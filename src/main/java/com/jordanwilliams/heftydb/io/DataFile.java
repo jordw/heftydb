@@ -14,26 +14,30 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.util;
+package com.jordanwilliams.heftydb.io;
 
 
-import com.jordanwilliams.heftydb.offheap.Memory;
-
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 
-public interface Serializer<I, O> {
+public interface DataFile {
 
-    public O serialize(I data);
+    public long append(ByteBuffer bufferToWrite) throws IOException;
 
-    public I deserialize(O in);
+    public long read(ByteBuffer bufferToRead, long position) throws IOException;
 
-    public long serializedSize(I data);
+    public long write(ByteBuffer bufferToWrite, long position) throws IOException;
 
-    public interface OffHeapSerializer<T> extends Serializer<T, Memory> {
+    public long size() throws IOException;
 
-    }
+    public void sync() throws IOException;
 
-    public interface ByteBufferSerializer<T> extends Serializer<T, ByteBuffer> {
+    public void rename(String newName) throws IOException;
 
-    }
+    public void delete() throws IOException;
+
+    public void close() throws IOException;
+
+    public Path path();
 }

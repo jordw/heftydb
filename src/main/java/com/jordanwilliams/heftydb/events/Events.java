@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.util;
+package com.jordanwilliams.heftydb.events;
 
+import com.jordanwilliams.heftydb.metrics.MetricsCollection;
 
-import com.jordanwilliams.heftydb.offheap.Memory;
+public interface Events {
 
-import java.nio.ByteBuffer;
+    public String summary();
 
-public interface Serializer<I, O> {
-
-    public O serialize(I data);
-
-    public I deserialize(O in);
-
-    public long serializedSize(I data);
-
-    public interface OffHeapSerializer<T> extends Serializer<T, Memory> {
-
-    }
-
-    public interface ByteBufferSerializer<T> extends Serializer<T, ByteBuffer> {
-
-    }
+    public MetricsCollection metrics();
 }

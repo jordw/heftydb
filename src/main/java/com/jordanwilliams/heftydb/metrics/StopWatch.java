@@ -14,32 +14,36 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.offheap;
+package com.jordanwilliams.heftydb.metrics;
 
+import net.jcip.annotations.ThreadSafe;
 
-import sun.misc.Unsafe;
+@ThreadSafe
+public final class StopWatch {
 
-import java.lang.reflect.Field;
+    private final long startTime;
 
-public class Allocator {
-
-    static final Unsafe unsafe;
-
-    public static long allocate(long size) {
-        return unsafe.allocateMemory(size);
+    public StopWatch() {
+        startTime = System.nanoTime();
     }
 
-    public static void free(long address) {
-        unsafe.freeMemory(address);
+    public long elapsed() {
+        return System.nanoTime() - startTime;
     }
 
-    static {
-        try {
-            Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = (sun.misc.Unsafe) field.get(null);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
+    public double elapsedMicros() {
+        return (double) elapsed() / 1000;
+    }
+
+    public double elapsedMillis() {
+        return (double) elapsed() / 1000000;
+    }
+
+    public double elapsedSeconds() {
+        return (double) elapsed() / 1000000000;
+    }
+
+    public static StopWatch start() {
+        return new StopWatch();
     }
 }
