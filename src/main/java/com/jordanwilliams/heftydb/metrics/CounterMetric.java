@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.hefty.metrics;
+package com.jordanwilliams.heftydb.metrics;
 
-import com.jordanwilliams.heftydb.metrics.Metric;
 import net.jcip.annotations.ThreadSafe;
 
 import java.util.concurrent.atomic.AtomicLong;
