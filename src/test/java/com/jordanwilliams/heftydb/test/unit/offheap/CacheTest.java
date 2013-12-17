@@ -1,6 +1,8 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 
+import com.jordanwilliams.heftydb.offheap.Cache;
+import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import com.jordanwilliams.heftydb.util.Serializer;
 import org.junit.Assert;

@@ -1,6 +1,7 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 
+import com.jordanwilliams.heftydb.offheap.Allocator;
 import org.junit.Assert;
 import org.junit.Test;
 

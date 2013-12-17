@@ -1,4 +1,4 @@
-package com.jordanwilliams.heftydb.test.unit.offheap;
+package com.jordanwilliams.heftydb.offheap;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EntryWeigher;

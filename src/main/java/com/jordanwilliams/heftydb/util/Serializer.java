@@ -1,7 +1,7 @@
 package com.jordanwilliams.heftydb.util;
 
 
-import com.jordanwilliams.heftydb.test.unit.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.Memory;
 
 import java.nio.ByteBuffer;
 
