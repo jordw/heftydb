@@ -25,15 +25,15 @@ import java.util.Iterator;
 
 public class MergingIteratorTest {
 
-    private static final int[] array1 = {1, 2, 3, 4, 5, 6};
-    private static final int[] array2 = {1, 4, 5, 7, 9, 10};
-    private static final int[] merged = {1, 1, 2, 3, 4, 4, 5, 5, 6, 7, 9, 10};
+    private static final int[] ARRAY1 = {1, 2, 3, 4, 5, 6};
+    private static final int[] ARRAY2 = {1, 4, 5, 7, 9, 10};
+    private static final int[] MERGED_ARRAY = {1, 1, 2, 3, 4, 4, 5, 5, 6, 7, 9, 10};
 
     @Test
     public void mergeTest() {
-        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(Ints.asList(array1).iterator(), Ints.asList(array2).iterator());
+        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(Ints.asList(ARRAY1).iterator(), Ints.asList(ARRAY2).iterator());
 
-        Iterator<Integer> mergedIterator = Ints.asList(merged).iterator();
+        Iterator<Integer> mergedIterator = Ints.asList(MERGED_ARRAY).iterator();
 
         while (mergedIterator.hasNext()) {
             Assert.assertEquals("Merged values match", mergedIterator.next(), mergingIterator.next());
