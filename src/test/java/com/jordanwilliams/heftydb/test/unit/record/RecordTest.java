@@ -16,7 +16,10 @@
 
 package com.jordanwilliams.heftydb.test.unit.record;
 
+import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,8 +27,9 @@ import java.nio.ByteBuffer;
 
 public class RecordTest {
 
-    private static final ByteBuffer TEST_KEY = ByteBuffer.wrap("I am a test key".getBytes());
-    private static final ByteBuffer TEST_VALUE = ByteBuffer.wrap("I am a test value".getBytes());
+    private static final Key TEST_KEY = new Key(ByteBuffers.fromString("I am a test key"));
+    private static final Value TEST_VALUE = new Value(ByteBuffers.fromString("I am a test value that should be used " +
+            "for testing only."));
 
     @Test
     public void testSerialization() {
@@ -38,11 +42,11 @@ public class RecordTest {
 
     @Test
     public void testTombstoneSerialization() {
-        Record record = new Record(TEST_KEY, null, 1);
+        Record record = new Record(TEST_KEY, Value.TOMBSTONE_VALUE, 1);
         ByteBuffer serialized = Record.SERIALIZER.serialize(record);
         Record deserializedRecord = Record.SERIALIZER.deserialize(serialized);
 
         Assert.assertEquals("Deserialized tombstone records match", record, deserializedRecord);
-        Assert.assertTrue("DBRecord is a tombstone record", deserializedRecord.tombstone());
+        Assert.assertTrue("Record is a tombstone record", deserializedRecord.value().isEmpty());
     }
 }

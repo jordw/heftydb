@@ -20,11 +20,14 @@ import sun.misc.Cleaner;
 import sun.nio.ch.DirectBuffer;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 public class ByteBuffers {
 
+    public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
+
     public static ByteBuffer fromString(String string) {
-        return ByteBuffer.wrap(string.getBytes());
+        return ByteBuffer.wrap(string.getBytes(Charset.defaultCharset()));
     }
 
     public static void free(ByteBuffer bb) {

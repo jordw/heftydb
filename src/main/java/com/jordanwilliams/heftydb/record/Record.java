@@ -23,79 +23,76 @@ import net.jcip.annotations.Immutable;
 import java.nio.ByteBuffer;
 
 @Immutable
-public final class Record implements Comparable<Record> {
+public class Record implements Comparable<Record> {
 
     public static final Serializer.ByteBufferSerializer<Record> SERIALIZER = new Serializer.ByteBufferSerializer<Record>() {
+        @Override
+        public ByteBuffer serialize(Record data) {
+            ByteBuffer serialized = ByteBuffer.allocate(serializedSize(data));
 
-        public int serializedSize(Record record) {
-            return Sizes.INT_SIZE + //Key size
-                    record.key().capacity() + //Key
-                    Sizes.INT_SIZE + //Value size
-                    (record.value() == null ? 0 : record.value().capacity()) + //Value
-                    Sizes.LONG_SIZE; //Write Id
+            // Key
+            serialized.putInt(data.key.size());
+            serialized.put(data.key.key());
+
+            // Value
+            serialized.putInt(data.value.size());
+            serialized.put(data.value().value());
+
+            serialized.putLong(data.snapshotId);
+
+            return serialized;
         }
 
         @Override
-        public Record deserialize(ByteBuffer byteBuffer) {
-            ByteBuffer buffer = byteBuffer.asReadOnlyBuffer();
-            buffer.rewind();
+        public Record deserialize(ByteBuffer in) {
+            ByteBuffer backingBuffer = in.duplicate();
+            backingBuffer.rewind();
 
-            int keyLength = buffer.getInt();
-            byte[] keyBytes = new byte[keyLength];
-            buffer.get(keyBytes);
+            // Key
+            int keySize = backingBuffer.getInt();
+            ByteBuffer keyBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), keySize).slice();
+            Key key = new Key(keyBuffer);
+            backingBuffer.position(backingBuffer.position() + keySize);
 
-            int valueLength = buffer.getInt();
-            byte[] valueBytes = new byte[valueLength];
-            buffer.get(valueBytes);
+            // Value
+            int valueSize = backingBuffer.getInt();
+            ByteBuffer valueBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(),
+                    valueSize).slice();
+            Value value = new Value(valueBuffer);
+            backingBuffer.position(backingBuffer.position() + valueSize);
 
-            long writeId = buffer.getLong();
+            //Snapshot Id
+            long snapshotId = backingBuffer.getLong();
 
-            return new Record(ByteBuffer.wrap(keyBytes), ByteBuffer.wrap(valueBytes), writeId);
+            return new Record(key, value, snapshotId);
         }
 
         @Override
-        public ByteBuffer serialize(Record record) {
-            ByteBuffer serializedBuffer = ByteBuffer.allocate(serializedSize(record));
-            ByteBuffer keyDup = record.key.duplicate();
-            ByteBuffer valueDup = record.value.duplicate();
-
-            keyDup.rewind();
-            valueDup.rewind();
-
-            serializedBuffer.putInt(keyDup.capacity());
-            serializedBuffer.put(keyDup);
-            serializedBuffer.putInt(valueDup.capacity());
-            serializedBuffer.put(valueDup);
-            serializedBuffer.putLong(record.snapshotId());
-
-            serializedBuffer.rewind();
-
-            return serializedBuffer;
+        public int serializedSize(Record data) {
+            return Sizes.INT_SIZE + // Key size
+                   Key.SERIALIZER.serializedSize(data.key) + // Key
+                   Sizes.INT_SIZE + // Value size
+                   Value.SERIALIZER.serializedSize(data.value) + // Value
+                   Sizes.LONG_SIZE; // Snapshot id
         }
     };
 
-    private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
-
-    private final ByteBuffer key;
-    private final ByteBuffer value;
+    private final Key key;
+    private final Value value;
     private final long snapshotId;
 
-    public Record(ByteBuffer key, ByteBuffer value, long snapshotId) {
+    public Record(Key key, Value value, long snapshotId) {
         this.key = key;
-        this.value = value == null ? EMPTY_BUFFER : value;
+        this.value = value;
         this.snapshotId = snapshotId;
     }
 
-    public boolean tombstone() {
-        return value.capacity() == 0;
+    public Key key() {
+        return key;
     }
 
-    public ByteBuffer key() {
-        return key.duplicate();
-    }
-
-    public ByteBuffer value() {
-        return value.duplicate();
+    public Value value() {
+        return value;
     }
 
     public long snapshotId() {
@@ -103,15 +100,30 @@ public final class Record implements Comparable<Record> {
     }
 
     @Override
+    public int compareTo(Record o) {
+        int compared = key.compareTo(o.key);
+
+        if (compared != 0){
+            return compared;
+        }
+
+        if (snapshotId == o.snapshotId){
+            return 0;
+        }
+
+        return snapshotId > o.snapshotId ? 1 : -1;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Record that = (Record) o;
+        Record record = (Record) o;
 
-        if (snapshotId != that.snapshotId) return false;
-        if (key != null ? !key.equals(that.key) : that.key != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (snapshotId != record.snapshotId) return false;
+        if (key != null ? !key.equals(record.key) : record.key != null) return false;
+        if (value != null ? !value.equals(record.value) : record.value != null) return false;
 
         return true;
     }
@@ -125,24 +137,9 @@ public final class Record implements Comparable<Record> {
     }
 
     @Override
-    public int compareTo(Record other) {
-        int compared = key.compareTo(other.key);
-
-        if (compared != 0) {
-            return compared;
-        }
-
-        if (snapshotId == other.snapshotId) {
-            return 0;
-        }
-
-        return snapshotId > other.snapshotId ? 1 : -1;
-    }
-
-    @Override
     public String toString() {
         return "Record{" +
-                "key=" + new String(key.array()) +
+                "key=" + key +
                 ", value=" + value +
                 ", snapshotId=" + snapshotId +
                 '}';
