@@ -27,7 +27,7 @@ public interface Serializer<I, O> {
 
     public I deserialize(O in);
 
-    public long serializedSize(I data);
+    public int serializedSize(I data);
 
     public interface OffHeapSerializer<T> extends Serializer<T, Memory> {
 

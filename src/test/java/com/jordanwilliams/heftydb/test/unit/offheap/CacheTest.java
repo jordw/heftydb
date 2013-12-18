@@ -56,7 +56,7 @@ public class CacheTest {
         }
 
         @Override
-        public long serializedSize(ByteBuffer data) {
+        public int serializedSize(ByteBuffer data) {
             return data.array().length;
         }
     };
