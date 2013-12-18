@@ -128,11 +128,11 @@ public final class Record implements Comparable<Record> {
     public int compareTo(Record other) {
         int compared = key.compareTo(other.key);
 
-        if (compared != 0){
+        if (compared != 0) {
             return compared;
         }
 
-        if (snapshotId == other.snapshotId){
+        if (snapshotId == other.snapshotId) {
             return 0;
         }
 

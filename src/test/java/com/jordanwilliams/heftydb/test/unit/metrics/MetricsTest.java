@@ -16,9 +16,9 @@
 
 package com.jordanwilliams.heftydb.test.unit.metrics;
 
+import com.jordanwilliams.heftydb.metrics.CounterMetric;
 import com.jordanwilliams.heftydb.metrics.HistogramMetric;
 import com.jordanwilliams.heftydb.metrics.RateMetric;
-import com.jordanwilliams.heftydb.metrics.CounterMetric;
 import org.junit.Assert;
 import org.junit.Test;
 
