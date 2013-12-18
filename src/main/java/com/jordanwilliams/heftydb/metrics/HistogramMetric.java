@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ThreadSafe
 public class HistogramMetric implements Metric {
 
-    private static final int SAMPLE_COUNT = 10000;
+    private static final int SAMPLE_COUNT = 5000;
 
     private final String name;
     private final String units;

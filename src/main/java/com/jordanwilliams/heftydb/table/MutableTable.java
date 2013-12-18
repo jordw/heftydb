@@ -16,34 +16,9 @@
 
 package com.jordanwilliams.heftydb.table;
 
-import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 
-import java.util.Iterator;
+public interface MutableTable extends Table {
 
-public interface Table extends Iterable<Record> {
-
-    public enum IterationDirection {
-        ASCENDING, DESCENDING
-    }
-
-    public long id();
-
-    public boolean mightContain(Key key);
-
-    public Record get(Key key, long snapshotId);
-
-    public Iterator<Record> iterator(IterationDirection direction, long snapshotId);
-
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId);
-
-    public long recordCount();
-
-    public long sizeBytes();
-
-    public int level();
-
-    public boolean isPersistent();
-
-    public void close();
+    public void put(Record record);
 }
