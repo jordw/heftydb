@@ -63,20 +63,14 @@ public class HistogramMetric implements Metric {
         return samples;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String name() {
         return name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public synchronized String summary() {
-        if (samples.length == 0) {
+        if (samples.length == 0 || avg() == 0) {
             return "";
         }
 
