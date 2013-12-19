@@ -70,12 +70,12 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public long recordCount() {
-        return 0;
+        return recordCount.get();
     }
 
     @Override
     public long sizeBytes() {
-        return 0;
+        return sizeBytes.get();
     }
 
     @Override
@@ -89,9 +89,7 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
     @Override
     public Iterator<Record> iterator() {
