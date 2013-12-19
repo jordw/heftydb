@@ -56,8 +56,7 @@ public class Record implements Comparable<Record> {
 
             // Value
             int valueSize = backingBuffer.getInt();
-            ByteBuffer valueBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(),
-                    valueSize).slice();
+            ByteBuffer valueBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), valueSize).slice();
             Value value = new Value(valueBuffer);
             backingBuffer.position(backingBuffer.position() + valueSize);
 
@@ -70,10 +69,10 @@ public class Record implements Comparable<Record> {
         @Override
         public int serializedSize(Record data) {
             return Sizes.INT_SIZE + // Key size
-                   Key.SERIALIZER.serializedSize(data.key) + // Key
-                   Sizes.INT_SIZE + // Value size
-                   Value.SERIALIZER.serializedSize(data.value) + // Value
-                   Sizes.LONG_SIZE; // Snapshot id
+                    Key.SERIALIZER.serializedSize(data.key) + // Key
+                    Sizes.INT_SIZE + // Value size
+                    Value.SERIALIZER.serializedSize(data.value) + // Value
+                    Sizes.LONG_SIZE; // Snapshot id
         }
     };
 
@@ -103,11 +102,11 @@ public class Record implements Comparable<Record> {
     public int compareTo(Record o) {
         int compared = key.compareTo(o.key);
 
-        if (compared != 0){
+        if (compared != 0) {
             return compared;
         }
 
-        if (snapshotId == o.snapshotId){
+        if (snapshotId == o.snapshotId) {
             return 0;
         }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.framework;
+package com.jordanwilliams.heftydb.test.base;
 
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.After;

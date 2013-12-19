@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.io;
 
 import com.jordanwilliams.heftydb.io.MappedDataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
-import com.jordanwilliams.heftydb.test.framework.FileTest;
+import com.jordanwilliams.heftydb.test.base.FileTest;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.Assert;
 import org.junit.Test;
