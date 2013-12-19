@@ -35,12 +35,14 @@ public class FilteringIteratorTest {
 
         FilteringIterator<String> filteringIterator = new FilteringIterator<String>(new FilteringIterator.Filter<String>() {
             @Override
-            public boolean accept(String data) {
-                if (data.equals("c")){
-                    return false;
+            public String next(Iterator<String> delegate) {
+                String next = delegate.next();
+
+                if (next == "c"){
+                    next = delegate.next();
                 }
 
-                return true;
+                return next;
             }
         }, sourceIter);
 

@@ -23,39 +23,42 @@ import java.util.Queue;
 public class FilteringIterator<T> implements Iterator<T> {
 
     public interface Filter<T> {
-        public boolean accept(T data);
+        public T next(Iterator<T> delegate);
     }
 
     private final Queue<T> next = new LinkedList<T>();
     private final Filter<T> filter;
     private final Iterator<T> delegate;
 
-    public FilteringIterator(Filter<T> filter, Iterator<T> delegate){
+    public FilteringIterator(Filter<T> filter, Iterator<T> delegate) {
         this.filter = filter;
         this.delegate = delegate;
     }
 
     @Override
     public boolean hasNext() {
-        if (!next.isEmpty()){
+        if (!next.isEmpty()) {
             return true;
         }
 
-        while (delegate.hasNext()){
-            T nextCandidate = delegate.next();
-
-            if (filter.accept(nextCandidate)){
-                next.add(nextCandidate);
-                return true;
-            }
+        if (!delegate.hasNext()) {
+            return false;
         }
 
-        return false;
+        T nextCandidate = filter.next(delegate);
+
+        if (nextCandidate == null) {
+            return false;
+        }
+
+        next.add(nextCandidate);
+
+        return true;
     }
 
     @Override
     public T next() {
-        if (next.isEmpty()){
+        if (next.isEmpty()) {
             hasNext();
         }
 
