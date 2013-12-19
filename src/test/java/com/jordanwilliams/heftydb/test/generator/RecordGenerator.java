@@ -22,12 +22,11 @@ import com.jordanwilliams.heftydb.record.Value;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -73,8 +72,8 @@ public class RecordGenerator {
         return testRecords(recordCount, keyReuse, keySize, valueSize).iterator();
     }
 
-    public Collection<Record> latestRecords(List<Record> records, long snapshotId){
-        Map<Key, Record> latestRecordMap = new HashMap<Key, Record>();
+    public List<Record> latestRecords(List<Record> records, long snapshotId){
+        SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
 
         for (Record record : records){
             Record existing = latestRecordMap.get(record.key());
@@ -84,6 +83,6 @@ public class RecordGenerator {
             }
         }
 
-        return latestRecordMap.values();
+        return new ArrayList<Record>(latestRecordMap.values());
     }
 }

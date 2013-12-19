@@ -94,6 +94,6 @@ public class Value implements Comparable<Value> {
     public String toString() {
         return "Value{" +
                 "value=" + new String(value.array()) +
-                '}';
+                "}";
     }
 }

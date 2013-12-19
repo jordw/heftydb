@@ -41,10 +41,6 @@ public class FilteringIterator<T> implements Iterator<T> {
             return true;
         }
 
-        if (!delegate.hasNext()) {
-            return false;
-        }
-
         T nextCandidate = filter.next(delegate);
 
         if (nextCandidate == null) {

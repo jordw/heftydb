@@ -17,12 +17,15 @@
 package com.jordanwilliams.heftydb.test.unit.table.memory;
 
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class MemoryTableTest extends RecordTest {
 
@@ -37,6 +40,43 @@ public class MemoryTableTest extends RecordTest {
 
         for (Record record : recordGenerator.latestRecords(records, Long.MAX_VALUE)){
             Assert.assertEquals("Records match", record, memoryTable.get(record.key(), Long.MAX_VALUE));
+        }
+    }
+
+    @Test
+    public void ascendingIteratorTest(){
+        List<Record> records = recordGenerator.testRecords(100, 20);
+        MemoryTable memoryTable = new MemoryTable(1);
+
+        for (Record record : records){
+            memoryTable.put(record);
+        }
+
+        Iterator<Record> ascendingIterator = memoryTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+        ListIterator<Record> latestRecordIterator = recordGenerator.latestRecords(records,
+                Long.MAX_VALUE).listIterator();
+
+        while (latestRecordIterator.hasNext()){
+            //System.out.println(latestRecordIterator.next() + " - " + ascendingIterator.next());
+            Assert.assertEquals("Records match", latestRecordIterator.next(), ascendingIterator.next());
+        }
+    }
+
+    @Test
+    public void descendingIteratorTest(){
+        List<Record> records = recordGenerator.testRecords(100, 20);
+        MemoryTable memoryTable = new MemoryTable(1);
+
+        for (Record record : records){
+            memoryTable.put(record);
+        }
+
+        Iterator<Record> descendingIterator = memoryTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        ListIterator<Record> latestRecordIterator = recordGenerator.latestRecords(records,
+                Long.MAX_VALUE).listIterator();
+
+        while (latestRecordIterator.hasPrevious()){
+            Assert.assertEquals("Records match", latestRecordIterator.previous(), descendingIterator.next());
         }
     }
 }

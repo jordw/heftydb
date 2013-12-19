@@ -60,7 +60,7 @@ public class VersionedRecordIterator implements Iterator<Record> {
                 }
             }
 
-            return null;
+            return lastSeenRecord;
         }
     }
 
