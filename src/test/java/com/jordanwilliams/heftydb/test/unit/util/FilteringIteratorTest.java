@@ -36,6 +36,10 @@ public class FilteringIteratorTest {
         FilteringIterator<String> filteringIterator = new FilteringIterator<String>(new FilteringIterator.Filter<String>() {
             @Override
             public String next(Iterator<String> delegate) {
+                if (!delegate.hasNext()){
+                    return null;
+                }
+
                 String next = delegate.next();
 
                 if (next == "c"){
