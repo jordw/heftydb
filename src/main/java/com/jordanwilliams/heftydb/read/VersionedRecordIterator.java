@@ -53,9 +53,10 @@ public class VersionedRecordIterator implements Iterator<Record> {
                     return newestRecord;
                 }
 
-                //Make sure we keep only the latest version of the key when there are multiple
-                //versions found
-                if (newestRecord == null || currentRecord.snapshotId() > newestRecord.snapshotId()) {
+                //Make sure we keep only the latest version <= than the max snapshot id when there are
+                //multiple versions found
+                if (newestRecord == null || currentRecord.snapshotId() > newestRecord.snapshotId() && currentRecord
+                        .snapshotId() <= maxSnapshotId) {
                     newestRecord = currentRecord;
                 }
             }
