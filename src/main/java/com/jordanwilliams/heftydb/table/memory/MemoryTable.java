@@ -106,7 +106,8 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public boolean mightContain(Key key) {
-        return records.containsKey(key);
+        VersionedKey floorKey = records.floorKey(new VersionedKey(key, Long.MAX_VALUE));
+        return floorKey != null && floorKey.key.equals(key);
     }
 
     @Override
