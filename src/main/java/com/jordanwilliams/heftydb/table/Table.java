@@ -35,7 +35,7 @@ public interface Table extends Iterable<Record> {
 
     public Iterator<Record> iterator(IterationDirection direction, long snapshotId);
 
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId);
+    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long sn);
 
     public long recordCount();
 
@@ -44,6 +44,4 @@ public interface Table extends Iterable<Record> {
     public int level();
 
     public boolean isPersistent();
-
-    public void close();
 }

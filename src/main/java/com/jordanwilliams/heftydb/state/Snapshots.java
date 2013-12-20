@@ -16,33 +16,21 @@
 
 package com.jordanwilliams.heftydb.state;
 
-import com.jordanwilliams.heftydb.table.Table;
+import java.util.concurrent.atomic.AtomicLong;
 
-import java.util.Collection;
+public class Snapshots {
 
-public class State {
+    private final AtomicLong currentSnapshotId = new AtomicLong();
 
-    private final Tables tables;
-    private final Snapshots snapshots;
-    private final Config config;
-    private final Files files;
-
-    public State(Collection<Table> tables, Config config, Files files, long currentSnapshotId) {
-        this.snapshots = new Snapshots(currentSnapshotId);
-        this.tables = new Tables(tables);
-        this.config = config;
-        this.files = files;
+    public Snapshots(long startingSnapshotId) {
+        this.currentSnapshotId.set(startingSnapshotId);
     }
 
-    public Tables tables() {
-        return tables;
+    public long nextId(){
+        return currentSnapshotId.incrementAndGet();
     }
 
-    public Snapshots snapshots() {
-        return snapshots;
-    }
-
-    public Config config() {
-        return config;
+    private long currentId(){
+        return currentSnapshotId.get();
     }
 }

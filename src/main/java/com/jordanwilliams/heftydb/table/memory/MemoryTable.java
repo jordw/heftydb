@@ -154,9 +154,6 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public void close() {}
-
-    @Override
     public Iterator<Record> iterator() {
         return records.values().iterator();
     }
