@@ -50,6 +50,27 @@ public class MemoryTest {
     }
 
     @Test
+    public void fromToBufferTest() {
+        ByteBuffer testBuffer = ByteBuffer.allocateDirect(1024);
+
+        for (int i = 0; i < testBuffer.capacity(); i++){
+            testBuffer.put((byte) 255);
+        }
+
+        Memory memory = Memory.fromByteBuffer(testBuffer);
+
+        for (int i = 0; i < testBuffer.capacity(); i++){
+            Assert.assertEquals("Read back long", (byte) 255, memory.getByte(i));
+        }
+
+        ByteBuffer otherBuffer = memory.toDirectBuffer();
+
+        for (int i = 0; i < otherBuffer.capacity(); i++){
+            Assert.assertEquals("Read back long", (byte) 255, otherBuffer.get(i));
+        }
+    }
+
+    @Test
     public void byteRangeTest() {
         Memory memory = Memory.allocate(256);
 

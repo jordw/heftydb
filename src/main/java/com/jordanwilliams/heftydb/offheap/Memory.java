@@ -17,7 +17,9 @@
 package com.jordanwilliams.heftydb.offheap;
 
 import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -35,28 +37,26 @@ public class Memory {
         baseAddress = Allocator.allocate(size);
     }
 
-    public static Memory allocate(long bytes) {
-        if (bytes < 0) {
-            throw new IllegalArgumentException();
-        }
-        return new Memory(bytes);
-    }
-
     public byte getByte(long offset) {
         checkOffset(offset);
         return unsafe.getByte(baseAddress + offset);
     }
 
-    public void getBytes(long offset, ByteBuffer buffer) {
+    public void getBytes(long memoryOffset, ByteBuffer buffer) {
         if (buffer == null) {
             throw new NullPointerException();
         }
 
-        checkOffset(offset);
-        long endOffset = offset + buffer.capacity();
+        checkOffset(memoryOffset);
+        long endOffset = memoryOffset + buffer.capacity();
         checkOffset(endOffset - 1);
 
-        unsafe.copyMemory(null, baseAddress + offset, buffer.array(), BYTE_ARRAY_BASE_OFFSET, buffer.capacity());
+
+        if (buffer instanceof DirectBuffer){
+            unsafe.copyMemory(baseAddress + memoryOffset, ((DirectBuffer) buffer).address(), buffer.capacity());
+        } else {
+            unsafe.copyMemory(null, baseAddress + memoryOffset, buffer.array(), BYTE_ARRAY_BASE_OFFSET, buffer.capacity());
+        }
     }
 
     public void setByte(long offset, byte b) {
@@ -73,7 +73,11 @@ public class Memory {
         long endOffset = memoryOffset + buffer.capacity();
         checkOffset(endOffset - 1);
 
-        unsafe.copyMemory(buffer.array(), BYTE_ARRAY_BASE_OFFSET, null, baseAddress + memoryOffset, buffer.capacity());
+        if (buffer instanceof DirectBuffer){
+            unsafe.copyMemory(((DirectBuffer) buffer).address(), baseAddress + memoryOffset, buffer.capacity());
+        } else {
+            unsafe.copyMemory(buffer.array(), BYTE_ARRAY_BASE_OFFSET, null, baseAddress + memoryOffset, buffer.capacity());
+        }
     }
 
     public int getInt(long offset) {
@@ -111,16 +115,22 @@ public class Memory {
 
     public boolean retain() {
         while (true) {
-            int value = retainCount.get();
+            int retainValue = retainCount.get();
 
-            if (value <= 0) {
+            if (retainValue <= 0) {
                 return false;
             }
 
-            if (retainCount.compareAndSet(value, value + 1)) {
+            if (retainCount.compareAndSet(retainValue, retainValue + 1)) {
                 return true;
             }
         }
+    }
+
+    public ByteBuffer toDirectBuffer(){
+        ByteBuffer directBuffer = ByteBuffer.allocateDirect((int) size);
+        getBytes(0, directBuffer);
+        return directBuffer;
     }
 
     public void release() {
@@ -132,5 +142,20 @@ public class Memory {
     private void checkOffset(long offset) {
         assert baseAddress != 0 : "Memory was already freed";
         assert offset >= 0 && offset < size : "Illegal address: " + offset + ", size: " + size;
+    }
+
+    public static Memory allocate(long bytes) {
+        if (bytes < 0) {
+            throw new IllegalArgumentException();
+        }
+        return new Memory(bytes);
+    }
+
+    public static Memory fromByteBuffer(ByteBuffer buffer){
+        Buffer fromBuffer = buffer.duplicate();
+        fromBuffer.rewind();
+        Memory memory = Memory.allocate(buffer.capacity());
+        memory.setBytes(0, buffer);
+        return memory;
     }
 }
