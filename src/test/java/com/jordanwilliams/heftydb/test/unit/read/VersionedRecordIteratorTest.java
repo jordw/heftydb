@@ -63,7 +63,7 @@ public class VersionedRecordIteratorTest {
 
     @Test
     public void respectSnapshotTest(){
-        Iterator<Record> snapshotIterator = FILTERED_RECORDS.iterator();
+        Iterator<Record> snapshotIterator = SNAPSHOT_RECORDS.iterator();
         Iterator<Record> versionedIterator = new VersionedRecordIterator(4, SOURCE_RECORDS.iterator());
 
         while (versionedIterator.hasNext()){

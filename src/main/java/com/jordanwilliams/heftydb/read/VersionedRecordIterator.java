@@ -17,72 +17,84 @@
 package com.jordanwilliams.heftydb.read;
 
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.util.FilteringIterator;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class VersionedRecordIterator implements Iterator<Record> {
 
-    private static class SnapshotFilter implements FilteringIterator.Filter<Record> {
+    private final Iterator<Record> recordIterator;
+    private final Queue<Record> nextRecord = new LinkedList<Record>();
+    private final long maxSnapshotId;
+    private final SortedSet<Record> currentKeyRecords = new TreeSet<Record>();
 
-        private final long maxSnapshotId;
-        private Record lastSeenRecord;
-
-        private SnapshotFilter(long maxSnapshotId) {
-            this.maxSnapshotId = maxSnapshotId;
-        }
-
-        @Override
-        public Record next(Iterator<Record> delegate) {
-            Record newestRecord = null;
-
-            while (delegate.hasNext()) {
-                Record currentRecord;
-
-                if (lastSeenRecord != null) {
-                    currentRecord = lastSeenRecord;
-                    lastSeenRecord = null;
-                } else {
-                    currentRecord = delegate.next();
-                }
-
-                //If we have seen the next unique key, then we can be sure we have the latest
-                //version of the previous key, so we can return it
-                if (newestRecord != null && !currentRecord.key().equals(newestRecord.key())) {
-                    lastSeenRecord = currentRecord;
-                    return newestRecord;
-                }
-
-                //Make sure we keep only the latest version <= than the max snapshot id when there are
-                //multiple versions found
-                if (newestRecord == null || currentRecord.snapshotId() > newestRecord.snapshotId() && currentRecord
-                        .snapshotId() <= maxSnapshotId) {
-                    newestRecord = currentRecord;
-                }
-            }
-
-            return lastSeenRecord;
-        }
-    }
-
-    private final FilteringIterator<Record> filteringIterator;
-
-    public VersionedRecordIterator(long maxSnapshotId, Iterator<Record> delegate) {
-        this.filteringIterator = new FilteringIterator<Record>(new SnapshotFilter(maxSnapshotId), delegate);
+    public VersionedRecordIterator(long maxSnapshotId, Iterator<Record> recordIterator) {
+        this.maxSnapshotId = maxSnapshotId;
+        this.recordIterator = recordIterator;
     }
 
     @Override
     public boolean hasNext() {
-        return filteringIterator.hasNext();
+        if (!nextRecord.isEmpty()) {
+            return true;
+        }
+
+        Record record = fetchNextRecord();
+
+        if (record == null) {
+            return false;
+        }
+
+        nextRecord.add(record);
+
+        return true;
     }
 
     @Override
     public Record next() {
-        return filteringIterator.next();
+        if (nextRecord.isEmpty()) {
+            hasNext();
+        }
+
+        return nextRecord.poll();
     }
 
     @Override
     public void remove() {
-        filteringIterator.remove();
+        throw new UnsupportedOperationException();
+    }
+
+    private Record fetchNextRecord() {
+        while (recordIterator.hasNext()) {
+            Record next = recordIterator.next();
+
+            if (next.snapshotId() > maxSnapshotId){
+                continue;
+            }
+
+            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().equals(currentKeyRecords.last()
+                    .key());
+
+            if (nextKeyEqualCurrent){
+                currentKeyRecords.add(next);
+                continue;
+            }
+
+            Record newest = currentKeyRecords.last();
+            currentKeyRecords.clear();
+            currentKeyRecords.add(next);
+            return newest;
+        }
+
+        if (currentKeyRecords.isEmpty()){
+            return null;
+        }
+
+        Record newest = currentKeyRecords.last();
+        currentKeyRecords.clear();
+        return newest;
     }
 }

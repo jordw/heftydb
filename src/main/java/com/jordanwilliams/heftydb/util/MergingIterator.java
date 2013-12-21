@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -104,7 +105,11 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
     @Override
     public T next() {
         if (next.isEmpty()) {
-            hasNext();
+            boolean hasNext = hasNext();
+
+            if (!hasNext){
+                throw new NoSuchElementException();
+            }
         }
 
         return next.poll();
