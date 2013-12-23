@@ -29,11 +29,15 @@ public interface Serializer<I, O> {
 
     public int serializedSize(I data);
 
-    public interface OffHeapSerializer<T> extends Serializer<T, Memory> {
+    public interface MemorySerializer<T> extends Serializer<T, Memory> {
 
     }
 
     public interface ByteBufferSerializer<T> extends Serializer<T, ByteBuffer> {
+
+    }
+
+    public interface ByteBufferArraySerializer<T> extends Serializer<T, ByteBuffer[]> {
 
     }
 }

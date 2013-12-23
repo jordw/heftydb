@@ -23,8 +23,16 @@ public class BitSet {
     private final static int ADDRESS_BITS_PER_WORD = 6;
     private final Memory memory;
 
+    public BitSet(long numberOfBits, long paddingBytes){
+        memory = Memory.allocate(((memoryOffset(numberOfBits - 1) + 1) * Sizes.LONG_SIZE) + paddingBytes);
+    }
+
     public BitSet(long numberOfBits){
-        memory = Memory.allocate((memoryOffset(numberOfBits - 1) + 1) * Sizes.LONG_SIZE);
+        this(numberOfBits, 0);
+    }
+
+    public BitSet(Memory memory){
+        this.memory = memory;
     }
 
     public void set(long index, boolean value) {
@@ -42,6 +50,19 @@ public class BitSet {
     public boolean get(long index){
         int offset = memoryOffset(index);
         return ((memory.getLong(offset) & (1L << index)) != 0);
+    }
+
+    public long size(){
+        return memory.size();
+    }
+
+    public Memory memory(){
+        return memory;
+    }
+
+    @Override
+    public void finalize(){
+        memory.release();
     }
 
     private static int memoryOffset(long bitIndex) {
