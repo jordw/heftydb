@@ -39,7 +39,7 @@ public class CacheTest {
         }
     };
 
-    private final Serializer.OffHeapSerializer<ByteBuffer> serializer = new Serializer.OffHeapSerializer<ByteBuffer>() {
+    private final Serializer.MemorySerializer<ByteBuffer> serializer = new Serializer.MemorySerializer<ByteBuffer>() {
         @Override
         public Memory serialize(ByteBuffer data) {
             Memory memory = Memory.allocate(serializedSize(data));

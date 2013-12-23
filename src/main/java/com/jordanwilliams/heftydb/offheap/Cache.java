@@ -29,10 +29,10 @@ public class Cache<K, V> {
 
     private static final int CACHE_CONCURRENCY_LEVEL = 64;
 
-    private final Serializer.OffHeapSerializer<V> serializer;
+    private final Serializer.MemorySerializer<V> serializer;
     private final ConcurrentLinkedHashMap<K, Memory> cache;
 
-    public Cache(Serializer.OffHeapSerializer<V> serializer, long capacityBytes, final KeyWeigher<K> keyWeigher) {
+    public Cache(Serializer.MemorySerializer<V> serializer, long capacityBytes, final KeyWeigher<K> keyWeigher) {
         this.serializer = serializer;
         this.cache = new ConcurrentLinkedHashMap.Builder().concurrencyLevel(CACHE_CONCURRENCY_LEVEL).maximumWeightedCapacity(capacityBytes).weigher(new EntryWeigher<K, Memory>() {
             @Override

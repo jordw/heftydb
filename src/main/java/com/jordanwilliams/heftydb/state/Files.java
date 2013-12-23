@@ -25,8 +25,9 @@ import java.util.TreeSet;
 public class Files {
 
     private static final String TABLE_EXT = ".table";
-    private static final String TMP_TABLE_EXT = ".tmp";
     private static final String LOG_EXT = ".log";
+    private static final String INDEX_EXT = ".index";
+    private static final String TEMP_FILE_EXT = ".temp";
 
     private final Path logDirectory;
     private final Path tableDirectory;
@@ -37,11 +38,19 @@ public class Files {
     }
 
     public Path tempTablePath(long tableId){
-        return tableDirectory.resolve(tableId + TMP_TABLE_EXT);
+        return tableDirectory.resolve(tableId + TABLE_EXT + TEMP_FILE_EXT);
+    }
+
+    public Path tempIndexPath(long tableId){
+        return tableDirectory.resolve(tableId + INDEX_EXT + TEMP_FILE_EXT);
     }
 
     public Path tablePath(long tableId){
         return tableDirectory.resolve(tableId + TABLE_EXT);
+    }
+
+    public Path indexPath(long tableId){
+        return tableDirectory.resolve(tableId + INDEX_EXT);
     }
 
     public Path logPath(long tableId){
@@ -56,8 +65,8 @@ public class Files {
         return filePathsForExtension(tableDirectory, LOG_EXT);
     }
 
-    public SortedSet<Path> tempTablePaths() throws IOException{
-        return filePathsForExtension(tableDirectory, TMP_TABLE_EXT);
+    public SortedSet<Path> tempFilePaths() throws IOException{
+        return filePathsForExtension(tableDirectory, TEMP_FILE_EXT);
     }
 
     private SortedSet<Path> filePathsForExtension(Path directory, String extension) throws IOException {
