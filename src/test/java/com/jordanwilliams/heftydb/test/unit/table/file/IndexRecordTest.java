@@ -27,11 +27,10 @@ import java.nio.ByteBuffer;
 public class IndexRecordTest {
 
     private static final Key TEST_START_KEY = new Key(ByteBuffers.fromString("I am a test key"));
-    private static final Key TEST_END_KEY = new Key(ByteBuffers.fromString("Yo, I am a test key"));
 
     @Test
     public void testSerialization() {
-        IndexRecord indexRecord = new IndexRecord(TEST_START_KEY, TEST_END_KEY, 1);
+        IndexRecord indexRecord = new IndexRecord(TEST_START_KEY, 1);
         ByteBuffer serialized = IndexRecord.SERIALIZER.serialize(indexRecord);
         IndexRecord deserializedRecord = IndexRecord.SERIALIZER.deserialize(serialized);
 

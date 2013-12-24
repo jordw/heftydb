@@ -24,7 +24,7 @@ public class IndexBuilder {
         public IndexBlock finishBlock();
     }
 
-    private static final int TARGET_BLOCK_SIZE = 8192;
+    private static final int TARGET_BLOCK_SIZE = 65536;
 
     public void add(Record record){
 
