@@ -17,8 +17,66 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.util.Serializer;
+import com.jordanwilliams.heftydb.util.Sizes;
 
-public class IndexRecord {
+import java.nio.ByteBuffer;
+
+public class IndexRecord implements Comparable<IndexRecord> {
+
+    public static final Serializer.ByteBufferSerializer<IndexRecord> SERIALIZER = new Serializer.ByteBufferSerializer<IndexRecord>() {
+        @Override
+        public ByteBuffer serialize(IndexRecord data) {
+            ByteBuffer buffer = ByteBuffer.allocate(serializedSize(data));
+
+            //Start key
+            ByteBuffer startKeyBuffer = Key.SERIALIZER.serialize(data.startKey);
+            buffer.putInt(startKeyBuffer.capacity());
+            buffer.put(startKeyBuffer);
+
+            //End key
+            ByteBuffer endKeyBuffer = Key.SERIALIZER.serialize(data.endKey);
+            buffer.putInt(endKeyBuffer.capacity());
+            buffer.put(endKeyBuffer);
+
+            //Offset
+            buffer.putLong(data.offset);
+
+            return buffer;
+        }
+
+        @Override
+        public IndexRecord deserialize(ByteBuffer in) {
+            ByteBuffer buffer = in.duplicate();
+            buffer.rewind();
+
+            //Start key
+            int startKeyLength = buffer.getInt();
+            Key startKey = Key.SERIALIZER.deserialize(ByteBuffer.wrap(buffer.array(), buffer.position(),
+                    startKeyLength).slice());
+            buffer.position(buffer.position() + startKeyLength);
+
+            //End key
+            int endKeyLength = buffer.getInt();
+            Key endKey = Key.SERIALIZER.deserialize(ByteBuffer.wrap(buffer.array(), buffer.position(),
+                    endKeyLength).slice());
+            buffer.position(buffer.position() + endKeyLength);
+
+            //Offset
+            long offset = buffer.getLong();
+
+            return new IndexRecord(startKey, endKey, offset);
+        }
+
+        @Override
+        public int serializedSize(IndexRecord data) {
+            return Sizes.INT_SIZE + //Start key length
+                   Key.SERIALIZER.serializedSize(data.startKey) + //Start key
+                   Sizes.INT_SIZE + //End key length
+                   Key.SERIALIZER.serializedSize(data.endKey) + //End key
+                   Sizes.LONG_SIZE; //Offset
+        }
+    };
 
     private final Key startKey;
     private final Key endKey;
@@ -28,5 +86,53 @@ public class IndexRecord {
         this.startKey = startKey;
         this.endKey = endKey;
         this.offset = offset;
+    }
+
+    public Key startKey() {
+        return startKey;
+    }
+
+    public Key endKey() {
+        return endKey;
+    }
+
+    public long offset() {
+        return offset;
+    }
+
+    @Override
+    public int compareTo(IndexRecord o) {
+        return startKey.compareTo(o.startKey);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IndexRecord that = (IndexRecord) o;
+
+        if (offset != that.offset) return false;
+        if (endKey != null ? !endKey.equals(that.endKey) : that.endKey != null) return false;
+        if (startKey != null ? !startKey.equals(that.startKey) : that.startKey != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = startKey != null ? startKey.hashCode() : 0;
+        result = 31 * result + (endKey != null ? endKey.hashCode() : 0);
+        result = 31 * result + (int) (offset ^ (offset >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "IndexRecord{" +
+                "startKey=" + startKey +
+                ", endKey=" + endKey +
+                ", offset=" + offset +
+                '}';
     }
 }

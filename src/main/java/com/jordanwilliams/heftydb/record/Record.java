@@ -49,16 +49,16 @@ public class Record implements Comparable<Record> {
             backingBuffer.rewind();
 
             // Key
-            int keySize = backingBuffer.getInt();
-            ByteBuffer keyBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), keySize).slice();
+            int keyLength = backingBuffer.getInt();
+            ByteBuffer keyBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), keyLength).slice();
             Key key = new Key(keyBuffer);
-            backingBuffer.position(backingBuffer.position() + keySize);
+            backingBuffer.position(backingBuffer.position() + keyLength);
 
             // Value
-            int valueSize = backingBuffer.getInt();
-            ByteBuffer valueBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), valueSize).slice();
+            int valueLength = backingBuffer.getInt();
+            ByteBuffer valueBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), valueLength).slice();
             Value value = new Value(valueBuffer);
-            backingBuffer.position(backingBuffer.position() + valueSize);
+            backingBuffer.position(backingBuffer.position() + valueLength);
 
             //Snapshot Id
             long snapshotId = backingBuffer.getLong();

@@ -20,9 +20,17 @@ import com.jordanwilliams.heftydb.record.Record;
 
 public class IndexBuilder {
 
+    public interface Callback {
+        public IndexBlock finishBlock();
+    }
+
     private static final int TARGET_BLOCK_SIZE = 8192;
 
     public void add(Record record){
 
+    }
+
+    public Index finish(){
+        return null;
     }
 }
