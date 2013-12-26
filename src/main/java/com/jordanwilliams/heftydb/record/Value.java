@@ -55,9 +55,7 @@ public class Value implements Comparable<Value> {
     }
 
     public ByteBuffer value(){
-        ByteBuffer valueBuffer = value.duplicate();
-        valueBuffer.rewind();
-        return valueBuffer;
+        return value;
     }
 
     public boolean isEmpty(){

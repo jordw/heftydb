@@ -52,9 +52,7 @@ public class Key implements Comparable<Key> {
     }
 
     public ByteBuffer key(){
-        ByteBuffer keyBuffer = key.duplicate();
-        keyBuffer.rewind();
-        return keyBuffer;
+        return key;
     }
 
     public int size(){
@@ -85,8 +83,13 @@ public class Key implements Comparable<Key> {
 
     @Override
     public String toString() {
+        byte[] keyArray = new byte[key.capacity()];
+        key.rewind();
+        key.get(keyArray);
+        key.rewind();
+
         return "Key{" +
-                "key=" + new String(key.array()) +
+                "key=" + new String(keyArray) +
                 '}';
     }
 }

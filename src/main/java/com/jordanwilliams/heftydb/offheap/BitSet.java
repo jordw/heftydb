@@ -40,10 +40,10 @@ public class BitSet {
 
         if (value){
             //Set
-            memory.setLong(offset, memory.getLong(offset) | (1L << index));
+            memory.putLong(offset, memory.getLong(offset) | (1L << index));
         } else {
             //Clear
-            memory.setLong(offset, memory.getLong(offset) & ~(1L << index));
+            memory.putLong(offset, memory.getLong(offset) & ~(1L << index));
         }
     }
 

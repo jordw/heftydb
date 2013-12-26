@@ -45,7 +45,7 @@ public class BloomFilter {
 
             long bitSetSize = buffer.getLong();
             Memory bitSetMemory = Memory.allocate(bitSetSize);
-            bitSetMemory.setBytes(0, buffer, buffer.position(), (int) bitSetSize);
+            bitSetMemory.putBytes(0, buffer, buffer.position(), (int) bitSetSize);
             buffer.position(buffer.position() + (int) bitSetSize);
             int hashFunctionCount = buffer.getInt();
 

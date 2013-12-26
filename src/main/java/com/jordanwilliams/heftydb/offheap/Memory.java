@@ -16,13 +16,12 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
+import com.jordanwilliams.heftydb.util.ByteBuffers;
 import sun.misc.Unsafe;
 import sun.nio.ch.DirectBuffer;
 
-import java.lang.reflect.Field;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
@@ -37,6 +36,11 @@ public class Memory {
     private Memory(long bytes) {
         size = bytes;
         baseAddress = Allocator.allocate(size);
+    }
+
+    private Memory(long baseAddress, long size) {
+        this.baseAddress = baseAddress;
+        this.size = size;
     }
 
     public byte getByte(long offset) {
@@ -54,7 +58,7 @@ public class Memory {
         checkOffset(endOffset - 1);
 
 
-        if (buffer instanceof DirectBuffer){
+        if (buffer instanceof DirectBuffer) {
             unsafe.copyMemory(baseAddress + memoryOffset, ((DirectBuffer) buffer).address(), length);
         } else {
             unsafe.copyMemory(null, baseAddress + memoryOffset, buffer.array(), BYTE_ARRAY_BASE_OFFSET + bufferPosition, length);
@@ -65,12 +69,12 @@ public class Memory {
         getBytes(memoryOffset, buffer, 0, buffer.capacity());
     }
 
-    public void setByte(long offset, byte b) {
+    public void putByte(long offset, byte b) {
         checkOffset(offset);
         unsafe.putByte(baseAddress + offset, b);
     }
 
-    public void setBytes(long memoryOffset, ByteBuffer buffer, int bufferPosition, int length) {
+    public void putBytes(long memoryOffset, ByteBuffer buffer, int bufferPosition, int length) {
         if (buffer == null) {
             throw new NullPointerException();
         }
@@ -79,15 +83,15 @@ public class Memory {
         long endOffset = memoryOffset + length;
         checkOffset(endOffset - 1);
 
-        if (buffer instanceof DirectBuffer){
+        if (buffer instanceof DirectBuffer) {
             unsafe.copyMemory(((DirectBuffer) buffer).address() + bufferPosition, baseAddress + memoryOffset, length);
         } else {
             unsafe.copyMemory(buffer.array(), BYTE_ARRAY_BASE_OFFSET + bufferPosition, null, baseAddress + memoryOffset, length);
         }
     }
 
-    public void setBytes(long memoryOffset, ByteBuffer buffer){
-        setBytes(memoryOffset, buffer, 0, buffer.capacity());
+    public void putBytes(long memoryOffset, ByteBuffer buffer) {
+        putBytes(memoryOffset, buffer, 0, buffer.capacity());
     }
 
     public int getInt(long offset) {
@@ -95,7 +99,7 @@ public class Memory {
         return unsafe.getInt(baseAddress + offset);
     }
 
-    public void setInt(long offset, int l) {
+    public void putInt(long offset, int l) {
         checkOffset(offset);
         unsafe.putInt(baseAddress + offset, l);
     }
@@ -105,7 +109,7 @@ public class Memory {
         return unsafe.getLong(baseAddress + offset);
     }
 
-    public void setLong(long offset, long l) {
+    public void putLong(long offset, long l) {
         checkOffset(offset);
         unsafe.putLong(baseAddress + offset, l);
     }
@@ -115,6 +119,7 @@ public class Memory {
     }
 
     public void free() {
+        assert baseAddress != 0 : "Memory was already freed";
         Allocator.free(baseAddress);
         baseAddress = 0;
     }
@@ -137,63 +142,74 @@ public class Memory {
         }
     }
 
-    public ByteBuffer toDirectBuffer(){
-        if (size >= Integer.MAX_VALUE){
-            throw new IndexOutOfBoundsException();
-        }
-
-        try {
-            Field bufferAddressField = Buffer.class.getDeclaredField("address");
-            bufferAddressField.setAccessible(true);
-            Field bufferCapacityField = Buffer.class.getDeclaredField("capacity");
-            bufferCapacityField.setAccessible(true);
-
-            ByteBuffer directBuffer = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder());
-            bufferAddressField.setLong(directBuffer, baseAddress);
-            bufferCapacityField.setInt(directBuffer, (int) size);
-
-            return directBuffer;
-        } catch (Exception e){
-            return null;
-        }
-    }
-
-    public Memory copy(long memoryOffset, long length){
-            checkOffset(memoryOffset);
-            long endOffset = memoryOffset + length;
-            checkOffset(endOffset - 1);
-
-            Memory memory = Memory.allocate(length);
-
-            for (long i = 0; i < length; i++){
-                memory.setByte(i, memory.getByte(i));
-            }
-
-            return memory;
-    }
-
-    public Memory copy(){
-        return copy(0, size);
-    }
-
-    public void copyInto(ByteBuffer buffer, long memoryOffset, int length){
-        checkOffset(memoryOffset);
-        long endOffset = memoryOffset + length;
-        checkOffset(endOffset - 1);
-
-        for (long i = memoryOffset; i < memoryOffset + length; i++){
-            buffer.put(unsafe.getByte(baseAddress + i));
-        }
-    }
-
-    public void copyInto(ByteBuffer buffer){
-        copyInto(buffer, 0, (int) size);
-    }
-
     public void release() {
         if (retainCount.decrementAndGet() == 0) {
             free();
         }
+    }
+
+    public ByteBuffer toDirectBuffer(long offset, int length) {
+        if (size >= Integer.MAX_VALUE) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        return ByteBuffers.rawDirectBuffer(baseAddress + offset, length);
+    }
+
+    public Memory copy(long memoryOffset, long length) {
+        checkOffset(memoryOffset);
+        long endOffset = memoryOffset + length;
+        checkOffset(endOffset - 1);
+
+        Memory memory = Memory.allocate(length);
+
+        for (long i = 0; i < length; i++) {
+            memory.putByte(i, memory.getByte(i));
+        }
+
+        return memory;
+    }
+
+    public Memory copy() {
+        return copy(0, size);
+    }
+
+    public void copyInto(ByteBuffer buffer, long memoryOffset, int length) {
+        checkOffset(memoryOffset);
+        long endOffset = memoryOffset + length;
+        checkOffset(endOffset - 1);
+
+        for (long i = memoryOffset; i < memoryOffset + length; i++) {
+            buffer.put(unsafe.getByte(baseAddress + i));
+        }
+    }
+
+    public int compareAsBytes(ByteBuffer compare, long memoryOffset, int length) {
+        long compareCount = Math.min(length, compare.remaining());
+        long compareOffset = memoryOffset + compareCount;
+        int remaining = length;
+
+        for (long i = memoryOffset; i < compareOffset; i++) {
+            byte thisVal = this.getByte(i);
+            byte thatVal = compare.get();
+            remaining--;
+
+            if (thisVal == thatVal) {
+                continue;
+            }
+
+            if (thisVal < thatVal) {
+                return -1;
+            }
+
+            return 1;
+        }
+
+        return remaining - compare.remaining();
+    }
+
+    public void copyInto(ByteBuffer buffer) {
+        copyInto(buffer, 0, (int) size);
     }
 
     private void checkOffset(long offset) {
@@ -208,11 +224,26 @@ public class Memory {
         return new Memory(bytes);
     }
 
-    public static Memory fromByteBuffer(ByteBuffer buffer){
+    public static Memory fromDirectBuffer(ByteBuffer buffer) {
+        if (!(buffer instanceof DirectBuffer)) {
+            throw new IllegalArgumentException();
+        }
+
+        //Capacity
+        int capacity = buffer.capacity();
+
+        //Base Address
+        DirectBuffer directBuffer = (DirectBuffer) buffer;
+        long address = directBuffer.address();
+
+        return new Memory(address, capacity);
+    }
+
+    public static Memory copyFromByteBuffer(ByteBuffer buffer) {
         Buffer fromBuffer = buffer.duplicate();
         fromBuffer.rewind();
         Memory memory = Memory.allocate(buffer.capacity());
-        memory.setBytes(0, buffer);
+        memory.putBytes(0, buffer);
         return memory;
     }
 }

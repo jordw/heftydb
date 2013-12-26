@@ -29,7 +29,7 @@ public class MemoryTest {
     public void intTest() {
         Memory memory = Memory.allocate(256);
 
-        memory.setInt(120, 4);
+        memory.putInt(120, 4);
         Assert.assertEquals("Read back int", 4, memory.getInt(120));
     }
 
@@ -37,7 +37,7 @@ public class MemoryTest {
     public void byteTest() {
         Memory memory = Memory.allocate(256);
 
-        memory.setByte(120, (byte) 8);
+        memory.putByte(120, (byte) 8);
         Assert.assertEquals("Read back byte", (byte) 8, memory.getByte(120));
     }
 
@@ -45,7 +45,7 @@ public class MemoryTest {
     public void longTest() {
         Memory memory = Memory.allocate(256);
 
-        memory.setLong(120, 1234567890L);
+        memory.putLong(120, 1234567890L);
         Assert.assertEquals("Read back long", 1234567890L, memory.getLong(120));
     }
 
@@ -57,7 +57,7 @@ public class MemoryTest {
             testBuffer.put((byte) 255);
         }
 
-        Memory memory = Memory.fromByteBuffer(testBuffer);
+        Memory memory = Memory.copyFromByteBuffer(testBuffer);
 
         for (int i = 0; i < testBuffer.capacity(); i++){
             Assert.assertEquals("Read back long", (byte) 255, memory.getByte(i));
@@ -69,7 +69,7 @@ public class MemoryTest {
         Memory memory = Memory.allocate(256);
 
         ByteBuffer testBuffer = ByteBuffers.fromString("hello");
-        memory.setBytes(0, testBuffer);
+        memory.putBytes(0, testBuffer);
 
         ByteBuffer readBuffer = ByteBuffer.allocate(testBuffer.capacity());
         memory.getBytes(0, readBuffer);

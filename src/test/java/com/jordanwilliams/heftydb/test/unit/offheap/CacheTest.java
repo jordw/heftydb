@@ -43,7 +43,7 @@ public class CacheTest {
         @Override
         public Memory serialize(ByteBuffer data) {
             Memory memory = Memory.allocate(serializedSize(data));
-            memory.setBytes(0, data);
+            memory.putBytes(0, data);
             return memory;
         }
 
