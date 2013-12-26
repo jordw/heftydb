@@ -53,13 +53,13 @@ public class MemoryTest {
     public void fromBufferTest() {
         ByteBuffer testBuffer = ByteBuffer.allocateDirect(1024);
 
-        for (int i = 0; i < testBuffer.capacity(); i++){
+        for (int i = 0; i < testBuffer.capacity(); i++) {
             testBuffer.put((byte) 255);
         }
 
         Memory memory = Memory.copyFromByteBuffer(testBuffer);
 
-        for (int i = 0; i < testBuffer.capacity(); i++){
+        for (int i = 0; i < testBuffer.capacity(); i++) {
             Assert.assertEquals("Read back long", (byte) 255, memory.getByte(i));
         }
     }

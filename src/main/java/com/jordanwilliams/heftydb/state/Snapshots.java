@@ -26,11 +26,11 @@ public class Snapshots {
         this.currentSnapshotId.set(startingSnapshotId);
     }
 
-    public long nextId(){
+    public long nextId() {
         return currentSnapshotId.incrementAndGet();
     }
 
-    private long currentId(){
+    private long currentId() {
         return currentSnapshotId.get();
     }
 }

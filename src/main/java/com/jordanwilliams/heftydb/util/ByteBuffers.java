@@ -39,7 +39,7 @@ public class ByteBuffers {
         }
     }
 
-    public static ByteBuffer rawDirectBuffer(long address, int size){
+    public static ByteBuffer rawDirectBuffer(long address, int size) {
         try {
             return (ByteBuffer) directBufferConstructor.newInstance(address, size);
         } catch (Exception e) {

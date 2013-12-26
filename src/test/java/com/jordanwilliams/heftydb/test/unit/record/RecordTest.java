@@ -28,8 +28,7 @@ import java.nio.ByteBuffer;
 public class RecordTest {
 
     private static final Key TEST_KEY = new Key(ByteBuffers.fromString("I am a test key"));
-    private static final Value TEST_VALUE = new Value(ByteBuffers.fromString("I am a test value that should be used " +
-            "for testing only."));
+    private static final Value TEST_VALUE = new Value(ByteBuffers.fromString("I am a test value that should be used " + "for testing only."));
 
     @Test
     public void testSerialization() {

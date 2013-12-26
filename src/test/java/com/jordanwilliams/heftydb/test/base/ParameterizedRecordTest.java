@@ -33,7 +33,7 @@ public abstract class ParameterizedRecordTest extends RecordTest {
         RecordGenerator recordGenerator = new RecordGenerator();
         List<Object[]> testParams = new ArrayList<Object[]>();
 
-        for (int i = 0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             Object[] params = new Object[1];
 
             List<Record> testRecords = recordGenerator.testRecords(1, 100, i * 10, 16, 100);
@@ -47,7 +47,7 @@ public abstract class ParameterizedRecordTest extends RecordTest {
 
     protected final List<Record> records;
 
-    public ParameterizedRecordTest(List<Record> testRecords){
+    public ParameterizedRecordTest(List<Record> testRecords) {
         this.records = testRecords;
     }
 }

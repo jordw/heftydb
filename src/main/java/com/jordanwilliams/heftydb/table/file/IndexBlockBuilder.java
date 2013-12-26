@@ -53,11 +53,11 @@ public class IndexBlockBuilder {
 
     private final List<Record> indexRecords = new ArrayList<Record>();
 
-    public void addRecord(Key startKey, long offset){
+    public void addRecord(Key startKey, long offset) {
         indexRecords.add(new Record(startKey, offset));
     }
 
-    public IndexBlock build(){
+    public IndexBlock build() {
         Memory contents = serializeRecords(indexRecords);
         return new IndexBlock(contents);
     }

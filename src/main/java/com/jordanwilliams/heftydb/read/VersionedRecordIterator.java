@@ -71,14 +71,13 @@ public class VersionedRecordIterator implements Iterator<Record> {
         while (recordIterator.hasNext()) {
             Record next = recordIterator.next();
 
-            if (next.snapshotId() > maxSnapshotId){
+            if (next.snapshotId() > maxSnapshotId) {
                 continue;
             }
 
-            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().equals(currentKeyRecords.last()
-                    .key());
+            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().equals(currentKeyRecords.last().key());
 
-            if (nextKeyEqualCurrent){
+            if (nextKeyEqualCurrent) {
                 currentKeyRecords.add(next);
                 continue;
             }
@@ -89,7 +88,7 @@ public class VersionedRecordIterator implements Iterator<Record> {
             return newest;
         }
 
-        if (currentKeyRecords.isEmpty()){
+        if (currentKeyRecords.isEmpty()) {
             return null;
         }
 

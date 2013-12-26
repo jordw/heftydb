@@ -24,8 +24,7 @@ import java.nio.ByteBuffer;
 
 public class BloomFilter {
 
-    public static final Serializer.ByteBufferSerializer<BloomFilter> SERIALIZER = new Serializer
-            .ByteBufferSerializer<BloomFilter>() {
+    public static final Serializer.ByteBufferSerializer<BloomFilter> SERIALIZER = new Serializer.ByteBufferSerializer<BloomFilter>() {
         @Override
         public ByteBuffer serialize(BloomFilter data) {
             ByteBuffer buffer = ByteBuffer.allocateDirect(serializedSize(data));
@@ -55,21 +54,21 @@ public class BloomFilter {
         @Override
         public int serializedSize(BloomFilter data) {
             return Sizes.LONG_SIZE + //Bit set length
-                   (int) data.bitSet.size() +  //Bit set
-                   Sizes.INT_SIZE; //Hash function count
+                    (int) data.bitSet.size() +  //Bit set
+                    Sizes.INT_SIZE; //Hash function count
         }
     };
 
     private final BitSet bitSet;
     private final int hashFunctionCount;
 
-    public BloomFilter(long approxElementCount, double falsePositiveProbability){
+    public BloomFilter(long approxElementCount, double falsePositiveProbability) {
         long bitCount = bitCount(approxElementCount, falsePositiveProbability);
         this.bitSet = new BitSet(bitCount);
         this.hashFunctionCount = hashFunctionCount(approxElementCount, bitCount);
     }
 
-    private BloomFilter(BitSet bitSet, int hashFunctionCount){
+    private BloomFilter(BitSet bitSet, int hashFunctionCount) {
         this.bitSet = bitSet;
         this.hashFunctionCount = hashFunctionCount;
     }

@@ -24,7 +24,7 @@ public class RecordTest {
     protected RecordGenerator recordGenerator;
 
     @Before
-    public void beforeTest(){
+    public void beforeTest() {
         recordGenerator = new RecordGenerator();
     }
 }

@@ -54,15 +54,15 @@ public class Value implements Comparable<Value> {
         this.value = value;
     }
 
-    public ByteBuffer value(){
+    public ByteBuffer value() {
         return value;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         return value.capacity() == 0;
     }
 
-    public int size(){
+    public int size() {
         return value.capacity();
     }
 

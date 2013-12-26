@@ -37,15 +37,15 @@ public class Tables {
         this.currentTableId.set(tables.last().id());
     }
 
-    public long nextId(){
+    public long nextId() {
         return currentTableId.incrementAndGet();
     }
 
-    public long currentId(){
+    public long currentId() {
         return currentTableId.get();
     }
 
-    public SortedSet<Table> all(){
+    public SortedSet<Table> all() {
         try {
             tableLock.readLock().lock();
             SortedSet<Table> tableSnapshot = new TreeSet<Table>(tables);
@@ -55,13 +55,13 @@ public class Tables {
         }
     }
 
-    public SortedSet<Table> persistent(){
+    public SortedSet<Table> persistent() {
         try {
             tableLock.readLock().lock();
             SortedSet<Table> tableSnapshot = new TreeSet<Table>();
 
-            for (Table table : tables){
-                if (table.isPersistent()){
+            for (Table table : tables) {
+                if (table.isPersistent()) {
                     tableSnapshot.add(table);
                 }
             }
@@ -72,7 +72,7 @@ public class Tables {
         }
     }
 
-    public void add(Table toAdd){
+    public void add(Table toAdd) {
         try {
             tableLock.writeLock().lock();
             tables.add(toAdd);
@@ -81,7 +81,7 @@ public class Tables {
         }
     }
 
-    public void remove(Table toRemove){
+    public void remove(Table toRemove) {
         try {
             tableLock.writeLock().lock();
             tables.remove(toRemove);
@@ -90,7 +90,7 @@ public class Tables {
         }
     }
 
-    public void swap(Table toAdd, Table toRemove){
+    public void swap(Table toAdd, Table toRemove) {
         try {
             tableLock.writeLock().lock();
             tables.add(toAdd);

@@ -68,17 +68,17 @@ public class RecordGenerator {
         return testRecords(recordCount, keyReuse, 16, 100);
     }
 
-    public Iterator<Record> testRecordIterator(int recordCount, int keyReuse, int keySize, int valueSize){
+    public Iterator<Record> testRecordIterator(int recordCount, int keyReuse, int keySize, int valueSize) {
         return testRecords(recordCount, keyReuse, keySize, valueSize).iterator();
     }
 
-    public List<Record> latestRecords(List<Record> records, long snapshotId){
+    public List<Record> latestRecords(List<Record> records, long snapshotId) {
         SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
 
-        for (Record record : records){
+        for (Record record : records) {
             Record existing = latestRecordMap.get(record.key());
 
-            if (existing == null || record.snapshotId() > existing.snapshotId()){
+            if (existing == null || record.snapshotId() > existing.snapshotId()) {
                 latestRecordMap.put(record.key(), record);
             }
         }

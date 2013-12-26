@@ -28,45 +28,45 @@ import java.util.Set;
 public class BloomFilterTest {
 
     @Test
-    public void readWriteTest(){
+    public void readWriteTest() {
         Set<ByteBuffer> testData = testKeys();
         BloomFilter testFilter = new BloomFilter(1000, 0.01);
 
-        for (ByteBuffer key : testData){
+        for (ByteBuffer key : testData) {
             testFilter.put(key.array());
         }
 
-        for (ByteBuffer key : testData){
+        for (ByteBuffer key : testData) {
             Assert.assertTrue("Key is in filter", testFilter.mightContain(key.array()));
         }
     }
 
     @Test
-    public void serializationTest(){
+    public void serializationTest() {
         Set<ByteBuffer> testData = testKeys();
         BloomFilter testFilter = new BloomFilter(1000, 0.01);
 
-        for (ByteBuffer key : testData){
+        for (ByteBuffer key : testData) {
             testFilter.put(key.array());
         }
 
-        for (ByteBuffer key : testData){
+        for (ByteBuffer key : testData) {
             Assert.assertTrue("Key is in filter", testFilter.mightContain(key.array()));
         }
 
         ByteBuffer serialized = BloomFilter.SERIALIZER.serialize(testFilter);
         BloomFilter deserializedFilter = BloomFilter.SERIALIZER.deserialize(serialized);
 
-        for (ByteBuffer key : testData){
+        for (ByteBuffer key : testData) {
             Assert.assertTrue("Key is in filter", deserializedFilter.mightContain(key.array()));
         }
     }
 
-    private static Set<ByteBuffer> testKeys(){
+    private static Set<ByteBuffer> testKeys() {
         KeyValueGenerator generator = new KeyValueGenerator();
         Set<ByteBuffer> testDataSet = new HashSet<ByteBuffer>();
 
-        for (int i = 0; i < 1000; i++){
+        for (int i = 0; i < 1000; i++) {
             testDataSet.add(generator.testKey(100, 0));
         }
 

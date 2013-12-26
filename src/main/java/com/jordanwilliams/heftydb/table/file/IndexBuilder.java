@@ -26,11 +26,11 @@ public class IndexBuilder {
 
     private static final int TARGET_BLOCK_SIZE = 65536;
 
-    public void add(Record record){
+    public void add(Record record) {
 
     }
 
-    public Index finish(){
+    public Index finish() {
         return null;
     }
 }

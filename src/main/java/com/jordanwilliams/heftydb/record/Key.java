@@ -51,11 +51,11 @@ public class Key implements Comparable<Key> {
         this.data = key;
     }
 
-    public ByteBuffer key(){
+    public ByteBuffer key() {
         return data;
     }
 
-    public int size(){
+    public int size() {
         return data.capacity();
     }
 

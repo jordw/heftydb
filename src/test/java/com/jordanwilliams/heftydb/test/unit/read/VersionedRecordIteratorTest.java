@@ -52,21 +52,21 @@ public class VersionedRecordIteratorTest {
     }
 
     @Test
-    public void filterRecordTest(){
+    public void filterRecordTest() {
         Iterator<Record> filteredIterator = FILTERED_RECORDS.iterator();
         Iterator<Record> versionedIterator = new VersionedRecordIterator(6, SOURCE_RECORDS.iterator());
 
-        while (versionedIterator.hasNext()){
+        while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), filteredIterator.next());
         }
     }
 
     @Test
-    public void respectSnapshotTest(){
+    public void respectSnapshotTest() {
         Iterator<Record> snapshotIterator = SNAPSHOT_RECORDS.iterator();
         Iterator<Record> versionedIterator = new VersionedRecordIterator(4, SOURCE_RECORDS.iterator());
 
-        while (versionedIterator.hasNext()){
+        while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), snapshotIterator.next());
         }
     }

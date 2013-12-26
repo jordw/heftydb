@@ -50,32 +50,32 @@ public class IndexBlockTest {
     }
 
     @Test
-    public void findRecordExactMatchTest(){
+    public void findRecordExactMatchTest() {
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(TEST_KEY_1);
         Assert.assertEquals("Offsets match", 0, blockOffsets.get(0).longValue());
     }
 
     @Test
-    public void findRecordExactMatchEndTest(){
+    public void findRecordExactMatchEndTest() {
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(TEST_KEY_3);
         Assert.assertEquals("Offsets match", 2, blockOffsets.get(0).longValue());
         Assert.assertEquals("Offsets match", 3, blockOffsets.get(1).longValue());
     }
 
     @Test
-    public void findRecordTest(){
+    public void findRecordTest() {
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(new Key(ByteBuffers.fromString("Awesome")));
         Assert.assertEquals("Offsets match", 5, blockOffsets.get(0).longValue());
     }
 
     @Test
-    public void findRecordMidTest(){
+    public void findRecordMidTest() {
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(new Key(ByteBuffers.fromString("Box")));
         Assert.assertEquals("Offsets match", 1, blockOffsets.get(0).longValue());
     }
 
     @Test
-    public void findRecordEndTest(){
+    public void findRecordEndTest() {
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(new Key(ByteBuffers.fromString("Toast")));
         Assert.assertEquals("Offsets match", 3, blockOffsets.get(0).longValue());
     }
@@ -84,14 +84,14 @@ public class IndexBlockTest {
         KeyValueGenerator generator = new KeyValueGenerator();
         List<Key> keys = new ArrayList<Key>();
 
-        for (int i = 0; i < 64000; i++){
+        for (int i = 0; i < 64000; i++) {
             keys.add(new Key(generator.testKey(32, 0)));
         }
 
         Collections.sort(keys);
 
         IndexBlockBuilder blockBuilder = new IndexBlockBuilder();
-        for (Key key : keys){
+        for (Key key : keys) {
             blockBuilder.addRecord(key, 0);
         }
 
@@ -101,10 +101,10 @@ public class IndexBlockTest {
         StopWatch watch = StopWatch.start();
         int iterations = 1000000;
 
-        for (int i = 0; i < iterations; i++){
+        for (int i = 0; i < iterations; i++) {
             block.blockOffsets(keys.get(random.nextInt(keys.size())));
         }
 
-        System.out.println(iterations /watch.elapsedSeconds());
+        System.out.println(iterations / watch.elapsedSeconds());
     }
 }

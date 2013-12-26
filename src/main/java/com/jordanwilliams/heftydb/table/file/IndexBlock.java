@@ -38,7 +38,7 @@ public class IndexBlock {
         return blockOffsets(key, startRecordIndex);
     }
 
-    private int startRecordIndex(Key key){
+    private int startRecordIndex(Key key) {
         int low = 0;
         int high = indexRecordCount - 1;
         int startIndex = -1;
@@ -61,15 +61,15 @@ public class IndexBlock {
         }
 
         //Look for the lowest index with the same start key
-        if (!found){
+        if (!found) {
             return low - 1;
         }
 
         int searchIndex = startIndex;
-        while (searchIndex > 0){
+        while (searchIndex > 0) {
             searchIndex--;
 
-            if (compareKeys(key, searchIndex) != 0){
+            if (compareKeys(key, searchIndex) != 0) {
                 break;
             }
         }
@@ -85,7 +85,7 @@ public class IndexBlock {
             int startKeyCompare = compareKeys(key, keyIndex);
 
             if (startKeyCompare <= 0) {
-                if (keyIndex + 1 == indexRecordCount){
+                if (keyIndex + 1 == indexRecordCount) {
                     blockOffsets.add(blockOffset(keyIndex));
                     break;
                 }
@@ -116,11 +116,11 @@ public class IndexBlock {
         return memory.compareAsBytes(key.key(), keyOffset, keySize);
     }
 
-    private int recordOffset(int pointerIndex){
+    private int recordOffset(int pointerIndex) {
         return memory.getInt(pointerOffset(pointerIndex));
     }
 
-    private long blockOffset(int pointerIndex){
+    private long blockOffset(int pointerIndex) {
         int recordOffset = recordOffset(pointerIndex);
         int keySize = memory.getInt(recordOffset);
         int blockOffset = recordOffset + Sizes.INT_SIZE + keySize;

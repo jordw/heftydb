@@ -37,23 +37,23 @@ public class Files {
         this.logDirectory = logDirectory;
     }
 
-    public Path tempTablePath(long tableId){
+    public Path tempTablePath(long tableId) {
         return tableDirectory.resolve(tableId + TABLE_EXT + TEMP_FILE_EXT);
     }
 
-    public Path tempIndexPath(long tableId){
+    public Path tempIndexPath(long tableId) {
         return tableDirectory.resolve(tableId + INDEX_EXT + TEMP_FILE_EXT);
     }
 
-    public Path tablePath(long tableId){
+    public Path tablePath(long tableId) {
         return tableDirectory.resolve(tableId + TABLE_EXT);
     }
 
-    public Path indexPath(long tableId){
+    public Path indexPath(long tableId) {
         return tableDirectory.resolve(tableId + INDEX_EXT);
     }
 
-    public Path logPath(long tableId){
+    public Path logPath(long tableId) {
         return tableDirectory.resolve(tableId + LOG_EXT);
     }
 
@@ -65,7 +65,7 @@ public class Files {
         return filePathsForExtension(tableDirectory, LOG_EXT);
     }
 
-    public SortedSet<Path> tempFilePaths() throws IOException{
+    public SortedSet<Path> tempFilePaths() throws IOException {
         return filePathsForExtension(tableDirectory, TEMP_FILE_EXT);
     }
 
@@ -73,7 +73,7 @@ public class Files {
         SortedSet<Path> sortedFilePaths = new TreeSet<Path>();
         DirectoryStream<Path> filePaths = java.nio.file.Files.newDirectoryStream(directory, extension);
 
-        for (Path filePath : filePaths){
+        for (Path filePath : filePaths) {
             sortedFilePaths.add(filePath);
         }
 

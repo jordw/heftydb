@@ -43,11 +43,11 @@ public class MemoryTable implements MutableTable {
         public int compareTo(VersionedKey o) {
             int compared = key.compareTo(o.key);
 
-            if (compared != 0){
+            if (compared != 0) {
                 return compared;
             }
 
-            if (snapshotId == o.snapshotId){
+            if (snapshotId == o.snapshotId) {
                 return 0;
             }
 
@@ -118,8 +118,7 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public Iterator<Record> iterator(IterationDirection direction, long snapshotId) {
-        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.values().iterator() : records
-                .descendingMap().values().iterator();
+        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.values().iterator() : records.descendingMap().values().iterator();
 
         return new VersionedRecordIterator(snapshotId, sourceIterator);
     }
@@ -127,8 +126,7 @@ public class MemoryTable implements MutableTable {
     @Override
     public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId) {
         VersionedKey versionedKey = new VersionedKey(key, snapshotId);
-        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.tailMap
-                (versionedKey, true).values().iterator() : records.headMap(versionedKey).descendingMap().values().iterator();
+        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.tailMap(versionedKey, true).values().iterator() : records.headMap(versionedKey).descendingMap().values().iterator();
 
         return new VersionedRecordIterator(snapshotId, sourceIterator);
     }
