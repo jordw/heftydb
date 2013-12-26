@@ -33,10 +33,12 @@ public class Record implements Comparable<Record> {
             // Key
             serialized.putInt(data.key.size());
             serialized.put(data.key.key());
+            data.key().key().rewind();
 
             // Value
             serialized.putInt(data.value.size());
             serialized.put(data.value().value());
+            data.value().value().rewind();
 
             serialized.putLong(data.snapshotId);
 
