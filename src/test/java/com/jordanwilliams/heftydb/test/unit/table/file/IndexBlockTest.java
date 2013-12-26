@@ -80,7 +80,7 @@ public class IndexBlockTest {
         Assert.assertEquals("Offsets match", 3, blockOffsets.get(0).longValue());
     }
 
-    public void performanceTest(){
+    public static void main(String[] args) {
         KeyValueGenerator generator = new KeyValueGenerator();
         List<Key> keys = new ArrayList<Key>();
 

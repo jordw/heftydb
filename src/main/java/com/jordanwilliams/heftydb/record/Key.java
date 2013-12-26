@@ -27,7 +27,7 @@ public class Key implements Comparable<Key> {
     public static final Serializer.ByteBufferSerializer<Key> SERIALIZER = new Serializer.ByteBufferSerializer<Key>() {
         @Override
         public ByteBuffer serialize(Key data) {
-            ByteBuffer serialized = data.key.duplicate();
+            ByteBuffer serialized = data.data.duplicate();
             serialized.rewind();
             return serialized;
         }
@@ -41,27 +41,27 @@ public class Key implements Comparable<Key> {
 
         @Override
         public int serializedSize(Key data) {
-            return data.key.capacity();
+            return data.data.capacity();
         }
     };
 
-    private final ByteBuffer key;
+    private final ByteBuffer data;
 
     public Key(ByteBuffer key) {
-        this.key = key;
+        this.data = key;
     }
 
     public ByteBuffer key(){
-        return key;
+        return data;
     }
 
     public int size(){
-        return key.capacity();
+        return data.capacity();
     }
 
     @Override
     public int compareTo(Key o) {
-        return key.compareTo(o.key);
+        return data.compareTo(o.data);
     }
 
     @Override
@@ -71,25 +71,25 @@ public class Key implements Comparable<Key> {
 
         Key key1 = (Key) o;
 
-        if (key != null ? !key.equals(key1.key) : key1.key != null) return false;
+        if (data != null ? !data.equals(key1.data) : key1.data != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return key != null ? key.hashCode() : 0;
+        return data != null ? data.hashCode() : 0;
     }
 
     @Override
     public String toString() {
-        byte[] keyArray = new byte[key.capacity()];
-        key.rewind();
-        key.get(keyArray);
-        key.rewind();
+        byte[] keyArray = new byte[data.capacity()];
+        data.rewind();
+        data.get(keyArray);
+        data.rewind();
 
         return "Key{" +
-                "key=" + new String(keyArray) +
+                "data=" + new String(keyArray) +
                 '}';
     }
 }
