@@ -27,6 +27,7 @@ public class Files {
     private static final String TABLE_EXT = ".table";
     private static final String LOG_EXT = ".log";
     private static final String INDEX_EXT = ".index";
+    private static final String FILTER_EXT = ".filter";
     private static final String TEMP_FILE_EXT = ".temp";
 
     private final Path logDirectory;
@@ -45,12 +46,20 @@ public class Files {
         return tableDirectory.resolve(tableId + INDEX_EXT + TEMP_FILE_EXT);
     }
 
+    public Path tempFilterPath(long tableId){
+        return tableDirectory.resolve(tableId + FILTER_EXT + TEMP_FILE_EXT);
+    }
+
     public Path tablePath(long tableId) {
         return tableDirectory.resolve(tableId + TABLE_EXT);
     }
 
     public Path indexPath(long tableId) {
         return tableDirectory.resolve(tableId + INDEX_EXT);
+    }
+
+    public Path filterPath(long tableId){
+        return tableDirectory.resolve(tableId + FILTER_EXT);
     }
 
     public Path logPath(long tableId) {

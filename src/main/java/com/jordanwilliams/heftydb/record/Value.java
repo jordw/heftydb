@@ -17,7 +17,6 @@
 package com.jordanwilliams.heftydb.record;
 
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-import com.jordanwilliams.heftydb.util.Serializer;
 import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
@@ -26,27 +25,6 @@ import java.nio.ByteBuffer;
 public class Value implements Comparable<Value> {
 
     public static Value TOMBSTONE_VALUE = new Value(ByteBuffers.EMPTY_BUFFER);
-
-    public static final Serializer.ByteBufferSerializer<Value> SERIALIZER = new Serializer.ByteBufferSerializer<Value>() {
-        @Override
-        public ByteBuffer serialize(Value data) {
-            ByteBuffer serialized = data.value.duplicate();
-            serialized.rewind();
-            return serialized;
-        }
-
-        @Override
-        public Value deserialize(ByteBuffer in) {
-            ByteBuffer backingBuffer = in.duplicate();
-            backingBuffer.rewind();
-            return new Value(backingBuffer);
-        }
-
-        @Override
-        public int serializedSize(Value data) {
-            return data.value.capacity();
-        }
-    };
 
     private final ByteBuffer value;
 

@@ -34,6 +34,10 @@ public class State {
         this.files = files;
     }
 
+    public Files files(){
+        return files;
+    }
+
     public Tables tables() {
         return tables;
     }

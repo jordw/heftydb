@@ -16,67 +16,10 @@
 
 package com.jordanwilliams.heftydb.record;
 
-import com.jordanwilliams.heftydb.util.Serializer;
-import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.Immutable;
-
-import java.nio.ByteBuffer;
 
 @Immutable
 public class Record implements Comparable<Record> {
-
-    public static final Serializer.ByteBufferSerializer<Record> SERIALIZER = new Serializer.ByteBufferSerializer<Record>() {
-        @Override
-        public ByteBuffer serialize(Record data) {
-            ByteBuffer serialized = ByteBuffer.allocate(serializedSize(data));
-
-            // Key
-            serialized.putInt(data.key.size());
-            serialized.put(data.key.key());
-            data.key().key().rewind();
-
-            // Value
-            serialized.putInt(data.value.size());
-            serialized.put(data.value().value());
-            data.value().value().rewind();
-
-            serialized.putLong(data.snapshotId);
-
-            return serialized;
-        }
-
-        @Override
-        public Record deserialize(ByteBuffer in) {
-            ByteBuffer backingBuffer = in.duplicate();
-            backingBuffer.rewind();
-
-            // Key
-            int keyLength = backingBuffer.getInt();
-            ByteBuffer keyBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), keyLength).slice();
-            Key key = new Key(keyBuffer);
-            backingBuffer.position(backingBuffer.position() + keyLength);
-
-            // Value
-            int valueLength = backingBuffer.getInt();
-            ByteBuffer valueBuffer = ByteBuffer.wrap(backingBuffer.array(), backingBuffer.position(), valueLength).slice();
-            Value value = new Value(valueBuffer);
-            backingBuffer.position(backingBuffer.position() + valueLength);
-
-            //Snapshot Id
-            long snapshotId = backingBuffer.getLong();
-
-            return new Record(key, value, snapshotId);
-        }
-
-        @Override
-        public int serializedSize(Record data) {
-            return Sizes.INT_SIZE + // Key size
-                    Key.SERIALIZER.serializedSize(data.key) + // Key
-                    Sizes.INT_SIZE + // Value size
-                    Value.SERIALIZER.serializedSize(data.value) + // Value
-                    Sizes.LONG_SIZE; // Snapshot id
-        }
-    };
 
     private final Key key;
     private final Value value;

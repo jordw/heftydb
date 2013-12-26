@@ -16,5 +16,69 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
-public class DataBlock {
+import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.util.Sizes;
+
+import java.util.Iterator;
+
+public class DataBlock implements Iterable<Record> {
+
+    private final Memory memory;
+    private final int recordCount;
+
+    public DataBlock(Memory memory) {
+        this.memory = memory;
+        this.recordCount = memory.getInt(0);
+    }
+
+    public Record get(Key key, long maxSnapshotId) {
+        int record = recordIndex(key);
+        return null;
+    }
+
+    @Override
+    public Iterator<Record> iterator() {
+        return null;
+    }
+
+    private int recordIndex(Key key) {
+        int low = 0;
+        int high = recordCount - 1;
+
+        //Binary search
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int compare = compareKeys(key, mid);
+
+            if (compare < 0) {
+                low = mid + 1;
+            } else if (compare > 0) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+
+        return low - 1;
+    }
+
+    private int compareKeys(Key key, int compareKeyIndex) {
+        int recordOffset = recordOffset(compareKeyIndex);
+        int keySize = memory.getInt(recordOffset);
+        int keyOffset = recordOffset + Sizes.INT_SIZE;
+        key.key().rewind();
+        return memory.compareAsBytes(key.key(), keyOffset, keySize);
+    }
+
+    private int recordOffset(int pointerIndex) {
+        return memory.getInt(pointerOffset(pointerIndex));
+    }
+
+    private static int pointerOffset(int pointerIndex) {
+        int pointerOffset = Sizes.INT_SIZE;
+        pointerOffset += pointerIndex * Sizes.INT_SIZE;
+        return pointerOffset;
+    }
 }

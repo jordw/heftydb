@@ -16,34 +16,12 @@
 
 package com.jordanwilliams.heftydb.record;
 
-import com.jordanwilliams.heftydb.util.Serializer;
 import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
 
 @Immutable
-public class Key implements Comparable<Key> {
-
-    public static final Serializer.ByteBufferSerializer<Key> SERIALIZER = new Serializer.ByteBufferSerializer<Key>() {
-        @Override
-        public ByteBuffer serialize(Key data) {
-            ByteBuffer serialized = data.data.duplicate();
-            serialized.rewind();
-            return serialized;
-        }
-
-        @Override
-        public Key deserialize(ByteBuffer in) {
-            ByteBuffer backingBuffer = in.duplicate();
-            backingBuffer.rewind();
-            return new Key(backingBuffer);
-        }
-
-        @Override
-        public int serializedSize(Key data) {
-            return data.data.capacity();
-        }
-    };
+public class Key implements Comparable<Key> {;
 
     private final ByteBuffer data;
 
