@@ -59,6 +59,7 @@ public class IndexBlockTest {
     public void findRecordExactMatchEndTest(){
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(TEST_KEY_3);
         Assert.assertEquals("Offsets match", 2, blockOffsets.get(0).longValue());
+        Assert.assertEquals("Offsets match", 3, blockOffsets.get(1).longValue());
     }
 
     @Test

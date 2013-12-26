@@ -92,7 +92,7 @@ public class IndexBlock {
 
                 int endKeyCompare = compareKeys(key, keyIndex + 1);
 
-                if (endKeyCompare >= 0) {
+                if (endKeyCompare > 0) {
                     blockOffsets.add(blockOffset(keyIndex));
                     break;
                 }
