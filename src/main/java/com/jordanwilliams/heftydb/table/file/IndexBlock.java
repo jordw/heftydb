@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,10 @@ public class IndexBlock {
     public IndexBlock(Memory memory) {
         this.memory = memory;
         this.indexRecordCount = memory.getInt(0);
+    }
+
+    public ByteBuffer toDirectBuffer(){
+        return memory.toDirectBuffer();
     }
 
     public List<Long> blockOffsets(Key key) {

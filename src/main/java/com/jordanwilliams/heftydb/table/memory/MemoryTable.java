@@ -96,7 +96,7 @@ public class MemoryTable implements MutableTable {
     public void put(Record record) {
         records.put(new VersionedKey(record.key(), record.snapshotId()), record);
         recordCount.incrementAndGet();
-        sizeBytes.addAndGet(record.key().size() + record.value().size());
+        sizeBytes.addAndGet(record.size());
     }
 
     @Override

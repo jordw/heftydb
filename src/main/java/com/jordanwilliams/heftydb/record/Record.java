@@ -43,6 +43,10 @@ public class Record implements Comparable<Record> {
         return snapshotId;
     }
 
+    public int size(){
+        return key.size() + value().size();
+    }
+
     @Override
     public int compareTo(Record o) {
         int compared = key.compareTo(o.key);

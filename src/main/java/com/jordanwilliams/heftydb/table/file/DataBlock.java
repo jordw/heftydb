@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 public class DataBlock implements Iterable<Record> {
@@ -31,6 +32,10 @@ public class DataBlock implements Iterable<Record> {
     public DataBlock(Memory memory) {
         this.memory = memory;
         this.recordCount = memory.getInt(0);
+    }
+
+    public ByteBuffer toDirectBuffer(){
+        return memory.toDirectBuffer();
     }
 
     public Record get(Key key, long maxSnapshotId) {

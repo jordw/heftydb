@@ -156,6 +156,10 @@ public class Memory {
         return ByteBuffers.rawDirectBuffer(baseAddress + offset, length);
     }
 
+    public ByteBuffer toDirectBuffer(){
+        return toDirectBuffer(0, (int) size);
+    }
+
     public Memory copy(long memoryOffset, long length) {
         checkOffset(memoryOffset);
         long endOffset = memoryOffset + length;

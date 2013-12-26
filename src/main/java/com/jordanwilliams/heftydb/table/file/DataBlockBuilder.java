@@ -16,5 +16,36 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.record.Record;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class DataBlockBuilder {
+
+    private final List<Record> records = new ArrayList<Record>();
+    private final int maxSizeBytes;
+    private int sizeBytes;
+
+    public DataBlockBuilder(int maxSizeBytes){
+        this.maxSizeBytes = maxSizeBytes;
+    }
+
+    public void addRecord(Record record){
+        records.add(record);
+        sizeBytes += record.size();
+    }
+
+    public boolean isFull(){
+        return sizeBytes >= maxSizeBytes;
+    }
+
+    public DataBlock build(){
+        return null;
+    }
+
+    private static Memory serializeRecords(List<Record> records){
+        return null;
+    }
 }
