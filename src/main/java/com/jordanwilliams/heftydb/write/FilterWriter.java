@@ -24,8 +24,6 @@ import com.jordanwilliams.heftydb.state.DataFiles;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 public class FilterWriter {
 
@@ -38,7 +36,7 @@ public class FilterWriter {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
         this.filterBuilder = new BloomFilter.Builder(approxRecordCount, 0.03);
-        this.filterFile = MutableDataFile.open(dataFiles.tempFilterPath(tableId));
+        this.filterFile = MutableDataFile.open(dataFiles.filterPath(tableId));
     }
 
     public void addRecord(Record record) {
@@ -50,7 +48,7 @@ public class FilterWriter {
         ByteBuffer filterBuffer = filter.memory().toDirectBuffer();
         filterFile.append(filterBuffer);
         filterFile.close();
-        Files.move(dataFiles.tempFilterPath(tableId), dataFiles.filterPath(tableId), StandardCopyOption.ATOMIC_MOVE);
+        filter.releaseMemory();
     }
 
     public static FilterWriter open(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {

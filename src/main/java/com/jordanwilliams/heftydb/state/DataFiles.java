@@ -28,7 +28,6 @@ public class DataFiles {
     private static final String LOG_EXT = ".log";
     private static final String INDEX_EXT = ".index";
     private static final String FILTER_EXT = ".filter";
-    private static final String TEMP_FILE_EXT = ".temp";
 
     private final Path logDirectory;
     private final Path tableDirectory;
@@ -36,18 +35,6 @@ public class DataFiles {
     public DataFiles(Path tableDirectory, Path logDirectory) {
         this.tableDirectory = tableDirectory;
         this.logDirectory = logDirectory;
-    }
-
-    public Path tempTablePath(long tableId) {
-        return tableDirectory.resolve(tableId + TABLE_EXT + TEMP_FILE_EXT);
-    }
-
-    public Path tempIndexPath(long tableId) {
-        return tableDirectory.resolve(tableId + INDEX_EXT + TEMP_FILE_EXT);
-    }
-
-    public Path tempFilterPath(long tableId) {
-        return tableDirectory.resolve(tableId + FILTER_EXT + TEMP_FILE_EXT);
     }
 
     public Path tablePath(long tableId) {
@@ -72,10 +59,6 @@ public class DataFiles {
 
     public SortedSet<Path> logFilePaths() throws IOException {
         return filePathsForExtension(tableDirectory, LOG_EXT);
-    }
-
-    public SortedSet<Path> tempFilePaths() throws IOException {
-        return filePathsForExtension(tableDirectory, TEMP_FILE_EXT);
     }
 
     private SortedSet<Path> filePathsForExtension(Path directory, String extension) throws IOException {
