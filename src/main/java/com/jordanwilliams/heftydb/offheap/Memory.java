@@ -81,9 +81,9 @@ public class Memory {
         getBytes(memoryOffset, memory, 0, memory.size);
     }
 
-    public void putByte(long offset, byte b) {
-        checkOffset(offset);
-        unsafe.putByte(baseAddress + offset, b);
+    public void putByte(long memoryOffset, byte b) {
+        checkOffset(memoryOffset);
+        unsafe.putByte(baseAddress + memoryOffset, b);
     }
 
     public void putBytes(long memoryOffset, ByteBuffer buffer, int bufferPosition, int length) {
