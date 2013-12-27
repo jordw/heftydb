@@ -120,7 +120,13 @@ public class DataBlock implements Iterable<Record>, Offheap {
 
     public Record get(Key key, long maxSnapshotId) {
         int recordIndex = recordIndex(versionedKeyBuffer(key, maxSnapshotId));
-        return deserializeRecord(recordIndex);
+        Record closest = deserializeRecord(recordIndex);
+
+        key.key().rewind();
+        int compare = key.compareTo(closest.key());
+        closest.key().key().rewind();
+
+        return compare == 0 ? closest : null;
     }
 
     @Override

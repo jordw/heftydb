@@ -48,9 +48,21 @@ public class DataBlockTest {
     }
 
     @Test
-    public void findRecordExactMatchTest() {
+    public void findRecordExistsTest() {
         Record record = TEST_BLOCK.get(TEST_KEY_1, Long.MAX_VALUE);
         Assert.assertEquals("Record matches", 2, record.snapshotId());
+    }
+
+    @Test
+    public void findRecordExistsEndTest() {
+        Record record = TEST_BLOCK.get(TEST_KEY_3, Long.MAX_VALUE);
+        Assert.assertEquals("Record matches", 5, record.snapshotId());
+    }
+
+    @Test
+    public void findRecordMissingTest() {
+        Record record = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Doesn't exist")), Long.MAX_VALUE);
+        Assert.assertNull("Record is null", record);
     }
 
     public static void main(String[] args) {
