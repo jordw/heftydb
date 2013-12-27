@@ -40,7 +40,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
             sizeBytes += record.size();
         }
 
-        public int sizeBytes(){
+        public int sizeBytes() {
             return sizeBytes;
         }
 
@@ -100,10 +100,10 @@ public class DataBlock implements Iterable<Record>, Offheap {
                 memoryOffset += Sizes.INT_SIZE;
 
                 //Value
-                if (record.value().size() != 0){
+                if (record.value().size() != 0) {
                     memory.putBytes(memoryOffset, record.value().data());
                     memoryOffset += record.value().size();
-                };
+                }
             }
 
             return memory;
@@ -167,7 +167,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return memory.getInt(pointerOffset(pointerIndex));
     }
 
-    private Record deserializeRecord(int recordIndex){
+    private Record deserializeRecord(int recordIndex) {
         int recordOffset = recordOffset(recordIndex);
         int keySize = memory.getInt(recordOffset);
         int keyOffset = recordOffset + Sizes.INT_SIZE;
@@ -188,7 +188,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
         memoryOffset += Sizes.INT_SIZE;
         ByteBuffer value = null;
 
-        if (valueSize != 0){
+        if (valueSize != 0) {
             value = ByteBuffer.allocate(valueSize);
             memory.getBytes(memoryOffset, value, 0, valueSize);
             value.rewind();
@@ -203,7 +203,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return pointerOffset;
     }
 
-    private static ByteBuffer versionedKeyBuffer(Key key, long snapshotId){
+    private static ByteBuffer versionedKeyBuffer(Key key, long snapshotId) {
         ByteBuffer versionedKey = ByteBuffer.allocate(key.size() + Sizes.LONG_SIZE);
         versionedKey.put(key.data());
         versionedKey.putLong(snapshotId);
