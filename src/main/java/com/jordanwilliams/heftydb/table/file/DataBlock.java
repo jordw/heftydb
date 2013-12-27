@@ -20,8 +20,10 @@ import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,28 +33,80 @@ public class DataBlock implements Iterable<Record>, Offheap {
     public static class Builder {
 
         private final List<Record> records = new ArrayList<Record>();
-        private final int maxSizeBytes;
         private int sizeBytes;
-
-        public Builder(int maxSizeBytes) {
-            this.maxSizeBytes = maxSizeBytes;
-        }
 
         public void addRecord(Record record) {
             records.add(record);
             sizeBytes += record.size();
         }
 
-        public boolean isFull() {
-            return sizeBytes >= maxSizeBytes;
+        public int sizeBytes(){
+            return sizeBytes;
         }
 
         public DataBlock build() {
-            return null;
+            return new DataBlock(serializeRecords(records));
         }
 
         private static Memory serializeRecords(List<Record> records) {
-            return null;
+            //Allocate memory
+            int memorySize = 0;
+            int[] recordOffsets = new int[records.size()];
+
+            memorySize += Sizes.INT_SIZE; //Pointer count
+            memorySize += Sizes.INT_SIZE * records.size(); //Pointers
+
+            //Compute memory size
+            for (int i = 0; i < records.size(); i++) {
+                Record record = records.get(i);
+                recordOffsets[i] = memorySize;
+                memorySize += Sizes.INT_SIZE; //Key size
+                memorySize += record.key().size(); //Key
+                memorySize += Sizes.LONG_SIZE; //Snapshot Id
+                memorySize += Sizes.INT_SIZE; //Value size
+                memorySize += record.value().size(); //Value
+            }
+
+            Memory memory = Memory.allocate(memorySize);
+
+            //Serialize the index records
+            int memoryOffset = 0;
+
+            //Pack pointers
+            memory.putInt(memoryOffset, records.size());
+            memoryOffset += Sizes.INT_SIZE;
+
+            for (int i = 0; i < recordOffsets.length; i++) {
+                memory.putInt(memoryOffset, recordOffsets[i]);
+                memoryOffset += Sizes.INT_SIZE;
+            }
+
+            //Pack records
+            for (Record record : records) {
+                //Key size
+                memory.putInt(memoryOffset, record.key().size());
+                memoryOffset += Sizes.INT_SIZE;
+
+                //Key
+                memory.putBytes(memoryOffset, record.key().key());
+                memoryOffset += record.key().size();
+
+                //Snapshot Id
+                memory.putLong(memoryOffset, record.snapshotId());
+                memoryOffset += Sizes.LONG_SIZE;
+
+                //Value size
+                memory.putInt(memoryOffset, record.value().size());
+                memoryOffset += Sizes.INT_SIZE;
+
+                //Value
+                if (record.value().size() != 0){
+                    memory.putBytes(memoryOffset, record.value().value());
+                    memoryOffset += record.value().size();
+                };
+            }
+
+            return memory;
         }
     }
 
@@ -65,8 +119,8 @@ public class DataBlock implements Iterable<Record>, Offheap {
     }
 
     public Record get(Key key, long maxSnapshotId) {
-        int record = recordIndex(key);
-        return null;
+        int recordIndex = recordIndex(versionedKeyBuffer(key, maxSnapshotId));
+        return deserializeRecord(recordIndex);
     }
 
     @Override
@@ -74,7 +128,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return null;
     }
 
-    private int recordIndex(Key key) {
+    private int recordIndex(ByteBuffer key) {
         int low = 0;
         int high = recordCount - 1;
 
@@ -95,22 +149,59 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return low - 1;
     }
 
-    private int compareKeys(Key key, int compareKeyIndex) {
+    private int compareKeys(ByteBuffer key, int compareKeyIndex) {
         int recordOffset = recordOffset(compareKeyIndex);
         int keySize = memory.getInt(recordOffset);
         int keyOffset = recordOffset + Sizes.INT_SIZE;
-        key.key().rewind();
-        return memory.compareAsBytes(key.key(), keyOffset, keySize);
+        key.rewind();
+        return memory.compareAsBytes(key, keyOffset, keySize + Sizes.LONG_SIZE);
     }
 
     private int recordOffset(int pointerIndex) {
         return memory.getInt(pointerOffset(pointerIndex));
     }
 
+    private Record deserializeRecord(int recordIndex){
+        int recordOffset = recordOffset(recordIndex);
+        int keySize = memory.getInt(recordOffset);
+        int keyOffset = recordOffset + Sizes.INT_SIZE;
+        long memoryOffset = keyOffset;
+
+        //Key
+        ByteBuffer key = ByteBuffer.allocate(keySize);
+        memory.getBytes(memoryOffset, key, 0, keySize);
+        key.rewind();
+        memoryOffset += keySize;
+
+        //Snapshot Id
+        long snapshotId = memory.getLong(memoryOffset);
+        memoryOffset += Sizes.LONG_SIZE;
+
+        //Value
+        int valueSize = memory.getInt(memoryOffset);
+        memoryOffset += Sizes.INT_SIZE;
+        ByteBuffer value = null;
+
+        if (valueSize != 0){
+            value = ByteBuffer.allocate(valueSize);
+            memory.getBytes(memoryOffset, value, 0, valueSize);
+            value.rewind();
+        }
+
+        return new Record(new Key(key), valueSize == 0 ? Value.TOMBSTONE_VALUE : new Value(value), snapshotId);
+    }
+
     private static int pointerOffset(int pointerIndex) {
         int pointerOffset = Sizes.INT_SIZE;
         pointerOffset += pointerIndex * Sizes.INT_SIZE;
         return pointerOffset;
+    }
+
+    private static ByteBuffer versionedKeyBuffer(Key key, long snapshotId){
+        ByteBuffer versionedKey = ByteBuffer.allocate(key.size() + Sizes.LONG_SIZE);
+        versionedKey.put(key.key());
+        versionedKey.putLong(snapshotId);
+        return versionedKey;
     }
 
     @Override

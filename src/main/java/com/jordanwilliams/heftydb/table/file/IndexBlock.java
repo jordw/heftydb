@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,8 +138,8 @@ public class IndexBlock implements Offheap {
     }
 
     public List<Long> blockOffsets(Key key) {
-        int startRecordIndex = startRecordIndex(key);
-        return blockOffsets(key, startRecordIndex);
+        int startRecordIndex = startRecordIndex(key.key());
+        return blockOffsets(key.key(), startRecordIndex);
     }
 
     @Override
@@ -151,7 +152,7 @@ public class IndexBlock implements Offheap {
         return memory.size();
     }
 
-    private int startRecordIndex(Key key) {
+    private int startRecordIndex(ByteBuffer key) {
         int low = 0;
         int high = indexRecordCount - 1;
         int startIndex = -1;
@@ -188,7 +189,7 @@ public class IndexBlock implements Offheap {
         return searchIndex == 0 ? searchIndex : searchIndex + 1;
     }
 
-    private List<Long> blockOffsets(Key key, int startingKeyIndex) {
+    private List<Long> blockOffsets(ByteBuffer key, int startingKeyIndex) {
         List<Long> blockOffsets = new ArrayList<Long>();
         int keyIndex = startingKeyIndex;
 
@@ -219,12 +220,12 @@ public class IndexBlock implements Offheap {
         return blockOffsets;
     }
 
-    private int compareKeys(Key key, int compareKeyIndex) {
+    private int compareKeys(ByteBuffer key, int compareKeyIndex) {
         int recordOffset = recordOffset(compareKeyIndex);
         int keySize = memory.getInt(recordOffset);
         int keyOffset = recordOffset + Sizes.INT_SIZE;
-        key.key().rewind();
-        return memory.compareAsBytes(key.key(), keyOffset, keySize);
+        key.rewind();
+        return memory.compareAsBytes(key, keyOffset, keySize);
     }
 
     private int recordOffset(int pointerIndex) {

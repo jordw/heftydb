@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) 2013. Jordan Williams
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.jordanwilliams.heftydb.test.unit.table.file;
+
+import com.jordanwilliams.heftydb.metrics.StopWatch;
+import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.util.ByteBuffers;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.List;
+import java.util.Random;
+
+public class DataBlockTest {
+
+    private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
+    private static final Key TEST_KEY_2 = new Key(ByteBuffers.fromString("Bad as I want to be"));
+    private static final Key TEST_KEY_3 = new Key(ByteBuffers.fromString("Dog I am a test key"));
+    private static final DataBlock TEST_BLOCK;
+
+    static {
+        DataBlock.Builder builder = new DataBlock.Builder();
+        builder.addRecord(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 1));
+        builder.addRecord(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 2));
+        builder.addRecord(new Record(TEST_KEY_2, Value.TOMBSTONE_VALUE, 3));
+        builder.addRecord(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 4));
+        builder.addRecord(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 5));
+
+        TEST_BLOCK = builder.build();
+    }
+
+    @Test
+    public void findRecordExactMatchTest() {
+        Record record = TEST_BLOCK.get(TEST_KEY_1, Long.MAX_VALUE);
+        Assert.assertEquals("Record matches", 2, record.snapshotId());
+    }
+
+    public static void main(String[] args) {
+        RecordGenerator generator = new RecordGenerator();
+        List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
+
+        DataBlock.Builder blockBuilder = new DataBlock.Builder();
+        for (Record record : records) {
+            blockBuilder.addRecord(record);
+        }
+
+        DataBlock block = blockBuilder.build();
+
+        Random random = new Random(System.nanoTime());
+        StopWatch watch = StopWatch.start();
+        int iterations = 1000000;
+
+        for (int i = 0; i < iterations; i++) {
+            block.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
+        }
+
+        System.out.println(iterations / watch.elapsedSeconds());
+    }
+}
