@@ -30,35 +30,16 @@ public class BloomFilterTest {
     @Test
     public void readWriteTest() {
         Set<ByteBuffer> testData = testKeys();
-        BloomFilter testFilter = new BloomFilter(1000, 0.01);
+        BloomFilter.Builder testFilterBuilder = new BloomFilter.Builder(1000, 0.01);
 
         for (ByteBuffer key : testData) {
-            testFilter.put(key.array());
+            testFilterBuilder.put(key.array());
         }
+
+        BloomFilter testFilter = testFilterBuilder.build();
 
         for (ByteBuffer key : testData) {
             Assert.assertTrue("Key is in filter", testFilter.mightContain(key.array()));
-        }
-    }
-
-    @Test
-    public void serializationTest() {
-        Set<ByteBuffer> testData = testKeys();
-        BloomFilter testFilter = new BloomFilter(1000, 0.01);
-
-        for (ByteBuffer key : testData) {
-            testFilter.put(key.array());
-        }
-
-        for (ByteBuffer key : testData) {
-            Assert.assertTrue("Key is in filter", testFilter.mightContain(key.array()));
-        }
-
-        ByteBuffer serialized = BloomFilter.SERIALIZER.serialize(testFilter);
-        BloomFilter deserializedFilter = BloomFilter.SERIALIZER.deserialize(serialized);
-
-        for (ByteBuffer key : testData) {
-            Assert.assertTrue("Key is in filter", deserializedFilter.mightContain(key.array()));
         }
     }
 

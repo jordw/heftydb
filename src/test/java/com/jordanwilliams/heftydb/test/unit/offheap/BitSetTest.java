@@ -26,16 +26,18 @@ public class BitSetTest {
 
     @Test
     public void getSetTest() {
-        BitSet testSet = new BitSet(256);
+        BitSet.Builder testSetBuilder = new BitSet.Builder(256);
         boolean[] values = new boolean[256];
 
         Random random = new Random(System.nanoTime());
 
         for (int i = 0; i < 256; i++) {
             boolean nextValue = random.nextBoolean();
-            testSet.set(i, nextValue);
+            testSetBuilder.set(i, nextValue);
             values[i] = nextValue;
         }
+
+        BitSet testSet = testSetBuilder.build();
 
         for (int i = 0; i < 256; i++) {
             Assert.assertEquals("Values match", values[i], testSet.get(i));

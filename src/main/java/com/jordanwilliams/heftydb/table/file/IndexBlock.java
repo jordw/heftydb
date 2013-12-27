@@ -17,14 +17,14 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IndexBlock {
+public class IndexBlock implements Offheap {
 
     private final Memory memory;
     private final int indexRecordCount;
@@ -32,10 +32,6 @@ public class IndexBlock {
     public IndexBlock(Memory memory) {
         this.memory = memory;
         this.indexRecordCount = memory.getInt(0);
-    }
-
-    public ByteBuffer toDirectBuffer(){
-        return memory.toDirectBuffer();
     }
 
     public List<Long> blockOffsets(Key key) {
@@ -136,5 +132,15 @@ public class IndexBlock {
         int pointerOffset = Sizes.INT_SIZE;
         pointerOffset += pointerIndex * Sizes.INT_SIZE;
         return pointerOffset;
+    }
+
+    @Override
+    public Memory memory() {
+        return memory;
+    }
+
+    @Override
+    public long sizeBytes() {
+        return memory.size();
     }
 }

@@ -17,74 +17,69 @@
 package com.jordanwilliams.heftydb.offheap;
 
 import com.google.common.hash.Hashing;
-import com.jordanwilliams.heftydb.util.Serializer;
 import com.jordanwilliams.heftydb.util.Sizes;
 
-import java.nio.ByteBuffer;
+public class BloomFilter implements Offheap {
 
-public class BloomFilter {
+    public static class Builder {
 
-    public static final Serializer.ByteBufferSerializer<BloomFilter> SERIALIZER = new Serializer.ByteBufferSerializer<BloomFilter>() {
-        @Override
-        public ByteBuffer serialize(BloomFilter data) {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(serializedSize(data));
-            Memory bitSetMemory = data.bitSet.memory();
+        private final BitSet.Builder bitSetBuilder;
+        private final int hashFunctionCount;
 
-            buffer.putLong(bitSetMemory.size());
-            bitSetMemory.copyInto(buffer);
-            buffer.putInt(data.hashFunctionCount);
-
-            return buffer;
+        public Builder(long approxElementCount, double falsePositiveProbability){
+            long bitCount = bitCount(approxElementCount, falsePositiveProbability);
+            this.bitSetBuilder = new BitSet.Builder(bitCount);
+            this.hashFunctionCount = hashFunctionCount(approxElementCount, bitCount);
         }
 
-        @Override
-        public BloomFilter deserialize(ByteBuffer in) {
-            ByteBuffer buffer = in.duplicate();
-            buffer.rewind();
+        public void put(byte[] data) {
+            long hash64 = Hashing.murmur3_128().hashBytes(data).asLong();
+            int hash1 = (int) hash64;
+            int hash2 = (int) (hash64 >>> 32);
 
-            long bitSetSize = buffer.getLong();
-            Memory bitSetMemory = Memory.allocate(bitSetSize);
-            bitSetMemory.putBytes(0, buffer, buffer.position(), (int) bitSetSize);
-            buffer.position(buffer.position() + (int) bitSetSize);
-            int hashFunctionCount = buffer.getInt();
+            for (int i = 1; i <= hashFunctionCount; i++) {
+                int nextHash = hash1 + i * hash2;
 
-            return new BloomFilter(new BitSet(bitSetMemory), hashFunctionCount);
+                if (nextHash < 0) {
+                    nextHash = ~nextHash;
+                }
+
+                bitSetBuilder.set(nextHash % bitSetBuilder.sizeBytes(), true);
+            }
         }
 
-        @Override
-        public int serializedSize(BloomFilter data) {
-            return Sizes.LONG_SIZE + //Bit set length
-                    (int) data.bitSet.size() +  //Bit set
-                    Sizes.INT_SIZE; //Hash function count
+        public BloomFilter build(){
+            Memory bloomFilterMemory = serializeBloomFilter(bitSetBuilder.build(), hashFunctionCount);
+            return new BloomFilter(bloomFilterMemory);
         }
-    };
 
+        private static int hashFunctionCount(long approxElementCount, long bitCount) {
+            return Math.max(1, (int) Math.round(bitCount / approxElementCount * Math.log(2)));
+        }
+
+        private static long bitCount(long approxElementCount, double falsePositiveProbability) {
+            if (falsePositiveProbability == 0) {
+                falsePositiveProbability = Double.MIN_VALUE;
+            }
+            return (long) (-approxElementCount * Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2)));
+        }
+
+        private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount){
+            Memory bloomFilterMemory = Memory.allocate(bitSet.sizeBytes() + Sizes.INT_SIZE);
+            bloomFilterMemory.putInt(0, hashFunctionCount);
+            bloomFilterMemory.putBytes(Sizes.INT_SIZE, bitSet.memory());
+            return bloomFilterMemory;
+        }
+    }
+
+    private final Memory memory;
     private final BitSet bitSet;
     private final int hashFunctionCount;
 
-    public BloomFilter(long approxElementCount, double falsePositiveProbability) {
-        long bitCount = bitCount(approxElementCount, falsePositiveProbability);
-        this.bitSet = new BitSet(bitCount);
-        this.hashFunctionCount = hashFunctionCount(approxElementCount, bitCount);
-    }
-
-    private BloomFilter(BitSet bitSet, int hashFunctionCount) {
-        this.bitSet = bitSet;
-        this.hashFunctionCount = hashFunctionCount;
-    }
-
-    public void put(byte[] data) {
-        long hash64 = Hashing.murmur3_128().hashBytes(data).asLong();
-        int hash1 = (int) hash64;
-        int hash2 = (int) (hash64 >>> 32);
-
-        for (int i = 1; i <= hashFunctionCount; i++) {
-            int nextHash = hash1 + i * hash2;
-            if (nextHash < 0) {
-                nextHash = ~nextHash;
-            }
-            bitSet.set(nextHash % bitSet.size(), true);
-        }
+    private BloomFilter(Memory memory) {
+        this.memory = memory;
+        this.bitSet = new BitSet(memory, Sizes.INT_SIZE);
+        this.hashFunctionCount = memory.getInt(0);
     }
 
     public boolean mightContain(byte[] data) {
@@ -97,7 +92,7 @@ public class BloomFilter {
             if (nextHash < 0) {
                 nextHash = ~nextHash;
             }
-            if (!bitSet.get(nextHash % bitSet.size())) {
+            if (!bitSet.get(nextHash % bitSet.sizeBytes())) {
                 return false;
             }
         }
@@ -105,14 +100,13 @@ public class BloomFilter {
         return true;
     }
 
-    static int hashFunctionCount(long approxElementCount, long bitCount) {
-        return Math.max(1, (int) Math.round(bitCount / approxElementCount * Math.log(2)));
+    @Override
+    public Memory memory() {
+        return memory;
     }
 
-    static long bitCount(long approxElementCount, double falsePositiveProbability) {
-        if (falsePositiveProbability == 0) {
-            falsePositiveProbability = Double.MIN_VALUE;
-        }
-        return (long) (-approxElementCount * Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2)));
+    @Override
+    public long sizeBytes() {
+        return memory.size();
     }
 }

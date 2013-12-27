@@ -16,7 +16,6 @@
 
 package com.jordanwilliams.heftydb.write;
 
-import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Files;
 import com.jordanwilliams.heftydb.table.file.IndexBuilder;
@@ -28,13 +27,11 @@ public class FileTableWriter {
     private final long tableId;
     private final Files files;
     private final IndexBuilder indexBuilder;
-    private final BloomFilter bloomFilter;
 
     private FileTableWriter(long tableId, Files files, long approxRecordCount){
         this.tableId = tableId;
         this.files = files;
         this.indexBuilder = new IndexBuilder();
-        this.bloomFilter = new BloomFilter(approxRecordCount, 0.01);
     }
 
     public void write(Iterator<Record> records){

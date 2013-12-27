@@ -69,6 +69,18 @@ public class Memory {
         getBytes(memoryOffset, buffer, 0, buffer.capacity());
     }
 
+    public void getBytes(long memoryOffset, Memory memory, long fromOffset, long length){
+        checkOffset(memoryOffset);
+        long endOffset = memoryOffset + length;
+        checkOffset(endOffset - 1);
+
+        unsafe.copyMemory(baseAddress + memoryOffset, memory.baseAddress + fromOffset, length);
+    }
+
+    public void getBytes(long memoryOffset, Memory memory){
+        getBytes(memoryOffset, memory, 0, memory.size);
+    }
+
     public void putByte(long offset, byte b) {
         checkOffset(offset);
         unsafe.putByte(baseAddress + offset, b);
@@ -92,6 +104,18 @@ public class Memory {
 
     public void putBytes(long memoryOffset, ByteBuffer buffer) {
         putBytes(memoryOffset, buffer, 0, buffer.capacity());
+    }
+
+    public void putBytes(long memoryOffset, Memory memory, long fromOffset, long length){
+        checkOffset(memoryOffset);
+        long endOffset = memoryOffset + length;
+        checkOffset(endOffset - 1);
+
+        unsafe.copyMemory(memory.baseAddress + fromOffset, baseAddress + memoryOffset, length);
+    }
+
+    public void putBytes(long memoryOffset, Memory memory){
+        putBytes(memoryOffset, memory, 0, memory.size);
     }
 
     public int getInt(long offset) {
@@ -178,16 +202,6 @@ public class Memory {
         return copy(0, size);
     }
 
-    public void copyInto(ByteBuffer buffer, long memoryOffset, int length) {
-        checkOffset(memoryOffset);
-        long endOffset = memoryOffset + length;
-        checkOffset(endOffset - 1);
-
-        for (long i = memoryOffset; i < memoryOffset + length; i++) {
-            buffer.put(unsafe.getByte(baseAddress + i));
-        }
-    }
-
     public int compareAsBytes(ByteBuffer compare, long memoryOffset, int length) {
         long compareCount = Math.min(length, compare.remaining());
         long compareOffset = memoryOffset + compareCount;
@@ -210,10 +224,6 @@ public class Memory {
         }
 
         return remaining - compare.remaining();
-    }
-
-    public void copyInto(ByteBuffer buffer) {
-        copyInto(buffer, 0, (int) size);
     }
 
     private void checkOffset(long offset) {
