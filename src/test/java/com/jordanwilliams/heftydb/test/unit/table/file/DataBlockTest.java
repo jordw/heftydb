@@ -16,18 +16,13 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.List;
-import java.util.Random;
 
 public class DataBlockTest {
 
@@ -63,27 +58,5 @@ public class DataBlockTest {
     public void findRecordMissingTest() {
         Record record = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Doesn't exist")), Long.MAX_VALUE);
         Assert.assertNull("Record is null", record);
-    }
-
-    public static void main(String[] args) {
-        RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
-
-        DataBlock.Builder blockBuilder = new DataBlock.Builder();
-        for (Record record : records) {
-            blockBuilder.addRecord(record);
-        }
-
-        DataBlock block = blockBuilder.build();
-
-        Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
-        int iterations = 1000000;
-
-        for (int i = 0; i < iterations; i++) {
-            block.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
-        }
-
-        System.out.println(iterations / watch.elapsedSeconds());
     }
 }

@@ -17,18 +17,13 @@
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
 
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class IndexBlockTest {
 
@@ -77,33 +72,5 @@ public class IndexBlockTest {
     public void findRecordEndTest() {
         List<Long> blockOffsets = TEST_BLOCK.blockOffsets(new Key(ByteBuffers.fromString("Toast")));
         Assert.assertEquals("Offsets match", 3, blockOffsets.get(0).longValue());
-    }
-
-    public static void main(String[] args) {
-        KeyValueGenerator generator = new KeyValueGenerator();
-        List<Key> keys = new ArrayList<Key>();
-
-        for (int i = 0; i < 64000; i++) {
-            keys.add(new Key(generator.testKey(32, 0)));
-        }
-
-        Collections.sort(keys);
-
-        IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
-        for (Key key : keys) {
-            blockBuilder.addRecord(new IndexBlock.Record(key, 0));
-        }
-
-        IndexBlock block = blockBuilder.build();
-
-        Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
-        int iterations = 1000000;
-
-        for (int i = 0; i < iterations; i++) {
-            block.blockOffsets(keys.get(random.nextInt(keys.size())));
-        }
-
-        System.out.println(iterations / watch.elapsedSeconds());
     }
 }
