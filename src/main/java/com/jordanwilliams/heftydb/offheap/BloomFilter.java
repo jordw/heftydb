@@ -26,7 +26,7 @@ public class BloomFilter implements Offheap {
         private final BitSet.Builder bitSetBuilder;
         private final int hashFunctionCount;
 
-        public Builder(long approxElementCount, double falsePositiveProbability){
+        public Builder(long approxElementCount, double falsePositiveProbability) {
             long bitCount = bitCount(approxElementCount, falsePositiveProbability);
             this.bitSetBuilder = new BitSet.Builder(bitCount);
             this.hashFunctionCount = hashFunctionCount(approxElementCount, bitCount);
@@ -48,7 +48,7 @@ public class BloomFilter implements Offheap {
             }
         }
 
-        public BloomFilter build(){
+        public BloomFilter build() {
             Memory bloomFilterMemory = serializeBloomFilter(bitSetBuilder.build(), hashFunctionCount);
             return new BloomFilter(bloomFilterMemory);
         }
@@ -64,7 +64,7 @@ public class BloomFilter implements Offheap {
             return (long) (-approxElementCount * Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2)));
         }
 
-        private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount){
+        private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount) {
             Memory bloomFilterMemory = Memory.allocate(bitSet.sizeBytes() + Sizes.INT_SIZE);
             bloomFilterMemory.putInt(0, hashFunctionCount);
             bloomFilterMemory.putBytes(Sizes.INT_SIZE, bitSet.memory());

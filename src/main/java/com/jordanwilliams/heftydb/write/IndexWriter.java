@@ -32,11 +32,11 @@ public class IndexWriter {
         this.indexBuilder = new Index.Builder();
     }
 
-    public void addRecord(Record record){
+    public void addRecord(Record record) {
 
     }
 
-    public static IndexWriter open(long tableId, Files files){
+    public static IndexWriter open(long tableId, Files files) {
         return new IndexWriter(tableId, files);
     }
 }

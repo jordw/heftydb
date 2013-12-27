@@ -44,7 +44,7 @@ public class IndexBlock implements Offheap {
             return offset;
         }
 
-        public int sizeBytes(){
+        public int sizeBytes() {
             return startKey.size() + Sizes.LONG_SIZE;
         }
 
@@ -67,7 +67,7 @@ public class IndexBlock implements Offheap {
             sizeBytes += indexRecord.sizeBytes();
         }
 
-        public int sizeBytes(){
+        public int sizeBytes() {
             return sizeBytes;
         }
 

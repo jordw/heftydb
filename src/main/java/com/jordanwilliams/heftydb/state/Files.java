@@ -46,7 +46,7 @@ public class Files {
         return tableDirectory.resolve(tableId + INDEX_EXT + TEMP_FILE_EXT);
     }
 
-    public Path tempFilterPath(long tableId){
+    public Path tempFilterPath(long tableId) {
         return tableDirectory.resolve(tableId + FILTER_EXT + TEMP_FILE_EXT);
     }
 
@@ -58,7 +58,7 @@ public class Files {
         return tableDirectory.resolve(tableId + INDEX_EXT);
     }
 
-    public Path filterPath(long tableId){
+    public Path filterPath(long tableId) {
         return tableDirectory.resolve(tableId + FILTER_EXT);
     }
 

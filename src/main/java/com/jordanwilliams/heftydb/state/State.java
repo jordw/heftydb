@@ -34,7 +34,7 @@ public class State {
         this.files = files;
     }
 
-    public Files files(){
+    public Files files() {
         return files;
     }
 

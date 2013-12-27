@@ -69,7 +69,7 @@ public class Memory {
         getBytes(memoryOffset, buffer, 0, buffer.capacity());
     }
 
-    public void getBytes(long memoryOffset, Memory memory, long fromOffset, long length){
+    public void getBytes(long memoryOffset, Memory memory, long fromOffset, long length) {
         checkOffset(memoryOffset);
         long endOffset = memoryOffset + length;
         checkOffset(endOffset - 1);
@@ -77,7 +77,7 @@ public class Memory {
         unsafe.copyMemory(baseAddress + memoryOffset, memory.baseAddress + fromOffset, length);
     }
 
-    public void getBytes(long memoryOffset, Memory memory){
+    public void getBytes(long memoryOffset, Memory memory) {
         getBytes(memoryOffset, memory, 0, memory.size);
     }
 
@@ -106,7 +106,7 @@ public class Memory {
         putBytes(memoryOffset, buffer, 0, buffer.capacity());
     }
 
-    public void putBytes(long memoryOffset, Memory memory, long fromOffset, long length){
+    public void putBytes(long memoryOffset, Memory memory, long fromOffset, long length) {
         checkOffset(memoryOffset);
         long endOffset = memoryOffset + length;
         checkOffset(endOffset - 1);
@@ -114,7 +114,7 @@ public class Memory {
         unsafe.copyMemory(memory.baseAddress + fromOffset, baseAddress + memoryOffset, length);
     }
 
-    public void putBytes(long memoryOffset, Memory memory){
+    public void putBytes(long memoryOffset, Memory memory) {
         putBytes(memoryOffset, memory, 0, memory.size);
     }
 
@@ -180,7 +180,7 @@ public class Memory {
         return ByteBuffers.rawDirectBuffer(baseAddress + offset, length);
     }
 
-    public ByteBuffer toDirectBuffer(){
+    public ByteBuffer toDirectBuffer() {
         return toDirectBuffer(0, (int) size);
     }
 

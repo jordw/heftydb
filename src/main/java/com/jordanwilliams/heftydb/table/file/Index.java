@@ -33,18 +33,18 @@ public class Index {
         public IndexBlock finish() {
             IndexBlock.Builder indexBuilder = new IndexBlock.Builder();
 
-            for (IndexBlock.Record indexRecord : indexBlockRecords){
+            for (IndexBlock.Record indexRecord : indexBlockRecords) {
                 indexBuilder.addRecord(indexRecord);
             }
 
             return indexBuilder.build();
         }
 
-        public int currentBlockSizeBytes(){
+        public int currentBlockSizeBytes() {
             return indexBlockBuilder.sizeBytes();
         }
 
-        public IndexBlock newIndexBlock(){
+        public IndexBlock newIndexBlock() {
             IndexBlock currentBlock = indexBlockBuilder.build();
             this.indexBlockBuilder = new IndexBlock.Builder();
             return currentBlock;

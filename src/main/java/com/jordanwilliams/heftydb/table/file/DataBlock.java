@@ -34,24 +34,24 @@ public class DataBlock implements Iterable<Record>, Offheap {
         private final int maxSizeBytes;
         private int sizeBytes;
 
-        public Builder(int maxSizeBytes){
+        public Builder(int maxSizeBytes) {
             this.maxSizeBytes = maxSizeBytes;
         }
 
-        public void addRecord(Record record){
+        public void addRecord(Record record) {
             records.add(record);
             sizeBytes += record.size();
         }
 
-        public boolean isFull(){
+        public boolean isFull() {
             return sizeBytes >= maxSizeBytes;
         }
 
-        public DataBlock build(){
+        public DataBlock build() {
             return null;
         }
 
-        private static Memory serializeRecords(List<Record> records){
+        private static Memory serializeRecords(List<Record> records) {
             return null;
         }
     }

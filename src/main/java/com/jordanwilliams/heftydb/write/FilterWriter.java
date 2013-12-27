@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.write;
 
+import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Files;
 
 public class FilterWriter {
@@ -26,6 +27,14 @@ public class FilterWriter {
     private FilterWriter(long tableId, Files files, long approxRecordCount) {
         this.tableId = tableId;
         this.files = files;
+    }
+
+    public void addRecord(Record record) {
+
+    }
+
+    public void close() {
+
     }
 
     public static FilterWriter open(long tableId, Files files, long approxRecordCount) {

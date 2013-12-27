@@ -24,11 +24,11 @@ public class BitSet implements Offheap {
 
         private final Memory memory;
 
-        public Builder(long bitCount){
+        public Builder(long bitCount) {
             memory = Memory.allocate(((memoryOffset(bitCount - 1) + 1) * Sizes.LONG_SIZE));
         }
 
-        public void set(long bitIndex, boolean value){
+        public void set(long bitIndex, boolean value) {
             long offset = memoryOffset(bitIndex);
 
             if (value) {
@@ -40,11 +40,11 @@ public class BitSet implements Offheap {
             }
         }
 
-        public BitSet build(){
+        public BitSet build() {
             return new BitSet(memory, 0);
         }
 
-        public long sizeBytes(){
+        public long sizeBytes() {
             return memory.size();
         }
 
@@ -69,7 +69,7 @@ public class BitSet implements Offheap {
     }
 
     @Override
-    public Memory memory(){
+    public Memory memory() {
         return memory;
     }
 

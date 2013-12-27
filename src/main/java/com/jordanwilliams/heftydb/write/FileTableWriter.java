@@ -28,22 +28,22 @@ public class FileTableWriter {
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
 
-    private FileTableWriter(long tableId, Files files, long approxRecordCount){
+    private FileTableWriter(long tableId, Files files, long approxRecordCount) {
         this.tableId = tableId;
         this.files = files;
         this.indexWriter = IndexWriter.open(tableId, files);
         this.filterWriter = FilterWriter.open(tableId, files, approxRecordCount);
     }
 
-    public void write(Iterator<Record> records){
+    public void write(Iterator<Record> records) {
 
     }
 
-    public void finish(){
+    public void finish() {
 
     }
 
-    public static FileTableWriter open(long tableId, Files files, long approxRecordCount){
+    public static FileTableWriter open(long tableId, Files files, long approxRecordCount) {
         return new FileTableWriter(tableId, files, approxRecordCount);
     }
 }
