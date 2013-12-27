@@ -152,6 +152,11 @@ public class IndexBlock implements Offheap {
         return memory.size();
     }
 
+    @Override
+    public void releaseMemory() {
+        memory.release();
+    }
+
     private int startRecordIndex(ByteBuffer key) {
         int low = 0;
         int high = indexRecordCount - 1;

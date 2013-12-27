@@ -78,6 +78,11 @@ public class BitSet implements Offheap {
         return memory.size() - startingOffset;
     }
 
+    @Override
+    public void releaseMemory() {
+        memory.release();
+    }
+
     private long memoryOffset(long bitIndex) {
         return startingOffset + ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
     }

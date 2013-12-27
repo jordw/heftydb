@@ -109,4 +109,9 @@ public class BloomFilter implements Offheap {
     public long sizeBytes() {
         return memory.size();
     }
+
+    @Override
+    public void releaseMemory() {
+        memory.release();
+    }
 }

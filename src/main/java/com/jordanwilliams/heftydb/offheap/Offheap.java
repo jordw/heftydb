@@ -21,4 +21,6 @@ public interface Offheap {
     public Memory memory();
 
     public long sizeBytes();
+
+    public void releaseMemory();
 }
