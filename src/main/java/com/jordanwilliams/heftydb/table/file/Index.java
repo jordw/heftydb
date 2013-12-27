@@ -16,6 +16,38 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Index {
 
+    public static class Builder {
+
+        private final List<IndexBlock.Record> indexBlockRecords = new ArrayList<IndexBlock.Record>();
+        private IndexBlock.Builder indexBlockBuilder = new IndexBlock.Builder();
+
+        public void addRecord(IndexBlock.Record indexRecord) {
+            indexBlockBuilder.addRecord(indexRecord);
+        }
+
+        public IndexBlock finish() {
+            IndexBlock.Builder indexBuilder = new IndexBlock.Builder();
+
+            for (IndexBlock.Record indexRecord : indexBlockRecords){
+                indexBuilder.addRecord(indexRecord);
+            }
+
+            return indexBuilder.build();
+        }
+
+        public int currentBlockSizeBytes(){
+            return indexBlockBuilder.sizeBytes();
+        }
+
+        public IndexBlock newIndexBlock(){
+            IndexBlock currentBlock = indexBlockBuilder.build();
+            this.indexBlockBuilder = new IndexBlock.Builder();
+            return currentBlock;
+        }
+    }
 }

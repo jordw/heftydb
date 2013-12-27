@@ -20,7 +20,6 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.IndexBlockBuilder;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
@@ -39,12 +38,12 @@ public class IndexBlockTest {
     private static final IndexBlock TEST_BLOCK;
 
     static {
-        IndexBlockBuilder builder = new IndexBlockBuilder();
-        builder.addRecord(TEST_KEY_1, 0);
-        builder.addRecord(TEST_KEY_1, 5);
-        builder.addRecord(TEST_KEY_2, 1);
-        builder.addRecord(TEST_KEY_3, 2);
-        builder.addRecord(TEST_KEY_3, 3);
+        IndexBlock.Builder builder = new IndexBlock.Builder();
+        builder.addRecord(new IndexBlock.Record(TEST_KEY_1, 0));
+        builder.addRecord(new IndexBlock.Record(TEST_KEY_1, 5));
+        builder.addRecord(new IndexBlock.Record(TEST_KEY_2, 1));
+        builder.addRecord(new IndexBlock.Record(TEST_KEY_3, 2));
+        builder.addRecord(new IndexBlock.Record(TEST_KEY_3, 3));
 
         TEST_BLOCK = builder.build();
     }
@@ -90,9 +89,9 @@ public class IndexBlockTest {
 
         Collections.sort(keys);
 
-        IndexBlockBuilder blockBuilder = new IndexBlockBuilder();
+        IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
         for (Key key : keys) {
-            blockBuilder.addRecord(key, 0);
+            blockBuilder.addRecord(new IndexBlock.Record(key, 0));
         }
 
         IndexBlock block = blockBuilder.build();

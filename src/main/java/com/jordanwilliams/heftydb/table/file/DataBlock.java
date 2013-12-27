@@ -22,9 +22,39 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class DataBlock implements Iterable<Record>, Offheap {
+
+    public static class Builder {
+
+        private final List<Record> records = new ArrayList<Record>();
+        private final int maxSizeBytes;
+        private int sizeBytes;
+
+        public Builder(int maxSizeBytes){
+            this.maxSizeBytes = maxSizeBytes;
+        }
+
+        public void addRecord(Record record){
+            records.add(record);
+            sizeBytes += record.size();
+        }
+
+        public boolean isFull(){
+            return sizeBytes >= maxSizeBytes;
+        }
+
+        public DataBlock build(){
+            return null;
+        }
+
+        private static Memory serializeRecords(List<Record> records){
+            return null;
+        }
+    }
 
     private final Memory memory;
     private final int recordCount;

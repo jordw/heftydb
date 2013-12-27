@@ -16,5 +16,19 @@
 
 package com.jordanwilliams.heftydb.write;
 
+import com.jordanwilliams.heftydb.state.Files;
+
 public class FilterWriter {
+
+    private final long tableId;
+    private final Files files;
+
+    private FilterWriter(long tableId, Files files, long approxRecordCount) {
+        this.tableId = tableId;
+        this.files = files;
+    }
+
+    public static FilterWriter open(long tableId, Files files, long approxRecordCount) {
+        return new FilterWriter(tableId, files, approxRecordCount);
+    }
 }

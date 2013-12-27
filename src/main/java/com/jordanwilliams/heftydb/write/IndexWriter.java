@@ -16,5 +16,27 @@
 
 package com.jordanwilliams.heftydb.write;
 
+import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.state.Files;
+import com.jordanwilliams.heftydb.table.file.Index;
+
 public class IndexWriter {
+
+    private final long tableId;
+    private final Files files;
+    private final Index.Builder indexBuilder;
+
+    private IndexWriter(long tableId, Files files) {
+        this.tableId = tableId;
+        this.files = files;
+        this.indexBuilder = new Index.Builder();
+    }
+
+    public void addRecord(Record record){
+
+    }
+
+    public static IndexWriter open(long tableId, Files files){
+        return new IndexWriter(tableId, files);
+    }
 }
