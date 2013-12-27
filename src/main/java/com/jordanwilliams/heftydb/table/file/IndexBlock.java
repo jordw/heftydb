@@ -117,7 +117,7 @@ public class IndexBlock implements Offheap {
                 memoryOffset += Sizes.INT_SIZE;
 
                 //Key
-                memory.putBytes(memoryOffset, startKey.key());
+                memory.putBytes(memoryOffset, startKey.data());
                 memoryOffset += startKey.size();
 
                 //Offset
@@ -138,8 +138,8 @@ public class IndexBlock implements Offheap {
     }
 
     public List<Long> blockOffsets(Key key) {
-        int startRecordIndex = startRecordIndex(key.key());
-        return blockOffsets(key.key(), startRecordIndex);
+        int startRecordIndex = startRecordIndex(key.data());
+        return blockOffsets(key.data(), startRecordIndex);
     }
 
     @Override

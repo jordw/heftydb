@@ -16,28 +16,44 @@
 
 package com.jordanwilliams.heftydb.write;
 
+import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.MutableDataFile;
+import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.Files;
+import com.jordanwilliams.heftydb.state.DataFiles;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 public class FilterWriter {
 
     private final long tableId;
-    private final Files files;
+    private final DataFiles dataFiles;
+    private final BloomFilter.Builder filterBuilder;
+    private final DataFile filterFile;
 
-    private FilterWriter(long tableId, Files files, long approxRecordCount) {
+    private FilterWriter(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
         this.tableId = tableId;
-        this.files = files;
+        this.dataFiles = dataFiles;
+        this.filterBuilder = new BloomFilter.Builder(approxRecordCount, 0.03);
+        this.filterFile = MutableDataFile.open(dataFiles.tempFilterPath(tableId));
     }
 
     public void addRecord(Record record) {
-
+        filterBuilder.put(record.key().data().array());
     }
 
-    public void close() {
-
+    public void close() throws IOException {
+        BloomFilter filter = filterBuilder.build();
+        ByteBuffer filterBuffer = filter.memory().toDirectBuffer();
+        filterFile.append(filterBuffer);
+        filterFile.close();
+        Files.move(dataFiles.tempFilterPath(tableId), dataFiles.filterPath(tableId), StandardCopyOption.ATOMIC_MOVE);
     }
 
-    public static FilterWriter open(long tableId, Files files, long approxRecordCount) {
-        return new FilterWriter(tableId, files, approxRecordCount);
+    public static FilterWriter open(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
+        return new FilterWriter(tableId, dataFiles, approxRecordCount);
     }
 }

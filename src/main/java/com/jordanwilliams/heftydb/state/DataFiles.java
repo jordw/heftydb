@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class Files {
+public class DataFiles {
 
     private static final String TABLE_EXT = ".table";
     private static final String LOG_EXT = ".log";
@@ -33,7 +33,7 @@ public class Files {
     private final Path logDirectory;
     private final Path tableDirectory;
 
-    public Files(Path tableDirectory, Path logDirectory) {
+    public DataFiles(Path tableDirectory, Path logDirectory) {
         this.tableDirectory = tableDirectory;
         this.logDirectory = logDirectory;
     }

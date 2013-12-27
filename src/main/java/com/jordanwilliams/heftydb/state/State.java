@@ -25,17 +25,17 @@ public class State {
     private final Tables tables;
     private final Snapshots snapshots;
     private final Config config;
-    private final Files files;
+    private final DataFiles dataFiles;
 
-    public State(Collection<Table> tables, Config config, Files files, long currentSnapshotId) {
+    public State(Collection<Table> tables, Config config, DataFiles dataFiles, long currentSnapshotId) {
         this.snapshots = new Snapshots(currentSnapshotId);
         this.tables = new Tables(tables);
         this.config = config;
-        this.files = files;
+        this.dataFiles = dataFiles;
     }
 
-    public Files files() {
-        return files;
+    public DataFiles files() {
+        return dataFiles;
     }
 
     public Tables tables() {

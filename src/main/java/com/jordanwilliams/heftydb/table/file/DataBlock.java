@@ -88,7 +88,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
                 memoryOffset += Sizes.INT_SIZE;
 
                 //Key
-                memory.putBytes(memoryOffset, record.key().key());
+                memory.putBytes(memoryOffset, record.key().data());
                 memoryOffset += record.key().size();
 
                 //Snapshot Id
@@ -101,7 +101,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
 
                 //Value
                 if (record.value().size() != 0){
-                    memory.putBytes(memoryOffset, record.value().value());
+                    memory.putBytes(memoryOffset, record.value().data());
                     memoryOffset += record.value().size();
                 };
             }
@@ -122,9 +122,9 @@ public class DataBlock implements Iterable<Record>, Offheap {
         int recordIndex = recordIndex(versionedKeyBuffer(key, maxSnapshotId));
         Record closest = deserializeRecord(recordIndex);
 
-        key.key().rewind();
+        key.data().rewind();
         int compare = key.compareTo(closest.key());
-        closest.key().key().rewind();
+        closest.key().data().rewind();
 
         return compare == 0 ? closest : null;
     }
@@ -205,7 +205,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
 
     private static ByteBuffer versionedKeyBuffer(Key key, long snapshotId){
         ByteBuffer versionedKey = ByteBuffer.allocate(key.size() + Sizes.LONG_SIZE);
-        versionedKey.put(key.key());
+        versionedKey.put(key.data());
         versionedKey.putLong(snapshotId);
         return versionedKey;
     }

@@ -30,7 +30,7 @@ public class Key implements Comparable<Key> {
         this.data = key;
     }
 
-    public ByteBuffer key() {
+    public ByteBuffer data() {
         return data;
     }
 

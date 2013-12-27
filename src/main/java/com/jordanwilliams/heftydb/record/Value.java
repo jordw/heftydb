@@ -32,7 +32,7 @@ public class Value implements Comparable<Value> {
         this.value = value;
     }
 
-    public ByteBuffer value() {
+    public ByteBuffer data() {
         return value;
     }
 
@@ -69,7 +69,7 @@ public class Value implements Comparable<Value> {
     @Override
     public String toString() {
         return "Value{" +
-                "value=" + new String(value.array()) +
+                "data=" + new String(value.array()) +
                 "}";
     }
 }
