@@ -42,7 +42,7 @@ public class IndexWriter {
     }
 
     public void write(IndexBlock.Record indexRecord) throws IOException {
-        if (indexBuilder.currentBlockSizeBytes() >= MAX_INDEX_BLOCK_SIZE_BYTES){
+        if (indexBuilder.currentBlockSizeBytes() >= MAX_INDEX_BLOCK_SIZE_BYTES) {
             IndexBlock indexBlock = indexBuilder.newIndexBlock();
             ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
             indexFile.append(indexBlockBuffer);

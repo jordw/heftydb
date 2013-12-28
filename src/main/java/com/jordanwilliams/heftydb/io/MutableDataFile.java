@@ -30,9 +30,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @ThreadSafe
 public class MutableDataFile implements DataFile {
 
-    private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>(){
+    private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>() {
         @Override
-        protected ByteBuffer initialValue(){
+        protected ByteBuffer initialValue() {
             return ByteBuffer.allocate(Sizes.LONG_SIZE);
         }
     };
@@ -135,28 +135,28 @@ public class MutableDataFile implements DataFile {
         return path;
     }
 
-    private ByteBuffer intBuffer(){
+    private ByteBuffer intBuffer() {
         ByteBuffer buffer = PRIMITIVE_BUFFER.get();
         buffer.rewind();
         buffer.limit(Sizes.INT_SIZE);
         return buffer;
     }
 
-    private ByteBuffer intBuffer(int value){
+    private ByteBuffer intBuffer(int value) {
         ByteBuffer intBuffer = intBuffer();
         intBuffer.putInt(value);
         intBuffer.rewind();
         return intBuffer();
     }
 
-    private ByteBuffer longBuffer(){
+    private ByteBuffer longBuffer() {
         ByteBuffer buffer = PRIMITIVE_BUFFER.get();
         buffer.rewind();
         buffer.limit(Sizes.LONG_SIZE);
         return buffer;
     }
 
-    private ByteBuffer longBuffer(long value){
+    private ByteBuffer longBuffer(long value) {
         ByteBuffer longBuffer = intBuffer();
         longBuffer.putLong(value);
         longBuffer.rewind();
