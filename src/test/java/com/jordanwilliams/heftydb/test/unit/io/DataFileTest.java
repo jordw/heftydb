@@ -60,6 +60,21 @@ public class DataFileTest extends FileTest {
     }
 
     @Test
+    public void mutableDataFilePrimitiveTest() throws IOException {
+        MutableDataFile file = MutableDataFile.open(TEST_FILE);
+
+        file.appendInt(4);
+        file.appendLong(8);
+        file.writeInt(4, file.size());
+        file.writeLong(8, file.size());
+
+        Assert.assertEquals("Values match", 4, file.readInt(0));
+        Assert.assertEquals("Values match", 8, file.readLong(4));
+        Assert.assertEquals("Values match", 4, file.readInt(12));
+        Assert.assertEquals("Values match", 8, file.readLong(16));
+    }
+
+    @Test
     public void mappedDataFileTest() throws IOException {
         TEST_BYTES.rewind();
         MORE_TEST_BYTES.rewind();

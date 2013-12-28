@@ -50,7 +50,7 @@ public class MutableDataFile implements DataFile {
 
     @Override
     public long append(ByteBuffer bufferToWrite) throws IOException {
-        long writtenPosition = position.getAndAdd(bufferToWrite.capacity());
+        long writtenPosition = position.getAndAdd(bufferToWrite.limit() - bufferToWrite.position());
         write(bufferToWrite, writtenPosition);
         return writtenPosition;
     }
@@ -157,10 +157,10 @@ public class MutableDataFile implements DataFile {
     }
 
     private ByteBuffer longBuffer(long value) {
-        ByteBuffer longBuffer = intBuffer();
+        ByteBuffer longBuffer = longBuffer();
         longBuffer.putLong(value);
         longBuffer.rewind();
-        return intBuffer();
+        return longBuffer;
     }
 
     public static MutableDataFile open(Path path) throws IOException {
