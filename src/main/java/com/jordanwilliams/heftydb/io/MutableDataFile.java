@@ -17,19 +17,25 @@
 package com.jordanwilliams.heftydb.io;
 
 import com.jordanwilliams.heftydb.events.DataFileEvents;
+import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicLong;
 
 @ThreadSafe
 public class MutableDataFile implements DataFile {
+
+    private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>(){
+        @Override
+        protected ByteBuffer initialValue(){
+            return ByteBuffer.allocate(Sizes.LONG_SIZE);
+        }
+    };
 
     private static final DataFileEvents events = new DataFileEvents("File IO");
 
@@ -50,11 +56,41 @@ public class MutableDataFile implements DataFile {
     }
 
     @Override
+    public long appendInt(int intToWrite) throws IOException {
+        return append(intBuffer(intToWrite));
+    }
+
+    @Override
+    public long appendLong(long longToWrite) throws IOException {
+        return append(longBuffer(longToWrite));
+    }
+
+    @Override
     public long read(ByteBuffer bufferToRead, long position) throws IOException {
         events.startRead();
         long bytesRead = channel.read(bufferToRead, position);
         events.finishRead();
         return bytesRead;
+    }
+
+    @Override
+    public int readInt(long position) throws IOException {
+        events.startRead();
+        ByteBuffer intBuffer = intBuffer();
+        channel.read(intBuffer, position);
+        intBuffer.rewind();
+        events.finishRead();
+        return intBuffer.getInt();
+    }
+
+    @Override
+    public long readLong(long position) throws IOException {
+        events.startRead();
+        ByteBuffer longBuffer = longBuffer();
+        channel.read(longBuffer, position);
+        longBuffer.rewind();
+        events.finishRead();
+        return longBuffer.getLong();
     }
 
     @Override
@@ -64,6 +100,16 @@ public class MutableDataFile implements DataFile {
         long bytesWritten = channel.write(bufferToWrite, position);
         events.finishWrite();
         return bytesWritten;
+    }
+
+    @Override
+    public long writeLong(long longToWrite, long position) throws IOException {
+        return write(longBuffer(longToWrite), position);
+    }
+
+    @Override
+    public long writeInt(int intToWrite, long position) throws IOException {
+        return write(intBuffer(intToWrite), position);
     }
 
     @Override
@@ -79,16 +125,6 @@ public class MutableDataFile implements DataFile {
     }
 
     @Override
-    public void rename(String newName) throws IOException {
-        Files.move(path, path.resolveSibling(newName), StandardCopyOption.ATOMIC_MOVE);
-    }
-
-    @Override
-    public void delete() throws IOException {
-        Files.deleteIfExists(path);
-    }
-
-    @Override
     public void close() throws IOException {
         sync();
         channel.close();
@@ -97,6 +133,34 @@ public class MutableDataFile implements DataFile {
     @Override
     public Path path() {
         return path;
+    }
+
+    private ByteBuffer intBuffer(){
+        ByteBuffer buffer = PRIMITIVE_BUFFER.get();
+        buffer.rewind();
+        buffer.limit(Sizes.INT_SIZE);
+        return buffer;
+    }
+
+    private ByteBuffer intBuffer(int value){
+        ByteBuffer intBuffer = intBuffer();
+        intBuffer.putInt(value);
+        intBuffer.rewind();
+        return intBuffer();
+    }
+
+    private ByteBuffer longBuffer(){
+        ByteBuffer buffer = PRIMITIVE_BUFFER.get();
+        buffer.rewind();
+        buffer.limit(Sizes.LONG_SIZE);
+        return buffer;
+    }
+
+    private ByteBuffer longBuffer(long value){
+        ByteBuffer longBuffer = intBuffer();
+        longBuffer.putLong(value);
+        longBuffer.rewind();
+        return intBuffer();
     }
 
     public static MutableDataFile open(Path path) throws IOException {

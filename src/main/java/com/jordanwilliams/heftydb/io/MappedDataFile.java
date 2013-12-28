@@ -48,6 +48,16 @@ public class MappedDataFile implements DataFile {
     }
 
     @Override
+    public long appendInt(int intToWrite) throws IOException {
+        throw new UnsupportedOperationException("MappedDataFiles are read only");
+    }
+
+    @Override
+    public long appendLong(long longToWrite) throws IOException {
+        throw new UnsupportedOperationException("MappedDataFiles are read only");
+    }
+
+    @Override
     public long read(ByteBuffer bufferToRead, long position) {
         events.startRead();
         ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
@@ -58,7 +68,37 @@ public class MappedDataFile implements DataFile {
     }
 
     @Override
+    public int readInt(long position) throws IOException {
+        events.startRead();
+        ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
+        duplicateBuffer.position((int) position);
+        int value = duplicateBuffer.getInt();
+        events.finishRead();
+        return value;
+    }
+
+    @Override
+    public long readLong(long position) throws IOException {
+        events.startRead();
+        ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
+        duplicateBuffer.position((int) position);
+        long value = duplicateBuffer.getLong();
+        events.finishRead();
+        return value;
+    }
+
+    @Override
     public long write(ByteBuffer bufferToWrite, long position) {
+        throw new UnsupportedOperationException("MappedDataFiles are read only");
+    }
+
+    @Override
+    public long writeLong(long longToWrite, long position) throws IOException {
+        throw new UnsupportedOperationException("MappedDataFiles are read only");
+    }
+
+    @Override
+    public long writeInt(int intToWrite, long position) throws IOException {
         throw new UnsupportedOperationException("MappedDataFiles are read only");
     }
 
@@ -69,16 +109,6 @@ public class MappedDataFile implements DataFile {
 
     @Override
     public void sync() {
-        throw new UnsupportedOperationException("MappedDataFiles are read only");
-    }
-
-    @Override
-    public void rename(String newName) throws IOException {
-        throw new UnsupportedOperationException("MappedDataFiles are read only");
-    }
-
-    @Override
-    public void delete() throws IOException {
         throw new UnsupportedOperationException("MappedDataFiles are read only");
     }
 
