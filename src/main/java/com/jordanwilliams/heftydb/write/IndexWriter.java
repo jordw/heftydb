@@ -45,6 +45,7 @@ public class IndexWriter {
         if (indexBuilder.currentBlockSizeBytes() >= MAX_INDEX_BLOCK_SIZE_BYTES) {
             IndexBlock indexBlock = indexBuilder.newIndexBlock();
             ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
+            indexFile.appendInt(indexBlockBuffer.capacity());
             indexFile.append(indexBlockBuffer);
         }
 
@@ -54,7 +55,9 @@ public class IndexWriter {
     public void finish() throws IOException {
         IndexBlock metaIndexBlock = indexBuilder.finish();
         ByteBuffer metaIndexBlockBuffer = metaIndexBlock.memory().toDirectBuffer();
+        long indexSizeOffset = indexFile.appendInt(metaIndexBlockBuffer.capacity());
         indexFile.append(metaIndexBlockBuffer);
+        indexFile.appendLong(indexSizeOffset);
         indexFile.close();
     }
 
