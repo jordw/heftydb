@@ -27,6 +27,8 @@ import java.nio.ByteBuffer;
 
 public class FilterWriter {
 
+    private static final double FILTER_FALSE_POSITIVE_PROBABILITY = 0.03;
+
     private final long tableId;
     private final DataFiles dataFiles;
     private final BloomFilter.Builder filterBuilder;
@@ -35,15 +37,15 @@ public class FilterWriter {
     private FilterWriter(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
-        this.filterBuilder = new BloomFilter.Builder(approxRecordCount, 0.03);
+        this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FILTER_FALSE_POSITIVE_PROBABILITY);
         this.filterFile = MutableDataFile.open(dataFiles.filterPath(tableId));
     }
 
-    public void addRecord(Record record) {
+    public void write(Record record) throws IOException {
         filterBuilder.put(record.key().data().array());
     }
 
-    public void close() throws IOException {
+    public void finish() throws IOException {
         BloomFilter filter = filterBuilder.build();
         ByteBuffer filterBuffer = filter.memory().toDirectBuffer();
         filterFile.append(filterBuffer);

@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.write;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.DataFiles;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 public class FileTableWriter {
@@ -28,22 +29,22 @@ public class FileTableWriter {
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
 
-    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount) {
+    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
         this.indexWriter = IndexWriter.open(tableId, dataFiles);
         this.filterWriter = FilterWriter.open(tableId, dataFiles, approxRecordCount);
     }
 
-    public void write(Iterator<Record> records) {
+    public void write(Iterator<Record> records) throws IOException {
 
     }
 
-    public void finish() {
+    public void finish() throws IOException {
 
     }
 
-    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount) {
+    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
         return new FileTableWriter(tableId, dataFiles, approxRecordCount);
     }
 }
