@@ -129,6 +129,11 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return compare == 0 ? closest : null;
     }
 
+    public Key startKey(){
+        Record deserializedRecord = deserializeRecord(0);
+        return deserializedRecord.key();
+    }
+
     @Override
     public Iterator<Record> iterator() {
         return null;

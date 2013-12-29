@@ -47,6 +47,7 @@ public class IndexWriter {
             ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
             indexFile.appendInt(indexBlockBuffer.capacity());
             indexFile.append(indexBlockBuffer);
+            indexBlock.releaseMemory();
         }
 
         indexBuilder.addRecord(indexRecord);
@@ -59,6 +60,7 @@ public class IndexWriter {
         indexFile.append(metaIndexBlockBuffer);
         indexFile.appendLong(indexSizeOffset);
         indexFile.close();
+        metaIndexBlock.releaseMemory();
     }
 
     public static IndexWriter open(long tableId, DataFiles dataFiles) throws IOException {

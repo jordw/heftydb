@@ -16,35 +16,65 @@
 
 package com.jordanwilliams.heftydb.write;
 
+import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.IndexBlock;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.nio.ByteBuffer;
 
 public class FileTableWriter {
 
     private final long tableId;
+    private final int maxDataBlockSizeBytes;
     private final DataFiles dataFiles;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
+    private final DataFile tableDataFile;
 
-    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
+    private DataBlock.Builder dataBlockBuilder;
+
+    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes) throws IOException {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
         this.indexWriter = IndexWriter.open(tableId, dataFiles);
         this.filterWriter = FilterWriter.open(tableId, dataFiles, approxRecordCount);
+        this.dataBlockBuilder = new DataBlock.Builder();
+        this.maxDataBlockSizeBytes = maxDataBlockSizeBytes;
+        this.tableDataFile = MutableDataFile.open(dataFiles.tablePath(tableId));
     }
 
-    public void write(Iterator<Record> records) throws IOException {
+    public void write(Record record) throws IOException {
+        if (dataBlockBuilder.sizeBytes() >= maxDataBlockSizeBytes) {
+            writeDataBlock();
+        }
 
+        dataBlockBuilder = new DataBlock.Builder();
+        dataBlockBuilder.addRecord(record);
+        filterWriter.write(record);
     }
 
     public void finish() throws IOException {
+        writeDataBlock();
 
+        filterWriter.finish();
+        indexWriter.finish();
+        tableDataFile.close();
     }
 
-    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
-        return new FileTableWriter(tableId, dataFiles, approxRecordCount);
+    private void writeDataBlock() throws IOException {
+        DataBlock dataBlock = dataBlockBuilder.build();
+        ByteBuffer dataBlockBuffer = dataBlock.memory().toDirectBuffer();
+        long dataBlockOffset = tableDataFile.appendInt(dataBlockBuffer.capacity());
+        tableDataFile.append(dataBlockBuffer);
+        indexWriter.write(new IndexBlock.Record(dataBlock.startKey(), dataBlockOffset));
+        dataBlock.releaseMemory();
+    }
+
+    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes) throws IOException {
+        return new FileTableWriter(tableId, dataFiles, approxRecordCount, maxDataBlockSizeBytes);
     }
 }
