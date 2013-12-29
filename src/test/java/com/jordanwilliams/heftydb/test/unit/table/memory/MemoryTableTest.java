@@ -20,16 +20,22 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.RecordTest;
+import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-public class MemoryTableTest extends ParameterizedRecordTest {
+public class MemoryTableTest extends RecordTest {
 
     private static final Key MID_KEY = new Key(ByteBuffers.fromString("JKLMNOP"));
 

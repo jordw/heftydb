@@ -16,15 +16,67 @@
 
 package com.jordanwilliams.heftydb.test.base;
 
+import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
-public class RecordTest {
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-    protected RecordGenerator recordGenerator;
+@RunWith(Parameterized.class)
+public abstract class RecordTest {
+
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        TestFileUtils.createTestDirectory();
+        TestFileUtils.cleanUpTestFiles();
+    }
+
+    @AfterClass
+    public static void afterClass() throws IOException {
+        TestFileUtils.cleanUpTestFiles();
+    }
 
     @Before
-    public void beforeTest() {
+    public void beforeTest() throws IOException {
         recordGenerator = new RecordGenerator();
+        TestFileUtils.createTestDirectory();
+    }
+
+    @After
+    public void afterTest() throws IOException {
+        TestFileUtils.cleanUpTestFiles();
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> generateTestRecords() {
+        RecordGenerator recordGenerator = new RecordGenerator();
+        List<Object[]> testParams = new ArrayList<Object[]>();
+
+        for (int i = 0; i < 10; i++) {
+            Object[] params = new Object[1];
+
+            List<Record> testRecords = recordGenerator.testRecords(1, 100, i * 10, 16, 100);
+            params[0] = testRecords;
+
+            testParams.add(params);
+        }
+
+        return testParams;
+    }
+
+    protected final List<Record> records;
+    protected RecordGenerator recordGenerator;
+
+    public RecordTest(List<Record> testRecords) {
+        this.records = testRecords;
     }
 }
