@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class DataBlock implements Iterable<Record>, Offheap {
 
@@ -136,7 +137,32 @@ public class DataBlock implements Iterable<Record>, Offheap {
 
     @Override
     public Iterator<Record> iterator() {
-        return null;
+
+        return new Iterator<Record>() {
+
+            int currentRecordIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentRecordIndex < recordCount;
+            }
+
+            @Override
+            public Record next() {
+                if (currentRecordIndex >= recordCount){
+                    throw new NoSuchElementException();
+                }
+
+                Record next = deserializeRecord(currentRecordIndex);
+                currentRecordIndex++;
+                return next;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     private int recordIndex(ByteBuffer key) {

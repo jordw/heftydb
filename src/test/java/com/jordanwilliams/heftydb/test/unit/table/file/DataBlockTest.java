@@ -24,6 +24,10 @@ import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class DataBlockTest {
 
     private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
@@ -58,5 +62,22 @@ public class DataBlockTest {
     public void findRecordMissingTest() {
         Record record = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Doesn't exist")), Long.MAX_VALUE);
         Assert.assertNull("Record is null", record);
+    }
+
+    @Test
+    public void recordIteratorTest(){
+        List<Record> recordList = new ArrayList<Record>();
+        recordList.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 1));
+        recordList.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 2));
+        recordList.add(new Record(TEST_KEY_2, Value.TOMBSTONE_VALUE, 3));
+        recordList.add(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 4));
+        recordList.add(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 5));
+
+        Iterator<Record> blockRecords = TEST_BLOCK.iterator();
+        Iterator<Record> expectedRecords = recordList.iterator();
+
+        while (blockRecords.hasNext()){
+            Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+        }
     }
 }
