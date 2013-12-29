@@ -76,7 +76,7 @@ public class BloomFilter implements Offheap {
     private final BitSet bitSet;
     private final int hashFunctionCount;
 
-    private BloomFilter(Memory memory) {
+    public BloomFilter(Memory memory) {
         this.memory = memory;
         this.bitSet = new BitSet(memory, Sizes.INT_SIZE);
         this.hashFunctionCount = memory.getInt(0);
