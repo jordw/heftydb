@@ -23,9 +23,11 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-public class IndexBlock implements Offheap {
+public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
 
     public static class Record {
 
@@ -137,6 +139,10 @@ public class IndexBlock implements Offheap {
         this.indexRecordCount = memory.getInt(0);
     }
 
+    public Key startKey(){
+        return deserializeRecord(0).startKey();
+    }
+
     public List<Long> blockOffsets(Key key) {
         int startRecordIndex = startRecordIndex(key.data());
         return blockOffsets(key.data(), startRecordIndex);
@@ -155,6 +161,45 @@ public class IndexBlock implements Offheap {
     @Override
     public void releaseMemory() {
         memory.release();
+    }
+
+    @Override
+    public Iterator<Record> iterator() {
+        return new Iterator<Record>() {
+
+            int currentRecordIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentRecordIndex < indexRecordCount;
+            }
+
+            @Override
+            public Record next() {
+                if (currentRecordIndex >= indexRecordCount){
+                    throw new NoSuchElementException();
+                }
+
+                Record next = deserializeRecord(currentRecordIndex);
+                currentRecordIndex++;
+                return next;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    @Override
+    public String toString() {
+        List<Record> records = new ArrayList<Record>();
+        for (Record record : this){
+            records.add(record);
+        }
+
+        return "IndexBlock{records=" + records + "}";
     }
 
     private int startRecordIndex(ByteBuffer key) {
@@ -233,15 +278,30 @@ public class IndexBlock implements Offheap {
         return memory.compareAsBytes(key, keyOffset, keySize);
     }
 
-    private int recordOffset(int pointerIndex) {
-        return memory.getInt(pointerOffset(pointerIndex));
+    private int recordOffset(int recordIndex) {
+        return memory.getInt(pointerOffset(recordIndex));
     }
 
-    private long blockOffset(int pointerIndex) {
-        int recordOffset = recordOffset(pointerIndex);
+    private long blockOffset(int recordIndex) {
+        int recordOffset = recordOffset(recordIndex);
         int keySize = memory.getInt(recordOffset);
         int blockOffset = recordOffset + Sizes.INT_SIZE + keySize;
         return memory.getLong(blockOffset);
+    }
+
+    private Record deserializeRecord(int recordIndex){
+        int recordOffset = recordOffset(recordIndex);
+
+        //Start Key
+        int keySize = memory.getInt(recordOffset);
+        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
+        memory.getBytes(recordOffset + Sizes.INT_SIZE, keyBuffer);
+        keyBuffer.rewind();
+
+        //Offset
+        long offset = memory.getLong(recordOffset + Sizes.INT_SIZE + keySize);
+
+        return new Record(new Key(keyBuffer), offset);
     }
 
     private static int pointerOffset(int pointerIndex) {

@@ -19,11 +19,12 @@ package com.jordanwilliams.heftydb.write;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.DataFiles;
-import com.jordanwilliams.heftydb.table.file.Index;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IndexWriter {
 
@@ -31,31 +32,36 @@ public class IndexWriter {
 
     private final long tableId;
     private final DataFiles dataFiles;
-    private final Index.Builder indexBuilder;
     private final DataFile indexFile;
+    private final List<IndexBlock.Record> metaIndexRecords = new ArrayList<IndexBlock.Record>();
+    private final int maxIndexBlockSizeBytes;
 
-    private IndexWriter(long tableId, DataFiles dataFiles) throws IOException {
+    private IndexBlock.Builder indexBlockBuilder;
+
+    private IndexWriter(long tableId, DataFiles dataFiles, int maxIndexBlockSizeBytes) throws IOException {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
-        this.indexBuilder = new Index.Builder();
+        this.indexBlockBuilder = new IndexBlock.Builder();
         this.indexFile = MutableDataFile.open(dataFiles.indexPath(tableId));
+        this.maxIndexBlockSizeBytes = maxIndexBlockSizeBytes;
     }
 
     public void write(IndexBlock.Record indexRecord) throws IOException {
-        if (indexBuilder.currentBlockSizeBytes() >= MAX_INDEX_BLOCK_SIZE_BYTES) {
-            IndexBlock indexBlock = indexBuilder.newIndexBlock();
-            ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
-            indexFile.appendInt(indexBlockBuffer.capacity());
-            indexFile.append(indexBlockBuffer);
-            indexBlock.releaseMemory();
+        if (indexBlockBuilder.sizeBytes() >= maxIndexBlockSizeBytes) {
+            writeIndexBlock();
         }
 
-        indexBuilder.addRecord(indexRecord);
+        indexBlockBuilder.addRecord(indexRecord);
     }
 
     public void finish() throws IOException {
-        IndexBlock metaIndexBlock = indexBuilder.finish();
+        if (indexBlockBuilder.sizeBytes() > 0){
+            writeIndexBlock();
+        }
+
+        IndexBlock metaIndexBlock = buildMetaIndexBlock();
         ByteBuffer metaIndexBlockBuffer = metaIndexBlock.memory().toDirectBuffer();
+
         long indexSizeOffset = indexFile.appendInt(metaIndexBlockBuffer.capacity());
         indexFile.append(metaIndexBlockBuffer);
         indexFile.appendLong(indexSizeOffset);
@@ -63,7 +69,32 @@ public class IndexWriter {
         metaIndexBlock.releaseMemory();
     }
 
+    private void writeIndexBlock() throws IOException {
+        IndexBlock indexBlock = indexBlockBuilder.build();
+        ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
+        long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
+        indexFile.append(indexBlockBuffer);
+
+        indexBlockBuilder = new IndexBlock.Builder();
+        metaIndexRecords.add(new IndexBlock.Record(indexBlock.startKey(), indexBlockOffset));
+        indexBlock.releaseMemory();
+    }
+
+    private IndexBlock buildMetaIndexBlock(){
+        IndexBlock.Builder metaIndexBuilder = new IndexBlock.Builder();
+
+        for (IndexBlock.Record metaIndexRecord : metaIndexRecords){
+            metaIndexBuilder.addRecord(metaIndexRecord);
+        }
+
+        return metaIndexBuilder.build();
+    }
+
+    public static IndexWriter open(long tableId, DataFiles dataFiles, int maxIndexSizeBytes) throws IOException {
+        return new IndexWriter(tableId, dataFiles, maxIndexSizeBytes);
+    }
+
     public static IndexWriter open(long tableId, DataFiles dataFiles) throws IOException {
-        return new IndexWriter(tableId, dataFiles);
+        return new IndexWriter(tableId, dataFiles, MAX_INDEX_BLOCK_SIZE_BYTES);
     }
 }

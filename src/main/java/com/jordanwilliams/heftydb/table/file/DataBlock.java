@@ -255,4 +255,14 @@ public class DataBlock implements Iterable<Record>, Offheap {
     public void releaseMemory() {
         memory.release();
     }
+
+    @Override
+    public String toString() {
+        List<Record> records = new ArrayList<Record>();
+        for (Record record : this){
+            records.add(record);
+        }
+
+        return "DataBlock{records=" + records + "}";
+    }
 }
