@@ -30,8 +30,6 @@ public class IndexWriter {
 
     private static final int MAX_INDEX_BLOCK_SIZE_BYTES = 65536;
 
-    private final long tableId;
-    private final DataFiles dataFiles;
     private final DataFile indexFile;
     private final List<IndexBlock.Record> metaIndexRecords = new ArrayList<IndexBlock.Record>();
     private final int maxIndexBlockSizeBytes;
@@ -39,8 +37,6 @@ public class IndexWriter {
     private IndexBlock.Builder indexBlockBuilder;
 
     private IndexWriter(long tableId, DataFiles dataFiles, int maxIndexBlockSizeBytes) throws IOException {
-        this.tableId = tableId;
-        this.dataFiles = dataFiles;
         this.indexBlockBuilder = new IndexBlock.Builder();
         this.indexFile = MutableDataFile.open(dataFiles.indexPath(tableId));
         this.maxIndexBlockSizeBytes = maxIndexBlockSizeBytes;

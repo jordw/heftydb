@@ -29,14 +29,10 @@ public class FilterWriter {
 
     private static final double FILTER_FALSE_POSITIVE_PROBABILITY = 0.03;
 
-    private final long tableId;
-    private final DataFiles dataFiles;
     private final BloomFilter.Builder filterBuilder;
     private final DataFile filterFile;
 
     private FilterWriter(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
-        this.tableId = tableId;
-        this.dataFiles = dataFiles;
         this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FILTER_FALSE_POSITIVE_PROBABILITY);
         this.filterFile = MutableDataFile.open(dataFiles.filterPath(tableId));
     }
