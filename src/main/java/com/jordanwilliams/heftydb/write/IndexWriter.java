@@ -24,66 +24,81 @@ import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class IndexWriter {
 
     private static final int MAX_INDEX_BLOCK_SIZE_BYTES = 65536;
 
     private final DataFile indexFile;
-    private final List<IndexBlock.Record> metaIndexRecords = new ArrayList<IndexBlock.Record>();
     private final int maxIndexBlockSizeBytes;
-
-    private IndexBlock.Builder indexBlockBuilder;
+    private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
 
     private IndexWriter(long tableId, DataFiles dataFiles, int maxIndexBlockSizeBytes) throws IOException {
-        this.indexBlockBuilder = new IndexBlock.Builder();
         this.indexFile = MutableDataFile.open(dataFiles.indexPath(tableId));
         this.maxIndexBlockSizeBytes = maxIndexBlockSizeBytes;
+        indexBlockBuilders.add(new IndexBlock.Builder(true));
     }
 
     public void write(IndexBlock.Record indexRecord) throws IOException {
-        if (indexBlockBuilder.sizeBytes() >= maxIndexBlockSizeBytes) {
-            writeIndexBlock();
+        Queue<IndexBlock.Record> pendingIndexRecord = new LinkedList<IndexBlock.Record>();
+        pendingIndexRecord.add(indexRecord);
+
+        for (int i = 0; i < indexBlockBuilders.size(); i++){
+            if (pendingIndexRecord.isEmpty()){
+                return;
+            }
+
+            IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
+
+            if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes){
+                IndexBlock.Record metaRecord = writeIndexBlock(levelBuilder.build());
+
+                IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(i > 0);
+                newLevelBuilder.addRecord(pendingIndexRecord.poll());
+                indexBlockBuilders.set(i, newLevelBuilder);
+
+                pendingIndexRecord.add(metaRecord);
+            } else {
+                levelBuilder.addRecord(pendingIndexRecord.poll());
+            }
         }
 
-        indexBlockBuilder.addRecord(indexRecord);
+        if (!pendingIndexRecord.isEmpty()){
+            IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(false);
+            newLevelBuilder.addRecord(pendingIndexRecord.poll());
+            indexBlockBuilders.add(newLevelBuilder);
+        }
     }
 
     public void finish() throws IOException {
-        if (indexBlockBuilder.sizeBytes() > 0){
-            writeIndexBlock();
+        Queue<IndexBlock.Record> pendingIndexRecord = new LinkedList<IndexBlock.Record>();
+
+        for (int i = 0; i < indexBlockBuilders.size(); i++){
+            IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
+
+            if (!pendingIndexRecord.isEmpty()){
+                levelBuilder.addRecord(pendingIndexRecord.poll());
+            }
+
+            IndexBlock.Record nextLevelRecord = writeIndexBlock(levelBuilder.build());
+            pendingIndexRecord.add(nextLevelRecord);
         }
 
-        IndexBlock metaIndexBlock = buildMetaIndexBlock();
-        ByteBuffer metaIndexBlockBuffer = metaIndexBlock.memory().toDirectBuffer();
-
-        long indexSizeOffset = indexFile.appendInt(metaIndexBlockBuffer.capacity());
-        indexFile.append(metaIndexBlockBuffer);
-        indexFile.appendLong(indexSizeOffset);
+        long rootIndexBlockOffset = pendingIndexRecord.poll().offset();
+        indexFile.appendLong(rootIndexBlockOffset);
         indexFile.close();
-        metaIndexBlock.releaseMemory();
     }
 
-    private void writeIndexBlock() throws IOException {
-        IndexBlock indexBlock = indexBlockBuilder.build();
+    private IndexBlock.Record writeIndexBlock(IndexBlock indexBlock) throws IOException {
         ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
         long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
         indexFile.append(indexBlockBuffer);
-
-        indexBlockBuilder = new IndexBlock.Builder();
-        metaIndexRecords.add(new IndexBlock.Record(indexBlock.startKey(), indexBlockOffset));
+        IndexBlock.Record metaIndexRecord = new IndexBlock.Record(indexBlock.startKey(), indexBlockOffset);
         indexBlock.releaseMemory();
-    }
-
-    private IndexBlock buildMetaIndexBlock(){
-        IndexBlock.Builder metaIndexBuilder = new IndexBlock.Builder();
-
-        for (IndexBlock.Record metaIndexRecord : metaIndexRecords){
-            metaIndexBuilder.addRecord(metaIndexRecord);
-        }
-
-        return metaIndexBuilder.build();
+        return metaIndexRecord;
     }
 
     public static IndexWriter open(long tableId, DataFiles dataFiles, int maxIndexSizeBytes) throws IOException {

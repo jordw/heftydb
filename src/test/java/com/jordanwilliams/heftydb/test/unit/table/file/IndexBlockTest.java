@@ -33,7 +33,7 @@ public class IndexBlockTest {
     private static final IndexBlock TEST_BLOCK;
 
     static {
-        IndexBlock.Builder builder = new IndexBlock.Builder();
+        IndexBlock.Builder builder = new IndexBlock.Builder(true);
         builder.addRecord(new IndexBlock.Record(TEST_KEY_1, 0));
         builder.addRecord(new IndexBlock.Record(TEST_KEY_1, 5));
         builder.addRecord(new IndexBlock.Record(TEST_KEY_2, 1));

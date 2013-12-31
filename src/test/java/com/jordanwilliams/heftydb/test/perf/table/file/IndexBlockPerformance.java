@@ -38,7 +38,7 @@ public class IndexBlockPerformance {
 
         Collections.sort(keys);
 
-        IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
+        IndexBlock.Builder blockBuilder = new IndexBlock.Builder(true);
         for (Key key : keys) {
             blockBuilder.addRecord(new IndexBlock.Record(key, 0));
         }

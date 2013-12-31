@@ -63,7 +63,13 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
     public static class Builder {
 
         private final List<Record> indexRecords = new ArrayList<Record>();
+        private final boolean isLeaf;
+
         private int sizeBytes;
+
+        public Builder(boolean isLeaf){
+            this.isLeaf = isLeaf;
+        }
 
         public void addRecord(Record indexRecord) {
             indexRecords.add(indexRecord);
@@ -75,11 +81,11 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
         }
 
         public IndexBlock build() {
-            Memory contents = serializeRecords(indexRecords);
+            Memory contents = serializeRecords(indexRecords, isLeaf);
             return new IndexBlock(contents);
         }
 
-        private static Memory serializeRecords(List<Record> indexRecords) {
+        private static Memory serializeRecords(List<Record> indexRecords, boolean isLeaf) {
             //Allocate memory
             int memorySize = 0;
             int[] indexRecordOffsets = new int[indexRecords.size()];
@@ -95,6 +101,8 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
                 memorySize += indexRecord.startKey().size(); //Key
                 memorySize += Sizes.LONG_SIZE; //Offset
             }
+
+            memorySize += 1; //isLeaf flag
 
             Memory memory = Memory.allocate(memorySize);
 
@@ -127,16 +135,25 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
                 memoryOffset += Sizes.LONG_SIZE;
             }
 
+            //Pack isLeaf flag
+            memory.putByte(memoryOffset, isLeaf ? (byte) 1 : (byte) 0);
+
             return memory;
         }
     }
 
     private final Memory memory;
     private final int indexRecordCount;
+    private final boolean isLeaf;
 
     public IndexBlock(Memory memory) {
         this.memory = memory;
         this.indexRecordCount = memory.getInt(0);
+        this.isLeaf = memory.getByte(memory.size() - 1) == 1;
+    }
+
+    public boolean isLeaf(){
+        return isLeaf;
     }
 
     public Key startKey(){
