@@ -56,7 +56,7 @@ public class IndexWriter {
             if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes){
                 IndexBlock.Record metaRecord = writeIndexBlock(levelBuilder.build());
 
-                IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(i > 0);
+                IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(i == 0);
                 newLevelBuilder.addRecord(pendingIndexRecord.poll());
                 indexBlockBuilders.set(i, newLevelBuilder);
 
