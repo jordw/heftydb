@@ -46,14 +46,14 @@ public class IndexWriter {
         Queue<IndexBlock.Record> pendingIndexRecord = new LinkedList<IndexBlock.Record>();
         pendingIndexRecord.add(indexRecord);
 
-        for (int i = 0; i < indexBlockBuilders.size(); i++){
-            if (pendingIndexRecord.isEmpty()){
+        for (int i = 0; i < indexBlockBuilders.size(); i++) {
+            if (pendingIndexRecord.isEmpty()) {
                 return;
             }
 
             IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
 
-            if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes){
+            if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes) {
                 IndexBlock.Record metaRecord = writeIndexBlock(levelBuilder.build());
 
                 IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(i == 0);
@@ -66,7 +66,7 @@ public class IndexWriter {
             }
         }
 
-        if (!pendingIndexRecord.isEmpty()){
+        if (!pendingIndexRecord.isEmpty()) {
             IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(false);
             newLevelBuilder.addRecord(pendingIndexRecord.poll());
             indexBlockBuilders.add(newLevelBuilder);
@@ -76,10 +76,10 @@ public class IndexWriter {
     public void finish() throws IOException {
         Queue<IndexBlock.Record> pendingIndexRecord = new LinkedList<IndexBlock.Record>();
 
-        for (int i = 0; i < indexBlockBuilders.size(); i++){
+        for (int i = 0; i < indexBlockBuilders.size(); i++) {
             IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
 
-            if (!pendingIndexRecord.isEmpty()){
+            if (!pendingIndexRecord.isEmpty()) {
                 levelBuilder.addRecord(pendingIndexRecord.poll());
             }
 

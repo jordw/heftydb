@@ -67,7 +67,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
 
         private int sizeBytes;
 
-        public Builder(boolean isLeaf){
+        public Builder(boolean isLeaf) {
             this.isLeaf = isLeaf;
         }
 
@@ -152,11 +152,11 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
         this.isLeaf = memory.getByte(memory.size() - 1) == 1;
     }
 
-    public boolean isLeaf(){
+    public boolean isLeaf() {
         return isLeaf;
     }
 
-    public Key startKey(){
+    public Key startKey() {
         return deserializeRecord(0).startKey();
     }
 
@@ -193,7 +193,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
 
             @Override
             public Record next() {
-                if (currentRecordIndex >= indexRecordCount){
+                if (currentRecordIndex >= indexRecordCount) {
                     throw new NoSuchElementException();
                 }
 
@@ -212,7 +212,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
     @Override
     public String toString() {
         List<Record> records = new ArrayList<Record>();
-        for (Record record : this){
+        for (Record record : this) {
             records.add(record);
         }
 
@@ -306,7 +306,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
         return memory.getLong(blockOffset);
     }
 
-    private Record deserializeRecord(int recordIndex){
+    private Record deserializeRecord(int recordIndex) {
         int recordOffset = recordOffset(recordIndex);
 
         //Start Key

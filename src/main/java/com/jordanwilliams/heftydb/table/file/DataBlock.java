@@ -130,7 +130,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return compare == 0 ? closest : null;
     }
 
-    public Key startKey(){
+    public Key startKey() {
         Record deserializedRecord = deserializeRecord(0);
         return deserializedRecord.key();
     }
@@ -149,7 +149,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
 
             @Override
             public Record next() {
-                if (currentRecordIndex >= recordCount){
+                if (currentRecordIndex >= recordCount) {
                     throw new NoSuchElementException();
                 }
 
@@ -259,7 +259,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
     @Override
     public String toString() {
         List<Record> records = new ArrayList<Record>();
-        for (Record record : this){
+        for (Record record : this) {
             records.add(record);
         }
 

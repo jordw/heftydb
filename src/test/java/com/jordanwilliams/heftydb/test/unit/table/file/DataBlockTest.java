@@ -65,7 +65,7 @@ public class DataBlockTest {
     }
 
     @Test
-    public void recordIteratorTest(){
+    public void recordIteratorTest() {
         List<Record> recordList = new ArrayList<Record>();
         recordList.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 1));
         recordList.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 2));
@@ -76,7 +76,7 @@ public class DataBlockTest {
         Iterator<Record> blockRecords = TEST_BLOCK.iterator();
         Iterator<Record> expectedRecords = recordList.iterator();
 
-        while (blockRecords.hasNext()){
+        while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
         }
     }

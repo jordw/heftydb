@@ -49,7 +49,7 @@ public class IndexWriterTest extends RecordTest {
         List<Key> keys = new ArrayList<Key>();
         int count = 0;
 
-        for (Record record : records){
+        for (Record record : records) {
             keys.add(record.key());
             indexWriter.write(new IndexBlock.Record(record.key(), count));
             count++;
@@ -65,18 +65,17 @@ public class IndexWriterTest extends RecordTest {
         indexFile.read(metaIndexBuffer, metaIndexOffset + Sizes.INT_SIZE);
         IndexBlock metaIndexBlock = new IndexBlock(metaIndexMemory);
 
-        for (Record record : records){
+        for (Record record : records) {
             List<Long> blockOffsets = metaIndexBlock.blockOffsets(record.key());
 
-            for (long blockOffset : blockOffsets){
+            for (long blockOffset : blockOffsets) {
                 int indexBlockSize = indexFile.readInt(blockOffset);
                 Memory indexMemory = Memory.allocate(indexBlockSize);
                 ByteBuffer indexBuffer = indexMemory.toDirectBuffer();
                 indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
                 IndexBlock indexBlock = new IndexBlock(indexMemory);
 
-                Assert.assertTrue(record.key() + " >= " + indexBlock.startKey(), record.key().compareTo(indexBlock
-                        .startKey()) >= 0);
+                Assert.assertTrue(record.key() + " >= " + indexBlock.startKey(), record.key().compareTo(indexBlock.startKey()) >= 0);
 
                 Assert.assertTrue("IndexBlock is a leaf", indexBlock.isLeaf());
 

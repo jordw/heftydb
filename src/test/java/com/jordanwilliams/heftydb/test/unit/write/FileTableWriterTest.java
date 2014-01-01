@@ -37,7 +37,7 @@ public class FileTableWriterTest extends RecordTest {
         DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
         FileTableWriter fileTableWriter = FileTableWriter.open(1, dataFiles, 100, 512);
 
-        for (Record record : records){
+        for (Record record : records) {
             fileTableWriter.write(record);
         }
 

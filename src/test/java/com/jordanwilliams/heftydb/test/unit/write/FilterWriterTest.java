@@ -43,7 +43,7 @@ public class FilterWriterTest extends RecordTest {
         DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
         FilterWriter filterWriter = FilterWriter.open(1, dataFiles, records.size());
 
-        for (Record record : records){
+        for (Record record : records) {
             filterWriter.write(record);
         }
 
@@ -55,7 +55,7 @@ public class FilterWriterTest extends RecordTest {
         filterFile.read(filterBuffer, 0);
         BloomFilter testFilter = new BloomFilter(filterMemory);
 
-        for (Record record : records){
+        for (Record record : records) {
             Assert.assertTrue("Record is in the filter", testFilter.mightContain(record.key().data().array()));
         }
 
