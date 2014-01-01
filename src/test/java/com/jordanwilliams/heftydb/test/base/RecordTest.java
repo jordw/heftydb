@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 @RunWith(Parameterized.class)
 public abstract class RecordTest {
@@ -60,11 +61,12 @@ public abstract class RecordTest {
     public static Collection<Object[]> generateTestRecords() {
         RecordGenerator recordGenerator = new RecordGenerator();
         List<Object[]> testParams = new ArrayList<Object[]>();
+        Random random = new Random(System.nanoTime());
 
         for (int i = 0; i < 10; i++) {
             Object[] params = new Object[1];
 
-            List<Record> testRecords = recordGenerator.testRecords(1, 100, i * 10, 16, 100);
+            List<Record> testRecords = recordGenerator.testRecords(1, 100, i * 10, random.nextInt(100) + 1, 100);
             params[0] = testRecords;
 
             testParams.add(params);

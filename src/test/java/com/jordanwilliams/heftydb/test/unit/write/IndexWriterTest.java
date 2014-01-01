@@ -76,9 +76,6 @@ public class IndexWriterTest extends RecordTest {
                 IndexBlock indexBlock = new IndexBlock(indexMemory);
 
                 Assert.assertTrue(record.key() + " >= " + indexBlock.startKey(), record.key().compareTo(indexBlock.startKey()) >= 0);
-
-                Assert.assertTrue("IndexBlock is a leaf", indexBlock.isLeaf());
-
                 indexBlock.releaseMemory();
             }
         }
