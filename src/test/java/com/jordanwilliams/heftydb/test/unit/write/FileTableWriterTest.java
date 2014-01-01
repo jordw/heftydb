@@ -37,7 +37,7 @@ public class FileTableWriterTest extends RecordTest {
     @Test
     public void readWriteTest() throws IOException {
         DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, dataFiles, 100, 512);
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, dataFiles, 100, 512, 1);
 
         for (Record record : records) {
             fileTableWriter.write(record);

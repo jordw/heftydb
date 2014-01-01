@@ -16,17 +16,31 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.state.DataFiles;
 import com.jordanwilliams.heftydb.table.Table;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 public class FileTable implements Table {
 
+    private final long tableId;
+    private final Index index;
+    private final DataFile tableFile;
+
+    private FileTable(long tableId, DataFiles dataFiles) throws IOException {
+        this.tableId = tableId;
+        this.index = Index.open(tableId, dataFiles);
+        this.tableFile = MutableDataFile.open(dataFiles.tablePath(tableId));
+    }
+
     @Override
     public long id() {
-        return 0;
+        return tableId;
     }
 
     @Override
@@ -72,5 +86,9 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> iterator() {
         return null;
+    }
+
+    public static FileTable open(long tableId, DataFiles dataFiles) throws IOException {
+        return new FileTable(tableId, dataFiles);
     }
 }

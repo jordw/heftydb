@@ -30,6 +30,7 @@ public class FileTableWriter {
 
     private final long tableId;
     private final int maxDataBlockSizeBytes;
+    private final int level;
     private final DataFiles dataFiles;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
@@ -37,13 +38,14 @@ public class FileTableWriter {
 
     private DataBlock.Builder dataBlockBuilder;
 
-    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes) throws IOException {
+    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
         this.indexWriter = IndexWriter.open(tableId, dataFiles, maxDataBlockSizeBytes);
         this.filterWriter = FilterWriter.open(tableId, dataFiles, approxRecordCount);
         this.dataBlockBuilder = new DataBlock.Builder();
         this.maxDataBlockSizeBytes = maxDataBlockSizeBytes;
+        this.level = level;
         this.tableDataFile = MutableDataFile.open(dataFiles.tablePath(tableId));
     }
 
@@ -58,7 +60,7 @@ public class FileTableWriter {
 
     public void finish() throws IOException {
         writeDataBlock();
-
+        tableDataFile.appendInt(level);
         filterWriter.finish();
         indexWriter.finish();
         tableDataFile.close();
@@ -74,7 +76,7 @@ public class FileTableWriter {
         dataBlockBuilder = new DataBlock.Builder();
     }
 
-    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes) throws IOException {
-        return new FileTableWriter(tableId, dataFiles, approxRecordCount, maxDataBlockSizeBytes);
+    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
+        return new FileTableWriter(tableId, dataFiles, approxRecordCount, maxDataBlockSizeBytes, level);
     }
 }
