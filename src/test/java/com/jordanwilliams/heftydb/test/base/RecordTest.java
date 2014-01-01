@@ -63,7 +63,7 @@ public abstract class RecordTest {
         List<Object[]> testParams = new ArrayList<Object[]>();
         Random random = new Random(System.nanoTime());
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 25; i++) {
             Object[] params = new Object[1];
 
             List<Record> testRecords = recordGenerator.testRecords(1, 100, i * 10, random.nextInt(100) + 1, 100);
