@@ -40,7 +40,7 @@ public class FileTableWriter {
     private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes) throws IOException {
         this.tableId = tableId;
         this.dataFiles = dataFiles;
-        this.indexWriter = IndexWriter.open(tableId, dataFiles);
+        this.indexWriter = IndexWriter.open(tableId, dataFiles, maxDataBlockSizeBytes);
         this.filterWriter = FilterWriter.open(tableId, dataFiles, approxRecordCount);
         this.dataBlockBuilder = new DataBlock.Builder();
         this.maxDataBlockSizeBytes = maxDataBlockSizeBytes;
@@ -52,7 +52,6 @@ public class FileTableWriter {
             writeDataBlock();
         }
 
-        dataBlockBuilder = new DataBlock.Builder();
         dataBlockBuilder.addRecord(record);
         filterWriter.write(record);
     }
@@ -72,6 +71,7 @@ public class FileTableWriter {
         tableDataFile.append(dataBlockBuffer);
         indexWriter.write(new IndexBlock.Record(dataBlock.startKey(), dataBlockOffset));
         dataBlock.releaseMemory();
+        dataBlockBuilder = new DataBlock.Builder();
     }
 
     public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes) throws IOException {
