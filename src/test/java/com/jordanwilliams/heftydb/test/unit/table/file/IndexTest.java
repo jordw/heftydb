@@ -14,39 +14,52 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.write;
+package com.jordanwilliams.heftydb.test.unit.table.file;
 
+import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.table.file.Index;
+import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.write.FileTableWriter;
+import com.jordanwilliams.heftydb.write.IndexWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
-public class FileTableWriterTest extends RecordTest {
+public class IndexTest extends RecordTest {
 
-    public FileTableWriterTest(List<Record> testRecords) {
+    public IndexTest(List<Record> testRecords) {
         super(testRecords);
     }
 
     @Test
     public void readWriteTest() throws IOException {
         DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, dataFiles, 100, 512);
+        IndexWriter indexWriter = IndexWriter.open(1, dataFiles, 512);
+
+        List<Key> keys = new ArrayList<Key>();
+        int count = 0;
 
         for (Record record : records) {
-            fileTableWriter.write(record);
+            keys.add(record.key());
+            indexWriter.write(new IndexBlock.Record(record.key(), count));
+            count++;
         }
 
-        fileTableWriter.finish();
+        indexWriter.finish();
 
-        Assert.assertTrue("Table file exists", Files.size(dataFiles.tablePath(1)) > 0);
-        Assert.assertTrue("Index file exists", Files.size(dataFiles.indexPath(1)) > 0);
-        Assert.assertTrue("Filter file exists", Files.size(dataFiles.filterPath(1)) > 0);
+        Index index = Index.open(1, dataFiles);
+
+        for (Record record : records) {
+            List<Long> blockOffsets = index.blockOffsets(record.key());
+            Assert.assertFalse("Index blocks are found", blockOffsets.isEmpty());
+        }
+
+        index.close();
     }
 }
