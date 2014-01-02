@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,9 +32,9 @@ public class FilterWriter {
     private final BloomFilter.Builder filterBuilder;
     private final DataFile filterFile;
 
-    private FilterWriter(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
+    private FilterWriter(long tableId, Paths paths, long approxRecordCount) throws IOException {
         this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FILTER_FALSE_POSITIVE_PROBABILITY);
-        this.filterFile = MutableDataFile.open(dataFiles.filterPath(tableId));
+        this.filterFile = MutableDataFile.open(paths.filterPath(tableId));
     }
 
     public void write(Record record) throws IOException {
@@ -49,7 +49,7 @@ public class FilterWriter {
         filter.releaseMemory();
     }
 
-    public static FilterWriter open(long tableId, DataFiles dataFiles, long approxRecordCount) throws IOException {
-        return new FilterWriter(tableId, dataFiles, approxRecordCount);
+    public static FilterWriter open(long tableId, Paths paths, long approxRecordCount) throws IOException {
+        return new FilterWriter(tableId, paths, approxRecordCount);
     }
 }

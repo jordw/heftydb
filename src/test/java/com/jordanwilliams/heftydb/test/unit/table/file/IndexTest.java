@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.Index;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
@@ -39,8 +39,8 @@ public class IndexTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
-        IndexWriter indexWriter = IndexWriter.open(1, dataFiles, 512);
+        Paths paths = ConfigGenerator.defaultDataFiles();
+        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
 
         List<Key> keys = new ArrayList<Key>();
         int count = 0;
@@ -53,7 +53,7 @@ public class IndexTest extends RecordTest {
 
         indexWriter.finish();
 
-        Index index = Index.open(1, dataFiles);
+        Index index = Index.open(1, paths);
 
         for (Record record : records) {
             List<Long> blockOffsets = index.blockOffsets(record.key());

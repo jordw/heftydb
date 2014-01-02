@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.test.unit.write;
 
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.write.FileTableWriter;
@@ -36,8 +36,8 @@ public class FileTableWriterTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, dataFiles, 100, 512, 1);
+        Paths paths = ConfigGenerator.defaultDataFiles();
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 100, 512, 1);
 
         for (Record record : records) {
             fileTableWriter.write(record);
@@ -45,8 +45,8 @@ public class FileTableWriterTest extends RecordTest {
 
         fileTableWriter.finish();
 
-        Assert.assertTrue("Table file exists", Files.size(dataFiles.tablePath(1)) > 0);
-        Assert.assertTrue("Index file exists", Files.size(dataFiles.indexPath(1)) > 0);
-        Assert.assertTrue("Filter file exists", Files.size(dataFiles.filterPath(1)) > 0);
+        Assert.assertTrue("Table file exists", Files.size(paths.tablePath(1)) > 0);
+        Assert.assertTrue("Index file exists", Files.size(paths.indexPath(1)) > 0);
+        Assert.assertTrue("Filter file exists", Files.size(paths.filterPath(1)) > 0);
     }
 }

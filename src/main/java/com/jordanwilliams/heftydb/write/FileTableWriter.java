@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.write;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 
@@ -31,22 +31,22 @@ public class FileTableWriter {
     private final long tableId;
     private final int maxDataBlockSizeBytes;
     private final int level;
-    private final DataFiles dataFiles;
+    private final Paths paths;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
     private final DataFile tableDataFile;
 
     private DataBlock.Builder dataBlockBuilder;
 
-    private FileTableWriter(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
+    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
         this.tableId = tableId;
-        this.dataFiles = dataFiles;
-        this.indexWriter = IndexWriter.open(tableId, dataFiles, maxDataBlockSizeBytes);
-        this.filterWriter = FilterWriter.open(tableId, dataFiles, approxRecordCount);
+        this.paths = paths;
+        this.level = level;
+        this.indexWriter = IndexWriter.open(tableId, paths, maxDataBlockSizeBytes);
+        this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
         this.dataBlockBuilder = new DataBlock.Builder();
         this.maxDataBlockSizeBytes = maxDataBlockSizeBytes;
-        this.level = level;
-        this.tableDataFile = MutableDataFile.open(dataFiles.tablePath(tableId));
+        this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
     }
 
     public void write(Record record) throws IOException {
@@ -76,7 +76,7 @@ public class FileTableWriter {
         dataBlockBuilder = new DataBlock.Builder();
     }
 
-    public static FileTableWriter open(long tableId, DataFiles dataFiles, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
-        return new FileTableWriter(tableId, dataFiles, approxRecordCount, maxDataBlockSizeBytes, level);
+    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
+        return new FileTableWriter(tableId, paths, approxRecordCount, maxDataBlockSizeBytes, level);
     }
 }

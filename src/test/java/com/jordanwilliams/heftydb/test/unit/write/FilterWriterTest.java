@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.write.FilterWriter;
@@ -40,8 +40,8 @@ public class FilterWriterTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
-        FilterWriter filterWriter = FilterWriter.open(1, dataFiles, records.size());
+        Paths paths = ConfigGenerator.defaultDataFiles();
+        FilterWriter filterWriter = FilterWriter.open(1, paths, records.size());
 
         for (Record record : records) {
             filterWriter.write(record);
@@ -49,7 +49,7 @@ public class FilterWriterTest extends RecordTest {
 
         filterWriter.finish();
 
-        DataFile filterFile = MutableDataFile.open(dataFiles.filterPath(1));
+        DataFile filterFile = MutableDataFile.open(paths.filterPath(1));
         Memory filterMemory = Memory.allocate(filterFile.size());
         ByteBuffer filterBuffer = filterMemory.toDirectBuffer();
         filterFile.read(filterBuffer, 0);

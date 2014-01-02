@@ -20,8 +20,9 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -30,12 +31,14 @@ public class FileTable implements Table {
 
     private final long tableId;
     private final Index index;
+    private final Filter filter;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, DataFiles dataFiles) throws IOException {
+    private FileTable(long tableId, Paths paths) throws IOException {
         this.tableId = tableId;
-        this.index = Index.open(tableId, dataFiles);
-        this.tableFile = MutableDataFile.open(dataFiles.tablePath(tableId));
+        this.index = Index.open(tableId, paths);
+        this.filter = Filter.open(tableId, paths);
+        this.tableFile = MutableDataFile.open(paths.tablePath(tableId));
     }
 
     @Override
@@ -45,7 +48,7 @@ public class FileTable implements Table {
 
     @Override
     public boolean mightContain(Key key) {
-        return false;
+        return filter.mightContain(key);
     }
 
     @Override
@@ -75,12 +78,12 @@ public class FileTable implements Table {
 
     @Override
     public int level() {
-        return 0;
+        return level;
     }
 
     @Override
     public boolean isPersistent() {
-        return false;
+        return true;
     }
 
     @Override
@@ -88,7 +91,7 @@ public class FileTable implements Table {
         return null;
     }
 
-    public static FileTable open(long tableId, DataFiles dataFiles) throws IOException {
-        return new FileTable(tableId, dataFiles);
+    public static FileTable open(long tableId, Paths paths) throws IOException {
+        return new FileTable(tableId, paths);
     }
 }

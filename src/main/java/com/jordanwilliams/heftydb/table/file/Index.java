@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
@@ -35,8 +35,8 @@ public class Index {
     private final DataFile indexFile;
     private final IndexBlock rootIndexBlock;
 
-    private Index(long tableId, DataFiles dataFiles) throws IOException {
-        this.indexFile = MutableDataFile.open(dataFiles.indexPath(tableId));
+    private Index(long tableId, Paths paths) throws IOException {
+        this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
         long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
     }
@@ -78,7 +78,7 @@ public class Index {
         return new IndexBlock(indexMemory);
     }
 
-    public static Index open(long tableId, DataFiles dataFiles) throws IOException {
-        return new Index(tableId, dataFiles);
+    public static Index open(long tableId, Paths paths) throws IOException {
+        return new Index(tableId, paths);
     }
 }

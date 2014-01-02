@@ -16,12 +16,12 @@
 
 package com.jordanwilliams.heftydb.test.generator;
 
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 
 public class ConfigGenerator {
 
-    public static DataFiles defaultDataFiles() {
-        return new DataFiles(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
+    public static Paths defaultDataFiles() {
+        return new Paths(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
     }
 }

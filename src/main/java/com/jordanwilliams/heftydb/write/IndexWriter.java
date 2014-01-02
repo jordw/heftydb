@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.write;
 
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 
 import java.io.IOException;
@@ -36,8 +36,8 @@ public class IndexWriter {
     private final int maxIndexBlockSizeBytes;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
 
-    private IndexWriter(long tableId, DataFiles dataFiles, int maxIndexBlockSizeBytes) throws IOException {
-        this.indexFile = MutableDataFile.open(dataFiles.indexPath(tableId));
+    private IndexWriter(long tableId, Paths paths, int maxIndexBlockSizeBytes) throws IOException {
+        this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
         this.maxIndexBlockSizeBytes = maxIndexBlockSizeBytes;
         indexBlockBuilders.add(new IndexBlock.Builder(true));
     }
@@ -101,11 +101,11 @@ public class IndexWriter {
         return metaIndexRecord;
     }
 
-    public static IndexWriter open(long tableId, DataFiles dataFiles, int maxIndexSizeBytes) throws IOException {
-        return new IndexWriter(tableId, dataFiles, maxIndexSizeBytes);
+    public static IndexWriter open(long tableId, Paths paths, int maxIndexSizeBytes) throws IOException {
+        return new IndexWriter(tableId, paths, maxIndexSizeBytes);
     }
 
-    public static IndexWriter open(long tableId, DataFiles dataFiles) throws IOException {
-        return new IndexWriter(tableId, dataFiles, MAX_INDEX_BLOCK_SIZE_BYTES);
+    public static IndexWriter open(long tableId, Paths paths) throws IOException {
+        return new IndexWriter(tableId, paths, MAX_INDEX_BLOCK_SIZE_BYTES);
     }
 }

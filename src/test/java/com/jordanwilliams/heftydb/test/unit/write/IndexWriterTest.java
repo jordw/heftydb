@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.DataFiles;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
@@ -43,8 +43,8 @@ public class IndexWriterTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        DataFiles dataFiles = ConfigGenerator.defaultDataFiles();
-        IndexWriter indexWriter = IndexWriter.open(1, dataFiles, 512);
+        Paths paths = ConfigGenerator.defaultDataFiles();
+        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
 
         List<Key> keys = new ArrayList<Key>();
         int count = 0;
@@ -57,7 +57,7 @@ public class IndexWriterTest extends RecordTest {
 
         indexWriter.finish();
 
-        DataFile indexFile = MutableDataFile.open(dataFiles.indexPath(1));
+        DataFile indexFile = MutableDataFile.open(paths.indexPath(1));
         long metaIndexOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
         int metaIndexBlockSize = indexFile.readInt(metaIndexOffset);
         Memory metaIndexMemory = Memory.allocate(metaIndexBlockSize);
