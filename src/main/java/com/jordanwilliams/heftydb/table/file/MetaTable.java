@@ -16,7 +16,10 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 
@@ -25,11 +28,47 @@ public class MetaTable {
     private final long id;
     private final int level;
     private final long maxSnapshotId;
-    private final int recordCount;
-    private final double garbageRate;
+    private final long recordCount;
+    private final long sizeBytes;
 
     private MetaTable(long tableId, Paths paths) throws IOException {
+        DataFile metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
+        int filePosition = 0;
 
+        this.id = metaTableFile.readLong(filePosition);
+        filePosition += Sizes.LONG_SIZE;
+
+        this.level = metaTableFile.readInt(filePosition);
+        filePosition += Sizes.INT_SIZE;
+
+        this.maxSnapshotId = metaTableFile.readLong(filePosition);
+        filePosition += Sizes.LONG_SIZE;
+
+        this.recordCount = metaTableFile.readLong(filePosition);
+        filePosition += Sizes.LONG_SIZE;
+
+        this.sizeBytes = metaTableFile.readLong(filePosition);
+        metaTableFile.close();
+    }
+
+    public long sizeBytes() {
+        return sizeBytes;
+    }
+
+    public long recordCount() {
+        return recordCount;
+    }
+
+    public long maxSnapshotId() {
+        return maxSnapshotId;
+    }
+
+    public int level() {
+        return level;
+    }
+
+    public long id() {
+        return id;
     }
 
     public static MetaTable open(long tableId, Paths paths) throws IOException {

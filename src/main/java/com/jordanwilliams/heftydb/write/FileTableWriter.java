@@ -34,6 +34,7 @@ public class FileTableWriter {
     private final Paths paths;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
+    private final MetaTableWriter metaWriter;
     private final DataFile tableDataFile;
 
     private DataBlock.Builder dataBlockBuilder;
@@ -46,6 +47,7 @@ public class FileTableWriter {
         this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
         this.dataBlockBuilder = new DataBlock.Builder();
         this.maxDataBlockSizeBytes = maxDataBlockSizeBytes;
+        this.metaWriter = MetaTableWriter.open(tableId, paths, level);
         this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
     }
 
@@ -56,6 +58,7 @@ public class FileTableWriter {
 
         dataBlockBuilder.addRecord(record);
         filterWriter.write(record);
+        metaWriter.write(record);
     }
 
     public void finish() throws IOException {
@@ -63,6 +66,7 @@ public class FileTableWriter {
         tableDataFile.appendInt(level);
         filterWriter.finish();
         indexWriter.finish();
+        metaWriter.finish();
         tableDataFile.close();
     }
 

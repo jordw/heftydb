@@ -22,7 +22,6 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
-import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -32,6 +31,7 @@ public class FileTable implements Table {
     private final long tableId;
     private final Index index;
     private final Filter filter;
+    private final MetaTable metaTable;
     private final DataFile tableFile;
 
     private FileTable(long tableId, Paths paths) throws IOException {
@@ -39,6 +39,7 @@ public class FileTable implements Table {
         this.index = Index.open(tableId, paths);
         this.filter = Filter.open(tableId, paths);
         this.tableFile = MutableDataFile.open(paths.tablePath(tableId));
+        this.metaTable = MetaTable.open(tableId, paths);
     }
 
     @Override
@@ -68,17 +69,17 @@ public class FileTable implements Table {
 
     @Override
     public long recordCount() {
-        return 0;
+        return metaTable.recordCount();
     }
 
     @Override
     public long sizeBytes() {
-        return 0;
+        return metaTable.sizeBytes();
     }
 
     @Override
     public int level() {
-        return level;
+        return metaTable.level();
     }
 
     @Override
