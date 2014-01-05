@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.nio.ByteBuffer;
 public class FileTableWriter {
 
     private final long tableId;
-    private final int maxDataBlockSizeBytes;
+    private final int maxRecordBlockSizeBytes;
     private final int level;
     private final Paths paths;
     private final IndexWriter indexWriter;
@@ -37,32 +37,32 @@ public class FileTableWriter {
     private final MetaTableWriter metaWriter;
     private final DataFile tableDataFile;
 
-    private DataBlock.Builder dataBlockBuilder;
+    private RecordBlock.Builder RecordBlockBuilder;
 
-    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
+    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxRecordBlockSizeBytes, int level) throws IOException {
         this.tableId = tableId;
         this.paths = paths;
         this.level = level;
-        this.indexWriter = IndexWriter.open(tableId, paths, maxDataBlockSizeBytes);
+        this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlockSizeBytes);
         this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
-        this.dataBlockBuilder = new DataBlock.Builder();
-        this.maxDataBlockSizeBytes = maxDataBlockSizeBytes;
+        this.RecordBlockBuilder = new RecordBlock.Builder();
+        this.maxRecordBlockSizeBytes = maxRecordBlockSizeBytes;
         this.metaWriter = MetaTableWriter.open(tableId, paths, level);
         this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
     }
 
     public void write(Record record) throws IOException {
-        if (dataBlockBuilder.sizeBytes() >= maxDataBlockSizeBytes) {
-            writeDataBlock();
+        if (RecordBlockBuilder.sizeBytes() >= maxRecordBlockSizeBytes) {
+            writeRecordBlock();
         }
 
-        dataBlockBuilder.addRecord(record);
+        RecordBlockBuilder.addRecord(record);
         filterWriter.write(record);
         metaWriter.write(record);
     }
 
     public void finish() throws IOException {
-        writeDataBlock();
+        writeRecordBlock();
         tableDataFile.appendInt(level);
         filterWriter.finish();
         indexWriter.finish();
@@ -70,17 +70,17 @@ public class FileTableWriter {
         tableDataFile.close();
     }
 
-    private void writeDataBlock() throws IOException {
-        DataBlock dataBlock = dataBlockBuilder.build();
-        ByteBuffer dataBlockBuffer = dataBlock.memory().toDirectBuffer();
-        long dataBlockOffset = tableDataFile.appendInt(dataBlockBuffer.capacity());
-        tableDataFile.append(dataBlockBuffer);
-        indexWriter.write(new IndexBlock.Record(dataBlock.startKey(), dataBlockOffset));
-        dataBlock.releaseMemory();
-        dataBlockBuilder = new DataBlock.Builder();
+    private void writeRecordBlock() throws IOException {
+        RecordBlock RecordBlock = RecordBlockBuilder.build();
+        ByteBuffer RecordBlockBuffer = RecordBlock.memory().toDirectBuffer();
+        long RecordBlockOffset = tableDataFile.appendInt(RecordBlockBuffer.capacity());
+        tableDataFile.append(RecordBlockBuffer);
+        indexWriter.write(new IndexBlock.Record(RecordBlock.startRecord().key(), RecordBlockOffset));
+        RecordBlock.releaseMemory();
+        RecordBlockBuilder = new RecordBlock.Builder();
     }
 
-    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxDataBlockSizeBytes, int level) throws IOException {
-        return new FileTableWriter(tableId, paths, approxRecordCount, maxDataBlockSizeBytes, level);
+    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxRecordBlockSizeBytes, int level) throws IOException {
+        return new FileTableWriter(tableId, paths, approxRecordCount, maxRecordBlockSizeBytes, level);
     }
 }

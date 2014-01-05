@@ -16,18 +16,22 @@
 
 package com.jordanwilliams.heftydb.record;
 
+import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
 
 @Immutable
 public class Key implements Comparable<Key> {
-    ;
 
     private final ByteBuffer data;
 
-    public Key(ByteBuffer key) {
-        this.data = key;
+    public Key(ByteBuffer data) {
+        this.data = data;
+    }
+
+    public Key(ByteBuffer data, long snapshotId){
+        this.data = versionedKeyBuffer(data, snapshotId);
     }
 
     public ByteBuffer data() {
@@ -70,5 +74,13 @@ public class Key implements Comparable<Key> {
         return "Key{" +
                 "data=" + new String(keyArray) +
                 '}';
+    }
+
+    private static ByteBuffer versionedKeyBuffer(ByteBuffer key, long snapshotId) {
+        ByteBuffer versionedKey = ByteBuffer.allocate(key.capacity() + Sizes.LONG_SIZE);
+        versionedKey.put(key);
+        versionedKey.putLong(snapshotId);
+        versionedKey.rewind();
+        return versionedKey;
     }
 }

@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.test.perf.table.file;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 
 import java.util.List;
@@ -30,12 +30,12 @@ public class DataBlockPerformance {
         RecordGenerator generator = new RecordGenerator();
         List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
 
-        DataBlock.Builder blockBuilder = new DataBlock.Builder();
+        RecordBlock.Builder blockBuilder = new RecordBlock.Builder();
         for (Record record : records) {
             blockBuilder.addRecord(record);
         }
 
-        DataBlock block = blockBuilder.build();
+        RecordBlock block = blockBuilder.build();
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();

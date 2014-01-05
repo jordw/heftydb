@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class DataBlock implements Iterable<Record>, Offheap {
+public class RecordBlock implements Iterable<Record>, Offheap {
 
     public static class Builder {
 
@@ -45,8 +45,8 @@ public class DataBlock implements Iterable<Record>, Offheap {
             return sizeBytes;
         }
 
-        public DataBlock build() {
-            return new DataBlock(serializeRecords(records));
+        public RecordBlock build() {
+            return new RecordBlock(serializeRecords(records));
         }
 
         private static Memory serializeRecords(List<Record> records) {
@@ -114,14 +114,13 @@ public class DataBlock implements Iterable<Record>, Offheap {
     private final Memory memory;
     private final int recordCount;
 
-    public DataBlock(Memory memory) {
+    public RecordBlock(Memory memory) {
         this.memory = memory;
         this.recordCount = memory.getInt(0);
     }
 
     public Record get(Key key, long maxSnapshotId) {
-        int recordIndex = recordIndex(versionedKeyBuffer(key, maxSnapshotId));
-        Record closest = deserializeRecord(recordIndex);
+        Record closest = getClosest(key, maxSnapshotId);
 
         key.data().rewind();
         int compare = key.compareTo(closest.key());
@@ -130,9 +129,13 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return compare == 0 ? closest : null;
     }
 
-    public Key startKey() {
-        Record deserializedRecord = deserializeRecord(0);
-        return deserializedRecord.key();
+    public Record getClosest(Key key, long maxSnapshotId){
+        int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
+        return deserializeRecord(recordIndex);
+    }
+
+    public Record startRecord() {
+        return deserializeRecord(0);
     }
 
     @Override
@@ -165,14 +168,39 @@ public class DataBlock implements Iterable<Record>, Offheap {
         };
     }
 
-    private int recordIndex(ByteBuffer key) {
+    @Override
+    public Memory memory() {
+        return memory;
+    }
+
+    @Override
+    public long sizeBytes() {
+        return memory.size();
+    }
+
+    @Override
+    public void releaseMemory() {
+        memory.release();
+    }
+
+    @Override
+    public String toString() {
+        List<Record> records = new ArrayList<Record>();
+        for (Record record : this) {
+            records.add(record);
+        }
+
+        return "RecordBlock{records=" + records + "}";
+    }
+
+    private int closestRecordIndex(ByteBuffer key) {
         int low = 0;
         int high = recordCount - 1;
 
         //Binary search
         while (low <= high) {
             int mid = (low + high) >>> 1;
-            int compare = compareKeys(key, mid);
+            int compare = compareVersionedKeys(key, mid);
 
             if (compare < 0) {
                 low = mid + 1;
@@ -186,7 +214,7 @@ public class DataBlock implements Iterable<Record>, Offheap {
         return low - 1;
     }
 
-    private int compareKeys(ByteBuffer key, int compareKeyIndex) {
+    private int compareVersionedKeys(ByteBuffer key, int compareKeyIndex) {
         int recordOffset = recordOffset(compareKeyIndex);
         int keySize = memory.getInt(recordOffset);
         int keyOffset = recordOffset + Sizes.INT_SIZE;
@@ -232,37 +260,5 @@ public class DataBlock implements Iterable<Record>, Offheap {
         int pointerOffset = Sizes.INT_SIZE;
         pointerOffset += pointerIndex * Sizes.INT_SIZE;
         return pointerOffset;
-    }
-
-    private static ByteBuffer versionedKeyBuffer(Key key, long snapshotId) {
-        ByteBuffer versionedKey = ByteBuffer.allocate(key.size() + Sizes.LONG_SIZE);
-        versionedKey.put(key.data());
-        versionedKey.putLong(snapshotId);
-        return versionedKey;
-    }
-
-    @Override
-    public Memory memory() {
-        return memory;
-    }
-
-    @Override
-    public long sizeBytes() {
-        return memory.size();
-    }
-
-    @Override
-    public void releaseMemory() {
-        memory.release();
-    }
-
-    @Override
-    public String toString() {
-        List<Record> records = new ArrayList<Record>();
-        for (Record record : this) {
-            records.add(record);
-        }
-
-        return "DataBlock{records=" + records + "}";
     }
 }

@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,15 +28,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class DataBlockTest {
+public class RecordBlockTest {
 
     private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
     private static final Key TEST_KEY_2 = new Key(ByteBuffers.fromString("Bad as I want to be"));
     private static final Key TEST_KEY_3 = new Key(ByteBuffers.fromString("Dog I am a test key"));
-    private static final DataBlock TEST_BLOCK;
+    private static final RecordBlock TEST_BLOCK;
 
     static {
-        DataBlock.Builder builder = new DataBlock.Builder();
+        RecordBlock.Builder builder = new RecordBlock.Builder();
         builder.addRecord(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 1));
         builder.addRecord(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 2));
         builder.addRecord(new Record(TEST_KEY_2, Value.TOMBSTONE_VALUE, 3));
