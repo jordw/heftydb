@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,11 +35,11 @@ public class IndexBlockTest {
 
     static {
         IndexBlock.Builder builder = new IndexBlock.Builder(true);
-        builder.addRecord(new IndexBlock.Record(TEST_KEY_1, 0));
-        builder.addRecord(new IndexBlock.Record(TEST_KEY_1, 5));
-        builder.addRecord(new IndexBlock.Record(TEST_KEY_2, 1));
-        builder.addRecord(new IndexBlock.Record(TEST_KEY_3, 2));
-        builder.addRecord(new IndexBlock.Record(TEST_KEY_3, 3));
+        builder.addRecord(new IndexRecord(TEST_KEY_1, 0));
+        builder.addRecord(new IndexRecord(TEST_KEY_1, 5));
+        builder.addRecord(new IndexRecord(TEST_KEY_2, 1));
+        builder.addRecord(new IndexRecord(TEST_KEY_3, 2));
+        builder.addRecord(new IndexRecord(TEST_KEY_3, 3));
 
         TEST_BLOCK = builder.build();
     }

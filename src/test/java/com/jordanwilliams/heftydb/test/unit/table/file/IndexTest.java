@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.Index;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.write.IndexWriter;
@@ -47,7 +47,7 @@ public class IndexTest extends RecordTest {
 
         for (Record record : records) {
             keys.add(record.key());
-            indexWriter.write(new IndexBlock.Record(record.key(), count));
+            indexWriter.write(new IndexRecord(record.key(), count));
             count++;
         }
 

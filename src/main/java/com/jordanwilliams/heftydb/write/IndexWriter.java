@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.IndexRecord;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -42,8 +43,8 @@ public class IndexWriter {
         indexBlockBuilders.add(new IndexBlock.Builder(true));
     }
 
-    public void write(IndexBlock.Record indexRecord) throws IOException {
-        Queue<IndexBlock.Record> pendingIndexRecord = new LinkedList<IndexBlock.Record>();
+    public void write(IndexRecord indexRecord) throws IOException {
+        Queue<IndexRecord> pendingIndexRecord = new LinkedList<IndexRecord>();
         pendingIndexRecord.add(indexRecord);
 
         for (int i = 0; i < indexBlockBuilders.size(); i++) {
@@ -54,7 +55,7 @@ public class IndexWriter {
             IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
 
             if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes) {
-                IndexBlock.Record metaRecord = writeIndexBlock(levelBuilder.build());
+                IndexRecord metaRecord = writeIndexBlock(levelBuilder.build());
 
                 IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(i == 0);
                 newLevelBuilder.addRecord(pendingIndexRecord.poll());
@@ -74,7 +75,7 @@ public class IndexWriter {
     }
 
     public void finish() throws IOException {
-        Queue<IndexBlock.Record> pendingIndexRecord = new LinkedList<IndexBlock.Record>();
+        Queue<IndexRecord> pendingIndexRecord = new LinkedList<IndexRecord>();
 
         for (int i = 0; i < indexBlockBuilders.size(); i++) {
             IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
@@ -83,7 +84,7 @@ public class IndexWriter {
                 levelBuilder.addRecord(pendingIndexRecord.poll());
             }
 
-            IndexBlock.Record nextLevelRecord = writeIndexBlock(levelBuilder.build());
+            IndexRecord nextLevelRecord = writeIndexBlock(levelBuilder.build());
             pendingIndexRecord.add(nextLevelRecord);
         }
 
@@ -92,11 +93,11 @@ public class IndexWriter {
         indexFile.close();
     }
 
-    private IndexBlock.Record writeIndexBlock(IndexBlock indexBlock) throws IOException {
+    private IndexRecord writeIndexBlock(IndexBlock indexBlock) throws IOException {
         ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
         long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
         indexFile.append(indexBlockBuffer);
-        IndexBlock.Record metaIndexRecord = new IndexBlock.Record(indexBlock.startKey(), indexBlockOffset);
+        IndexRecord metaIndexRecord = new IndexRecord(indexBlock.startKey(), indexBlockOffset);
         indexBlock.releaseMemory();
         return metaIndexRecord;
     }

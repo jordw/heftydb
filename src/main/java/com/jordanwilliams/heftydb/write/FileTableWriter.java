@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
 
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class FileTableWriter {
         ByteBuffer RecordBlockBuffer = RecordBlock.memory().toDirectBuffer();
         long RecordBlockOffset = tableDataFile.appendInt(RecordBlockBuffer.capacity());
         tableDataFile.append(RecordBlockBuffer);
-        indexWriter.write(new IndexBlock.Record(RecordBlock.startRecord().key(), RecordBlockOffset));
+        indexWriter.write(new IndexRecord(RecordBlock.startRecord().key(), RecordBlockOffset));
         RecordBlock.releaseMemory();
         RecordBlockBuilder = new RecordBlock.Builder();
     }

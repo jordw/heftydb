@@ -120,7 +120,8 @@ public class RecordBlock implements Iterable<Record>, Offheap {
     }
 
     public Record get(Key key, long maxSnapshotId) {
-        Record closest = getClosest(key, maxSnapshotId);
+        int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
+        Record closest = deserializeRecord(recordIndex);
 
         key.data().rewind();
         int compare = key.compareTo(closest.key());
@@ -129,9 +130,17 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         return compare == 0 ? closest : null;
     }
 
-    public Record getClosest(Key key, long maxSnapshotId) {
-        int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
-        return deserializeRecord(recordIndex);
+    public int closestRecordIndex(Key key, long maxSnapshotId){
+       int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
+       return recordIndex;
+    }
+
+    public int recordMemoryOffset(int recordIndex){
+        return recordOffset(recordIndex);
+    }
+
+    public int recordCount(){
+        return recordCount;
     }
 
     public Record startRecord() {
@@ -220,6 +229,14 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         int keyOffset = recordOffset + Sizes.INT_SIZE;
         key.rewind();
         return memory.compareAsBytes(key, keyOffset, keySize + Sizes.LONG_SIZE);
+    }
+
+    private int compareKeys(ByteBuffer key, int compareKeyIndex) {
+        int recordOffset = recordOffset(compareKeyIndex);
+        int keySize = memory.getInt(recordOffset);
+        int keyOffset = recordOffset + Sizes.INT_SIZE;
+        key.rewind();
+        return memory.compareAsBytes(key, keyOffset, keySize);
     }
 
     private int recordOffset(int pointerIndex) {

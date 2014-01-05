@@ -27,42 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
-
-    public static class Record {
-
-        private final Key startKey;
-        private final long offset;
-
-        public Record(Key startKey, long offset) {
-            this.startKey = startKey;
-            this.offset = offset;
-        }
-
-        public Key startKey() {
-            return startKey;
-        }
-
-        public long offset() {
-            return offset;
-        }
-
-        public int sizeBytes() {
-            return startKey.size() + Sizes.LONG_SIZE;
-        }
-
-        @Override
-        public String toString() {
-            return "Record{" +
-                    "startKey=" + startKey +
-                    ", offset=" + offset +
-                    '}';
-        }
-    }
+public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     public static class Builder {
 
-        private final List<Record> indexRecords = new ArrayList<Record>();
+        private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
         private final boolean isLeaf;
 
         private int sizeBytes;
@@ -71,7 +40,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
             this.isLeaf = isLeaf;
         }
 
-        public void addRecord(Record indexRecord) {
+        public void addRecord(IndexRecord indexRecord) {
             indexRecords.add(indexRecord);
             sizeBytes += indexRecord.sizeBytes();
         }
@@ -85,7 +54,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
             return new IndexBlock(contents);
         }
 
-        private static Memory serializeRecords(List<Record> indexRecords, boolean isLeaf) {
+        private static Memory serializeRecords(List<IndexRecord> indexRecords, boolean isLeaf) {
             //Allocate memory
             int memorySize = 0;
             int[] indexRecordOffsets = new int[indexRecords.size()];
@@ -95,7 +64,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
 
             //Compute memory size
             for (int i = 0; i < indexRecords.size(); i++) {
-                Record indexRecord = indexRecords.get(i);
+                IndexRecord indexRecord = indexRecords.get(i);
                 indexRecordOffsets[i] = memorySize;
                 memorySize += Sizes.INT_SIZE; //Key size
                 memorySize += indexRecord.startKey().size(); //Key
@@ -119,7 +88,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
             }
 
             //Pack indexRecords
-            for (Record indexRecord : indexRecords) {
+            for (IndexRecord indexRecord : indexRecords) {
                 Key startKey = indexRecord.startKey();
 
                 //Key size
@@ -181,8 +150,8 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
     }
 
     @Override
-    public Iterator<Record> iterator() {
-        return new Iterator<Record>() {
+    public Iterator<IndexRecord> iterator() {
+        return new Iterator<IndexRecord>() {
 
             int currentRecordIndex = 0;
 
@@ -192,12 +161,12 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
             }
 
             @Override
-            public Record next() {
+            public IndexRecord next() {
                 if (currentRecordIndex >= indexRecordCount) {
                     throw new NoSuchElementException();
                 }
 
-                Record next = deserializeRecord(currentRecordIndex);
+                IndexRecord next = deserializeRecord(currentRecordIndex);
                 currentRecordIndex++;
                 return next;
             }
@@ -211,8 +180,8 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
 
     @Override
     public String toString() {
-        List<Record> records = new ArrayList<Record>();
-        for (Record record : this) {
+        List<IndexRecord> records = new ArrayList<IndexRecord>();
+        for (IndexRecord record : this) {
             records.add(record);
         }
 
@@ -306,7 +275,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
         return memory.getLong(blockOffset);
     }
 
-    private Record deserializeRecord(int recordIndex) {
+    private IndexRecord deserializeRecord(int recordIndex) {
         int recordOffset = recordOffset(recordIndex);
 
         //Start Key
@@ -318,7 +287,7 @@ public class IndexBlock implements Iterable<IndexBlock.Record>, Offheap {
         //Offset
         long offset = memory.getLong(recordOffset + Sizes.INT_SIZE + keySize);
 
-        return new Record(new Key(keyBuffer), offset);
+        return new IndexRecord(new Key(keyBuffer), offset);
     }
 
     private static int pointerOffset(int pointerIndex) {
