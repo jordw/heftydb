@@ -47,7 +47,7 @@ public class IndexTest extends RecordTest {
 
         for (Record record : records) {
             keys.add(record.key());
-            indexWriter.write(new IndexRecord(record.key(), count));
+            indexWriter.write(new IndexRecord(record.key(), record.snapshotId(), count));
             count++;
         }
 
@@ -56,8 +56,8 @@ public class IndexTest extends RecordTest {
         Index index = Index.open(1, paths);
 
         for (Record record : records) {
-            List<Long> blockOffsets = index.blockOffsets(record.key());
-            Assert.assertFalse("Index blocks are found", blockOffsets.isEmpty());
+            long blockOffset = index.recordBlockOffset(record.key(), record.snapshotId());
+            Assert.assertTrue("Index blocks are found", blockOffset > 0);
         }
 
         index.close();

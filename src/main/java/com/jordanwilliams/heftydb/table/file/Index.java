@@ -25,10 +25,6 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 
 public class Index {
 
@@ -41,28 +37,19 @@ public class Index {
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
     }
 
-    public List<Long> blockOffsets(Key key) throws IOException {
-        List<Long> blockOffsets = new ArrayList<Long>();
+    public long recordBlockOffset(Key key, long maxSnapshotId) throws IOException {
+        IndexBlock currentIndexBlock = rootIndexBlock;
+        IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
 
-        //BFS index blocks
-        List<Long> rootBlockOffsets = rootIndexBlock.blockOffsets(key);
-        Queue<Long> searchBlockOffsets = new LinkedList<Long>();
-        searchBlockOffsets.addAll(rootBlockOffsets);
-
-        while (!searchBlockOffsets.isEmpty()) {
-            IndexBlock keyIndexBlock = readIndexBlock(searchBlockOffsets.poll());
-            List<Long> keyBlockOffsets = keyIndexBlock.blockOffsets(key);
-
-            if (!keyIndexBlock.isLeaf()) {
-                searchBlockOffsets.addAll(keyBlockOffsets);
-            } else {
-                blockOffsets.addAll(keyBlockOffsets);
-            }
-
-            keyIndexBlock.releaseMemory();
+        while (!currentIndexRecord.isLeaf()){
+            currentIndexBlock.releaseMemory();
+            currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
+            currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
         }
 
-        return blockOffsets;
+        currentIndexBlock.releaseMemory();
+
+        return currentIndexRecord.offset();
     }
 
     public void close() throws IOException {
@@ -75,7 +62,7 @@ public class Index {
         Memory indexMemory = Memory.allocate(indexBlockSize);
         ByteBuffer indexBuffer = indexMemory.toDirectBuffer();
         indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
-        return new IndexBlock(indexMemory);
+        return new IndexBlock(new RecordBlock(indexMemory));
     }
 
     public static Index open(long tableId, Paths paths) throws IOException {

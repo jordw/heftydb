@@ -40,7 +40,7 @@ public class IndexWriter {
     private IndexWriter(long tableId, Paths paths, int maxIndexBlockSizeBytes) throws IOException {
         this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
         this.maxIndexBlockSizeBytes = maxIndexBlockSizeBytes;
-        indexBlockBuilders.add(new IndexBlock.Builder(true));
+        indexBlockBuilders.add(new IndexBlock.Builder());
     }
 
     public void write(IndexRecord indexRecord) throws IOException {
@@ -57,7 +57,7 @@ public class IndexWriter {
             if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes) {
                 IndexRecord metaRecord = writeIndexBlock(levelBuilder.build());
 
-                IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(i == 0);
+                IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder();
                 newLevelBuilder.addRecord(pendingIndexRecord.poll());
                 indexBlockBuilders.set(i, newLevelBuilder);
 
@@ -68,7 +68,7 @@ public class IndexWriter {
         }
 
         if (!pendingIndexRecord.isEmpty()) {
-            IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder(false);
+            IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder();
             newLevelBuilder.addRecord(pendingIndexRecord.poll());
             indexBlockBuilders.add(newLevelBuilder);
         }
@@ -97,7 +97,9 @@ public class IndexWriter {
         ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
         long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
         indexFile.append(indexBlockBuffer);
-        IndexRecord metaIndexRecord = new IndexRecord(indexBlock.startKey(), indexBlockOffset);
+        IndexRecord startRecord = indexBlock.startRecord();
+        IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), startRecord.snapshotId(),
+                indexBlockOffset, false);
         indexBlock.releaseMemory();
         return metaIndexRecord;
     }

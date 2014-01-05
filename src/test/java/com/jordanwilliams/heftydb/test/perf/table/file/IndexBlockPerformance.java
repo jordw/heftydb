@@ -39,9 +39,9 @@ public class IndexBlockPerformance {
 
         Collections.sort(keys);
 
-        IndexBlock.Builder blockBuilder = new IndexBlock.Builder(true);
+        IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
         for (Key key : keys) {
-            blockBuilder.addRecord(new IndexRecord(key, 0));
+            blockBuilder.addRecord(new IndexRecord(key, 1, 0));
         }
 
         IndexBlock block = blockBuilder.build();
@@ -51,7 +51,7 @@ public class IndexBlockPerformance {
         int iterations = 2000000;
 
         for (int i = 0; i < iterations; i++) {
-            block.blockOffsets(keys.get(random.nextInt(keys.size())));
+            block.get(keys.get(random.nextInt(keys.size())), 1);
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

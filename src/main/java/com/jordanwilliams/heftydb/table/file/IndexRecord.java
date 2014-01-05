@@ -22,15 +22,27 @@ import com.jordanwilliams.heftydb.util.Sizes;
 public class IndexRecord {
 
     private final Key startKey;
+    private final long snapshotId;
     private final long offset;
+    private final boolean isLeaf;
 
-    public IndexRecord(Key startKey, long offset) {
+    public IndexRecord(Key startKey, long snapshotId, long offset, boolean isLeaf) {
         this.startKey = startKey;
+        this.snapshotId = snapshotId;
         this.offset = offset;
+        this.isLeaf = isLeaf;
+    }
+
+    public IndexRecord(Key startKey, long snapshotId, long offset) {
+        this (startKey, snapshotId, offset, true);
     }
 
     public Key startKey() {
         return startKey;
+    }
+
+    public long snapshotId() {
+        return snapshotId;
     }
 
     public long offset() {
@@ -38,14 +50,29 @@ public class IndexRecord {
     }
 
     public int sizeBytes() {
-        return startKey.size() + Sizes.LONG_SIZE;
+        return  Sizes.INT_SIZE + //Key size
+                startKey.size() + //Key
+                Sizes.LONG_SIZE + //SnapshotId
+                Sizes.LONG_SIZE + //Offset
+                1; //Leaf flag
+    }
+
+    public int contentsSizeBytes(){
+               return Sizes.LONG_SIZE + //Offset
+               1; //Leaf flag
+    }
+
+    public boolean isLeaf() {
+        return isLeaf;
     }
 
     @Override
     public String toString() {
-        return "Record{" +
+        return "IndexRecord{" +
                 "startKey=" + startKey +
+                ", snapshotId=" + snapshotId +
                 ", offset=" + offset +
+                ", isLeaf=" + isLeaf +
                 '}';
     }
 }
