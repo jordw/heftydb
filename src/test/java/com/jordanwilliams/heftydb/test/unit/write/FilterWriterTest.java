@@ -40,7 +40,7 @@ public class FilterWriterTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        Paths paths = ConfigGenerator.defaultDataFiles();
+        Paths paths = ConfigGenerator.testPaths();
         FilterWriter filterWriter = FilterWriter.open(1, paths, records.size());
 
         for (Record record : records) {

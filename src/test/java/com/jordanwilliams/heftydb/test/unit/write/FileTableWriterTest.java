@@ -36,7 +36,7 @@ public class FileTableWriterTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        Paths paths = ConfigGenerator.defaultDataFiles();
+        Paths paths = ConfigGenerator.testPaths();
         FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 100, 512, 1);
 
         for (Record record : records) {

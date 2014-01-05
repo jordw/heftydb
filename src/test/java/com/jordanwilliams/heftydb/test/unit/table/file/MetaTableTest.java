@@ -16,50 +16,45 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
-import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.Index;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.MetaTable;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.write.IndexWriter;
+import com.jordanwilliams.heftydb.write.MetaTableWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-public class IndexTest extends RecordTest {
+public class MetaTableTest extends RecordTest {
 
-    public IndexTest(List<Record> testRecords) {
+    public MetaTableTest(List<Record> testRecords) {
         super(testRecords);
     }
 
     @Test
     public void readWriteTest() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
-        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
+        MetaTableWriter metaWriter = MetaTableWriter.open(1, paths, 2);
 
-        List<Key> keys = new ArrayList<Key>();
-        int count = 0;
+        int recordCount = 0;
+        long sizeBytes = 0;
 
-        for (Record record : records) {
-            keys.add(record.key());
-            indexWriter.write(new IndexBlock.Record(record.key(), count));
-            count++;
+        for (Record record : records){
+            metaWriter.write(record);
+            recordCount++;
+            sizeBytes += record.size();
         }
 
-        indexWriter.finish();
+        metaWriter.finish();
 
-        Index index = Index.open(1, paths);
+        MetaTable metaTable = MetaTable.open(1, paths);
 
-        for (Record record : records) {
-            List<Long> blockOffsets = index.blockOffsets(record.key());
-            Assert.assertFalse("Index blocks are found", blockOffsets.isEmpty());
-        }
-
-        index.close();
+        Assert.assertEquals("Size matches", sizeBytes, metaTable.sizeBytes());
+        Assert.assertEquals("Record count matches", recordCount, metaTable.recordCount());
+        Assert.assertEquals("Level matches", 2, metaTable.level());
+        Assert.assertEquals("ID matches", 1, metaTable.id());
     }
 }

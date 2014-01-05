@@ -43,7 +43,7 @@ public class IndexWriterTest extends RecordTest {
 
     @Test
     public void readWriteTest() throws IOException {
-        Paths paths = ConfigGenerator.defaultDataFiles();
+        Paths paths = ConfigGenerator.testPaths();
         IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
 
         List<Key> keys = new ArrayList<Key>();
