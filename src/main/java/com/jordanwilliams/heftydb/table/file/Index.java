@@ -49,11 +49,11 @@ public class Index {
         Queue<Long> searchBlockOffsets = new LinkedList<Long>();
         searchBlockOffsets.addAll(rootBlockOffsets);
 
-        while (!searchBlockOffsets.isEmpty()){
+        while (!searchBlockOffsets.isEmpty()) {
             IndexBlock keyIndexBlock = readIndexBlock(searchBlockOffsets.poll());
             List<Long> keyBlockOffsets = keyIndexBlock.blockOffsets(key);
 
-            if (!keyIndexBlock.isLeaf()){
+            if (!keyIndexBlock.isLeaf()) {
                 searchBlockOffsets.addAll(keyBlockOffsets);
             } else {
                 blockOffsets.addAll(keyBlockOffsets);

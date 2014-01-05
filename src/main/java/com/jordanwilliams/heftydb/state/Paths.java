@@ -50,7 +50,7 @@ public class Paths {
         return tableDirectory.resolve(tableId + FILTER_EXT);
     }
 
-    public Path metaPath(long tableId){
+    public Path metaPath(long tableId) {
         return tableDirectory.resolve(tableId + META_EXT);
     }
 

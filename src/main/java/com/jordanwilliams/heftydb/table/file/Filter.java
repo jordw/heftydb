@@ -39,7 +39,7 @@ public class Filter implements Offheap {
         this.bloomFilter = new BloomFilter(filterMemory);
     }
 
-    public boolean mightContain(Key key){
+    public boolean mightContain(Key key) {
         return bloomFilter.mightContain(key.data().array());
     }
 

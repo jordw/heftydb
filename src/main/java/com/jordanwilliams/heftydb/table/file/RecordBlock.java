@@ -129,7 +129,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         return compare == 0 ? closest : null;
     }
 
-    public Record getClosest(Key key, long maxSnapshotId){
+    public Record getClosest(Key key, long maxSnapshotId) {
         int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
         return deserializeRecord(recordIndex);
     }

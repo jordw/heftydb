@@ -42,7 +42,7 @@ public class MetaTableTest extends RecordTest {
         int recordCount = 0;
         long sizeBytes = 0;
 
-        for (Record record : records){
+        for (Record record : records) {
             metaWriter.write(record);
             recordCount++;
             sizeBytes += record.size();
