@@ -22,8 +22,6 @@ import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Value;
 
-import java.nio.ByteBuffer;
-
 public class ByteCache {
 
     private static final int CACHE_CONCURRENCY_LEVEL = 64;
@@ -32,14 +30,14 @@ public class ByteCache {
 
     public ByteCache(long capacityBytes) {
         this.cache = new ConcurrentLinkedHashMap.Builder().concurrencyLevel(CACHE_CONCURRENCY_LEVEL)
-                .maximumWeightedCapacity(capacityBytes).weigher(new EntryWeigher<ByteBuffer, Memory>() {
+                .maximumWeightedCapacity(capacityBytes).weigher(new EntryWeigher<Key, Memory>() {
             @Override
-            public int weightOf(ByteBuffer key, Memory value) {
-                return key.capacity() + (int) value.size();
+            public int weightOf(Key key, Memory value) {
+                return key.size() + value.size();
             }
-        }).listener(new EvictionListener<ByteBuffer, Memory>() {
+        }).listener(new EvictionListener<Key, Memory>() {
             @Override
-            public void onEviction(ByteBuffer key, Memory value) {
+            public void onEviction(Key key, Memory value) {
                 if (value != null) {
                     value.release();
                 }
@@ -47,14 +45,14 @@ public class ByteCache {
         }).build();
     }
 
-    public ByteBuffer get(Key key) {
+    public Value get(Key key) {
         Memory serializedValue = cache.get(key);
         if (serializedValue == null || !serializedValue.retain()) {
             return null;
         }
 
         try {
-            return serializedValue.directBuffer();
+            return new Value(serializedValue.directBuffer());
         } finally {
             serializedValue.release();
         }
