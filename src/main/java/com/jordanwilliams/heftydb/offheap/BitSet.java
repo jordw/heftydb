@@ -18,54 +18,58 @@ package com.jordanwilliams.heftydb.offheap;
 
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.nio.ByteBuffer;
+
 public class BitSet implements Offheap {
 
     public static class Builder {
 
         private final Memory memory;
+        private final ByteBuffer directBuffer;
 
         public Builder(long bitCount) {
-            memory = Memory.allocate(((memoryOffset(bitCount - 1) + 1) * Sizes.LONG_SIZE));
+            this.memory = Memory.allocate(((memoryOffset(bitCount - 1) + 1) * Sizes.LONG_SIZE));
+            this.directBuffer = memory.directBuffer();
         }
 
         public void set(long bitIndex, boolean value) {
-            long offset = memoryOffset(bitIndex);
+            int offset = memoryOffset(bitIndex);
 
             if (value) {
                 //Set
-                memory.putLong(offset, memory.getLong(offset) | (1L << bitIndex));
+                directBuffer.putLong(offset, directBuffer.getLong(offset) | (1L << bitIndex));
             } else {
                 //Clear
-                memory.putLong(offset, memory.getLong(offset) & ~(1L << bitIndex));
+                directBuffer.putLong(offset, directBuffer.getLong(offset) & ~(1L << bitIndex));
             }
         }
 
         public BitSet build() {
-            return new BitSet(memory, 0);
+            return new BitSet(memory);
         }
 
         public long sizeBytes() {
             return memory.size();
         }
 
-        private long memoryOffset(long bitIndex) {
-            return ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
+        private int memoryOffset(long bitIndex) {
+            return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
         }
     }
 
     private static final int ADDRESS_BITS_PER_WORD = 6;
 
     private final Memory memory;
-    private final long startingOffset;
+    private final ByteBuffer directBuffer;
 
-    public BitSet(Memory memory, long startingOffset) {
+    public BitSet(Memory memory) {
         this.memory = memory;
-        this.startingOffset = startingOffset;
+        this.directBuffer = memory.directBuffer();
     }
 
     public boolean get(long index) {
-        long offset = memoryOffset(index);
-        return ((memory.getLong(offset) & (1L << index)) != 0);
+        int offset = memoryOffset(index);
+        return ((directBuffer.getLong(offset) & (1L << index)) != 0);
     }
 
     @Override
@@ -73,17 +77,7 @@ public class BitSet implements Offheap {
         return memory;
     }
 
-    @Override
-    public long sizeBytes() {
-        return memory.size() - startingOffset;
-    }
-
-    @Override
-    public void releaseMemory() {
-        memory.release();
-    }
-
-    private long memoryOffset(long bitIndex) {
-        return startingOffset + ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
+    private int memoryOffset(long bitIndex) {
+        return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
     }
 }

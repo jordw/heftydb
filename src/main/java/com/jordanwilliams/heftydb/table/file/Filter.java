@@ -33,29 +33,20 @@ public class Filter implements Offheap {
 
     private Filter(long tableId, Paths paths) throws IOException {
         DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
-        Memory filterMemory = Memory.allocate(filterFile.size());
-        ByteBuffer filterBuffer = filterMemory.toDirectBuffer();
+        Memory filterMemory = Memory.allocate((int) filterFile.size());
+        ByteBuffer filterBuffer = filterMemory.directBuffer();
         filterFile.read(filterBuffer, filterFile.size());
+        filterFile.close();
         this.bloomFilter = new BloomFilter(filterMemory);
     }
 
     public boolean mightContain(Key key) {
-        return bloomFilter.mightContain(key.data().array());
+        return bloomFilter.mightContain(key);
     }
 
     @Override
     public Memory memory() {
         return bloomFilter.memory();
-    }
-
-    @Override
-    public long sizeBytes() {
-        return bloomFilter.memory().size();
-    }
-
-    @Override
-    public void releaseMemory() {
-        bloomFilter.memory().release();
     }
 
     public static Filter open(long tableId, Paths paths) throws IOException {

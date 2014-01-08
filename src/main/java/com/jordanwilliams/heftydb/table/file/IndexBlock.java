@@ -21,15 +21,13 @@ import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
-import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-public class IndexBlock implements Iterable<IndexRecord>, Offheap {
+public class IndexBlock implements Offheap {
 
     public static class Builder {
 
@@ -57,6 +55,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
         private ByteBuffer indexRecordContents(IndexRecord indexRecord){
             ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentsSizeBytes());
+            contentsBuffer.order(ByteOrder.nativeOrder());
             contentsBuffer.putLong(indexRecord.offset());
             contentsBuffer.put(indexRecord.isLeaf() ? (byte) 1 : (byte) 0);
             contentsBuffer.rewind();
@@ -75,7 +74,18 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     }
 
     public IndexRecord get(Key key, long maxSnapshotId){
-        return null;
+        int closestIndex = recordBlock.closestRecordIndex(key, maxSnapshotId);
+
+        if (closestIndex < 0){
+            return null;
+        }
+
+        if (closestIndex >= recordBlock.recordCount()){
+            closestIndex = recordBlock.recordCount() - 1;
+        }
+
+        IndexRecord indexRecord = deserializeRecord(closestIndex);
+        return indexRecord;
     }
 
     @Override
@@ -83,80 +93,13 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         return recordBlock.memory();
     }
 
-    @Override
-    public long sizeBytes() {
-        return recordBlock.sizeBytes();
-    }
-
-    @Override
-    public void releaseMemory() {
-        recordBlock.memory().release();
-    }
-
-    @Override
-    public Iterator<IndexRecord> iterator() {
-        return new Iterator<IndexRecord>() {
-
-            int currentRecordIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return currentRecordIndex < recordBlock.recordCount();
-            }
-
-            @Override
-            public IndexRecord next() {
-                if (currentRecordIndex >= recordBlock.recordCount()) {
-                    throw new NoSuchElementException();
-                }
-
-                IndexRecord next = deserializeRecord(currentRecordIndex);
-                currentRecordIndex++;
-                return next;
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
-    }
-
     private IndexRecord deserializeRecord(int recordIndex){
-        long memoryOffset = recordBlock.recordMemoryOffset(recordIndex);
-        Memory memory = recordBlock.memory();
-
-        //Key
-        int keySize = memory.getInt(memoryOffset);
-        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-        memoryOffset += Sizes.INT_SIZE;
-        memory.getBytes(memoryOffset, keyBuffer);
-        memoryOffset += keySize;
-
-        //Snapshot Id
-        long snapshotId = memory.getLong(memoryOffset);
-        memoryOffset += Sizes.LONG_SIZE;
-
-        //Value Size
-        memoryOffset += Sizes.INT_SIZE;
-
-        //Offset
-        long offset = memory.getLong(memoryOffset);
-        memoryOffset += Sizes.LONG_SIZE;
-
-        //Leaf flag
-        boolean isLeaf = memory.getByte(memoryOffset) == (byte) 1;
-
-        return new IndexRecord(new Key(keyBuffer), snapshotId, offset, isLeaf);
+        return null;
     }
 
     @Override
     public String toString() {
         List<IndexRecord> records = new ArrayList<IndexRecord>();
-        for (IndexRecord record : this) {
-            records.add(record);
-        }
-
         return "IndexBlock{records=" + records + "}";
     }
 }

@@ -94,13 +94,13 @@ public class IndexWriter {
     }
 
     private IndexRecord writeIndexBlock(IndexBlock indexBlock) throws IOException {
-        ByteBuffer indexBlockBuffer = indexBlock.memory().toDirectBuffer();
+        ByteBuffer indexBlockBuffer = indexBlock.memory().directBuffer();
         long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
         indexFile.append(indexBlockBuffer);
         IndexRecord startRecord = indexBlock.startRecord();
         IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), startRecord.snapshotId(),
                 indexBlockOffset, false);
-        indexBlock.releaseMemory();
+        indexBlock.memory().release();
         return metaIndexRecord;
     }
 

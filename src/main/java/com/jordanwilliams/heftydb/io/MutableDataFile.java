@@ -44,7 +44,7 @@ public class MutableDataFile implements DataFile {
 
     private final Path path;
     private final FileChannel channel;
-    private final AtomicLong position = new AtomicLong();
+    private final AtomicLong appendPosition = new AtomicLong();
 
     private MutableDataFile(Path path) throws IOException {
         this.path = path;
@@ -53,7 +53,7 @@ public class MutableDataFile implements DataFile {
 
     @Override
     public long append(ByteBuffer bufferToWrite) throws IOException {
-        long writtenPosition = position.getAndAdd(bufferToWrite.limit() - bufferToWrite.position());
+        long writtenPosition = appendPosition.getAndAdd(bufferToWrite.limit() - bufferToWrite.position());
         write(bufferToWrite, writtenPosition);
         return writtenPosition;
     }

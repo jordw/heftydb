@@ -72,12 +72,12 @@ public class FileTableWriter {
 
     private void writeRecordBlock() throws IOException {
         RecordBlock RecordBlock = RecordBlockBuilder.build();
-        ByteBuffer RecordBlockBuffer = RecordBlock.memory().toDirectBuffer();
+        ByteBuffer RecordBlockBuffer = RecordBlock.memory().directBuffer();
         long RecordBlockOffset = tableDataFile.appendInt(RecordBlockBuffer.capacity());
         tableDataFile.append(RecordBlockBuffer);
         Record startRecord = RecordBlock.startRecord();
         indexWriter.write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), RecordBlockOffset));
-        RecordBlock.releaseMemory();
+        RecordBlock.memory().release();
         RecordBlockBuilder = new RecordBlock.Builder();
     }
 

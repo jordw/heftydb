@@ -20,10 +20,8 @@ import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.util.Sizes;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,11 +31,9 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     public static class Builder {
 
-        private final List<Record> records = new ArrayList<Record>();
         private int sizeBytes;
 
         public void addRecord(Record record) {
-            records.add(record);
             sizeBytes += record.size();
         }
 
@@ -46,101 +42,26 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         }
 
         public RecordBlock build() {
-            return new RecordBlock(serializeRecords(records));
-        }
-
-        private static Memory serializeRecords(List<Record> records) {
-            //Allocate memory
-            int memorySize = 0;
-            int[] recordOffsets = new int[records.size()];
-
-            memorySize += Sizes.INT_SIZE; //Pointer count
-            memorySize += Sizes.INT_SIZE * records.size(); //Pointers
-
-            //Compute memory size
-            for (int i = 0; i < records.size(); i++) {
-                Record record = records.get(i);
-                recordOffsets[i] = memorySize;
-                memorySize += Sizes.INT_SIZE; //Key size
-                memorySize += record.key().size(); //Key
-                memorySize += Sizes.LONG_SIZE; //Snapshot Id
-                memorySize += Sizes.INT_SIZE; //Value size
-                memorySize += record.value().size(); //Value
-            }
-
-            Memory memory = Memory.allocate(memorySize);
-
-            //Serialize the index records
-            int memoryOffset = 0;
-
-            //Pack pointers
-            memory.putInt(memoryOffset, records.size());
-            memoryOffset += Sizes.INT_SIZE;
-
-            for (int i = 0; i < recordOffsets.length; i++) {
-                memory.putInt(memoryOffset, recordOffsets[i]);
-                memoryOffset += Sizes.INT_SIZE;
-            }
-
-            //Pack records
-            for (Record record : records) {
-                //Key size
-                memory.putInt(memoryOffset, record.key().size());
-                memoryOffset += Sizes.INT_SIZE;
-
-                //Key
-                memory.putBytes(memoryOffset, record.key().data());
-                memoryOffset += record.key().size();
-
-                //Snapshot Id
-                memory.putLong(memoryOffset, record.snapshotId());
-                memoryOffset += Sizes.LONG_SIZE;
-
-                //Value size
-                memory.putInt(memoryOffset, record.value().size());
-                memoryOffset += Sizes.INT_SIZE;
-
-                //Value
-                if (record.value().size() != 0) {
-                    memory.putBytes(memoryOffset, record.value().data());
-                    memoryOffset += record.value().size();
-                }
-            }
-
-            return memory;
+            return new RecordBlock(null);
         }
     }
 
     private final Memory memory;
-    private final int recordCount;
 
     public RecordBlock(Memory memory) {
         this.memory = memory;
-        this.recordCount = memory.getInt(0);
     }
 
     public Record get(Key key, long maxSnapshotId) {
-        int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
-        Record closest = deserializeRecord(recordIndex);
-
-        key.data().rewind();
-        int compare = key.compareTo(closest.key());
-        closest.key().data().rewind();
-
-        return compare == 0 ? closest : null;
+        return null;
     }
 
     public int closestRecordIndex(Key key, long maxSnapshotId){
-       int recordIndex = closestRecordIndex(new Key(key.data(), maxSnapshotId).data());
-       return recordIndex;
-    }
-
-    public int recordMemoryOffset(int recordIndex){
-        return recordOffset(recordIndex);
+        return 0;
     }
 
     public int recordCount(){
-        return recordCount;
+        return 0;
     }
 
     public Record startRecord() {
@@ -156,12 +77,12 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
             @Override
             public boolean hasNext() {
-                return currentRecordIndex < recordCount;
+                return currentRecordIndex < 0;
             }
 
             @Override
             public Record next() {
-                if (currentRecordIndex >= recordCount) {
+                if (currentRecordIndex >= 0) {
                     throw new NoSuchElementException();
                 }
 
@@ -183,16 +104,6 @@ public class RecordBlock implements Iterable<Record>, Offheap {
     }
 
     @Override
-    public long sizeBytes() {
-        return memory.size();
-    }
-
-    @Override
-    public void releaseMemory() {
-        memory.release();
-    }
-
-    @Override
     public String toString() {
         List<Record> records = new ArrayList<Record>();
         for (Record record : this) {
@@ -202,75 +113,8 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         return "RecordBlock{records=" + records + "}";
     }
 
-    private int closestRecordIndex(ByteBuffer key) {
-        int low = 0;
-        int high = recordCount - 1;
-
-        //Binary search
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            int compare = compareVersionedKeys(key, mid);
-
-            if (compare < 0) {
-                low = mid + 1;
-            } else if (compare > 0) {
-                high = mid - 1;
-            } else {
-                return mid;
-            }
-        }
-
-        return low - 1;
-    }
-
-    private int compareVersionedKeys(ByteBuffer key, int compareKeyIndex) {
-        int recordOffset = recordOffset(compareKeyIndex);
-        int keySize = memory.getInt(recordOffset);
-        int keyOffset = recordOffset + Sizes.INT_SIZE;
-        key.rewind();
-        return memory.compareAsBytes(key, keyOffset, keySize + Sizes.LONG_SIZE);
-    }
-
-    private int compareKeys(ByteBuffer key, int compareKeyIndex) {
-        int recordOffset = recordOffset(compareKeyIndex);
-        int keySize = memory.getInt(recordOffset);
-        int keyOffset = recordOffset + Sizes.INT_SIZE;
-        key.rewind();
-        return memory.compareAsBytes(key, keyOffset, keySize);
-    }
-
-    private int recordOffset(int pointerIndex) {
-        return memory.getInt(pointerOffset(pointerIndex));
-    }
-
     private Record deserializeRecord(int recordIndex) {
-        int recordOffset = recordOffset(recordIndex);
-        int keySize = memory.getInt(recordOffset);
-        int keyOffset = recordOffset + Sizes.INT_SIZE;
-        long memoryOffset = keyOffset;
-
-        //Key
-        ByteBuffer key = ByteBuffer.allocate(keySize);
-        memory.getBytes(memoryOffset, key, 0, keySize);
-        key.rewind();
-        memoryOffset += keySize;
-
-        //Snapshot Id
-        long snapshotId = memory.getLong(memoryOffset);
-        memoryOffset += Sizes.LONG_SIZE;
-
-        //Value
-        int valueSize = memory.getInt(memoryOffset);
-        memoryOffset += Sizes.INT_SIZE;
-        ByteBuffer value = null;
-
-        if (valueSize != 0) {
-            value = ByteBuffer.allocate(valueSize);
-            memory.getBytes(memoryOffset, value, 0, valueSize);
-            value.rewind();
-        }
-
-        return new Record(new Key(key), valueSize == 0 ? Value.TOMBSTONE_VALUE : new Value(value), snapshotId);
+        return null;
     }
 
     private static int pointerOffset(int pointerIndex) {

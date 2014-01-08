@@ -41,26 +41,26 @@ public class Index {
         IndexBlock currentIndexBlock = rootIndexBlock;
         IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
 
-        while (!currentIndexRecord.isLeaf()){
-            currentIndexBlock.releaseMemory();
+        while (currentIndexRecord != null && !currentIndexRecord.isLeaf()){
+            currentIndexBlock.memory().release();
             currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
             currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
         }
 
-        currentIndexBlock.releaseMemory();
+        currentIndexBlock.memory().release();
 
         return currentIndexRecord.offset();
     }
 
     public void close() throws IOException {
         indexFile.close();
-        rootIndexBlock.releaseMemory();
+        rootIndexBlock.memory().release();
     }
 
     private IndexBlock readIndexBlock(long blockOffset) throws IOException {
         int indexBlockSize = indexFile.readInt(blockOffset);
         Memory indexMemory = Memory.allocate(indexBlockSize);
-        ByteBuffer indexBuffer = indexMemory.toDirectBuffer();
+        ByteBuffer indexBuffer = indexMemory.directBuffer();
         indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
         return new IndexBlock(new RecordBlock(indexMemory));
     }

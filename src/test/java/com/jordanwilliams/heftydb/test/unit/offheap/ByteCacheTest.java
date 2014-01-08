@@ -16,26 +16,23 @@
 
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
-import com.jordanwilliams.heftydb.offheap.Memory;
+
+import com.jordanwilliams.heftydb.offheap.ByteCache;
+import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
+public class ByteCacheTest {
 
-public class MemoryTest {
+    private static final Key TEST_KEY = new Key(ByteBuffers.fromString("test"));
+    private static final Value TEST_VALUE = new Value(ByteBuffers.fromString("test1"));
 
     @Test
-    public void retainReleaseTest() {
-        Memory memory = Memory.allocate(256);
-
-        memory.retain();
-        memory.retain();
-
-        memory.release();
-        memory.release();
-        memory.release();
-
-        Assert.assertTrue("Memory has been freed", memory.isFree());
+    public void getPutTest() {
+        ByteCache testCache = new ByteCache(1024);
+        testCache.put(TEST_KEY, TEST_VALUE);
+        Assert.assertEquals("ByteCache values match", TEST_VALUE, testCache.get(TEST_KEY));
     }
 }

@@ -16,10 +16,6 @@
 
 package com.jordanwilliams.heftydb.util;
 
-import sun.misc.Cleaner;
-import sun.nio.ch.DirectBuffer;
-
-import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -27,39 +23,7 @@ public class ByteBuffers {
 
     public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
 
-    private static Constructor directBufferConstructor;
-
-    static {
-        try {
-            Constructor[] constructors = Class.forName("java.nio.DirectByteBuffer").getDeclaredConstructors();
-            directBufferConstructor = constructors[0];
-            directBufferConstructor.setAccessible(true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static ByteBuffer rawDirectBuffer(long address, int size) {
-        try {
-            return (ByteBuffer) directBufferConstructor.newInstance(address, size);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static ByteBuffer fromString(String string) {
         return ByteBuffer.wrap(string.getBytes(Charset.defaultCharset()));
-    }
-
-    public static void free(ByteBuffer bb) {
-        if (bb == null) {
-            return;
-        }
-
-        Cleaner cleaner = ((DirectBuffer) bb).cleaner();
-
-        if (cleaner != null) {
-            cleaner.clean();
-        }
     }
 }

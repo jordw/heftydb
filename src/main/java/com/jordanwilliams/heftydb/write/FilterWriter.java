@@ -38,15 +38,15 @@ public class FilterWriter {
     }
 
     public void write(Record record) throws IOException {
-        filterBuilder.put(record.key().data().array());
+        filterBuilder.put(record.key());
     }
 
     public void finish() throws IOException {
         BloomFilter filter = filterBuilder.build();
-        ByteBuffer filterBuffer = filter.memory().toDirectBuffer();
+        ByteBuffer filterBuffer = filter.memory().directBuffer();
         filterFile.append(filterBuffer);
         filterFile.close();
-        filter.releaseMemory();
+        filter.memory().release();
     }
 
     public static FilterWriter open(long tableId, Paths paths, long approxRecordCount) throws IOException {

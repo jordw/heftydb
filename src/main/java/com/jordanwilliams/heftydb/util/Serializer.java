@@ -17,27 +17,14 @@
 package com.jordanwilliams.heftydb.util;
 
 
-import com.jordanwilliams.heftydb.offheap.Memory;
-
 import java.nio.ByteBuffer;
 
-public interface Serializer<I, O> {
+public interface Serializer<V> {
 
-    public O serialize(I data);
+    public int sizeBytes(V item);
 
-    public I deserialize(O in);
+    public void serialize(V item, ByteBuffer buffer);
 
-    public int serializedSize(I data);
+    public void deserialize(ByteBuffer buffer);
 
-    public interface MemorySerializer<T> extends Serializer<T, Memory> {
-
-    }
-
-    public interface ByteBufferSerializer<T> extends Serializer<T, ByteBuffer> {
-
-    }
-
-    public interface ByteBufferArraySerializer<T> extends Serializer<T, ByteBuffer[]> {
-
-    }
 }

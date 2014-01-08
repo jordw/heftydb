@@ -17,7 +17,10 @@
 package com.jordanwilliams.heftydb.offheap;
 
 import com.google.common.hash.Hashing;
+import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
+
+import java.nio.ByteBuffer;
 
 public class BloomFilter implements Offheap {
 
@@ -32,8 +35,8 @@ public class BloomFilter implements Offheap {
             this.hashFunctionCount = hashFunctionCount(approxElementCount, bitCount);
         }
 
-        public void put(byte[] data) {
-            long hash64 = Hashing.murmur3_128().hashBytes(data).asLong();
+        public void put(Key key) {
+            long hash64 = Hashing.murmur3_128().hashBytes(key.data().array()).asLong();
             int hash1 = (int) hash64;
             int hash2 = (int) (hash64 >>> 32);
 
@@ -65,9 +68,10 @@ public class BloomFilter implements Offheap {
         }
 
         private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount) {
-            Memory bloomFilterMemory = Memory.allocate(bitSet.sizeBytes() + Sizes.INT_SIZE);
-            bloomFilterMemory.putInt(0, hashFunctionCount);
-            bloomFilterMemory.putBytes(Sizes.INT_SIZE, bitSet.memory());
+            Memory bloomFilterMemory = Memory.allocate(bitSet.memory().size() + Sizes.INT_SIZE);
+            ByteBuffer bloomFilterBuffer = bloomFilterMemory.directBuffer();
+            bloomFilterBuffer.putInt(hashFunctionCount);
+            bloomFilterBuffer.put(bitSet.memory().directBuffer());
             return bloomFilterMemory;
         }
     }
@@ -78,12 +82,12 @@ public class BloomFilter implements Offheap {
 
     public BloomFilter(Memory memory) {
         this.memory = memory;
-        this.bitSet = new BitSet(memory, Sizes.INT_SIZE);
-        this.hashFunctionCount = memory.getInt(0);
+        this.bitSet = new BitSet(memory);
+        this.hashFunctionCount = memory.directBuffer().getInt(0);
     }
 
-    public boolean mightContain(byte[] data) {
-        long hash64 = Hashing.murmur3_128().hashBytes(data).asLong();
+    public boolean mightContain(Key key) {
+        long hash64 = Hashing.murmur3_128().hashBytes(key.data().array()).asLong();
         int hash1 = (int) hash64;
         int hash2 = (int) (hash64 >>> 32);
 
@@ -92,7 +96,7 @@ public class BloomFilter implements Offheap {
             if (nextHash < 0) {
                 nextHash = ~nextHash;
             }
-            if (!bitSet.get(nextHash % bitSet.sizeBytes())) {
+            if (!bitSet.get(nextHash % bitSet.memory().size())) {
                 return false;
             }
         }
@@ -103,15 +107,5 @@ public class BloomFilter implements Offheap {
     @Override
     public Memory memory() {
         return memory;
-    }
-
-    @Override
-    public long sizeBytes() {
-        return memory.size();
-    }
-
-    @Override
-    public void releaseMemory() {
-        memory.release();
     }
 }
