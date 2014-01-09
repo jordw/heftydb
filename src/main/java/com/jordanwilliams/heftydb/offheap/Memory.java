@@ -22,13 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
-    private final AtomicInteger retainCount = new AtomicInteger(1);
-    private final int size;
-    private final ByteBuffer directBuffer;
-
-    private long baseAddress;
-
-    private static Constructor directBufferConstructor;
+    private static final Constructor directBufferConstructor;
 
     static {
         try {
@@ -39,6 +33,12 @@ public class Memory {
             throw new RuntimeException(e);
         }
     }
+
+    private final AtomicInteger retainCount = new AtomicInteger(1);
+    private final int size;
+    private final ByteBuffer directBuffer;
+
+    private long baseAddress;
 
     private Memory(int sizeBytes){
         this.baseAddress = Allocator.allocate(sizeBytes);
@@ -63,7 +63,6 @@ public class Memory {
     }
 
     public void free() {
-        assert baseAddress != 0 : "Memory was already freed";
         Allocator.free(baseAddress);
         baseAddress = 0;
     }

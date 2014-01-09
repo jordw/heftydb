@@ -31,7 +31,7 @@ public class BloomFilter implements Offheap {
 
         public Builder(long approxElementCount, double falsePositiveProbability) {
             long bitCount = bitCount(approxElementCount, falsePositiveProbability);
-            this.bitSetBuilder = new BitSet.Builder(bitCount);
+            this.bitSetBuilder = new BitSet.Builder(bitCount, Sizes.INT_SIZE);
             this.hashFunctionCount = hashFunctionCount(approxElementCount, bitCount);
         }
 
@@ -47,7 +47,7 @@ public class BloomFilter implements Offheap {
                     nextHash = ~nextHash;
                 }
 
-                bitSetBuilder.set(nextHash % bitSetBuilder.sizeBytes(), true);
+                bitSetBuilder.set(nextHash % bitSetBuilder.usableBytes(), true);
             }
         }
 
@@ -68,10 +68,8 @@ public class BloomFilter implements Offheap {
         }
 
         private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount) {
-            Memory bloomFilterMemory = Memory.allocate(bitSet.memory().size() + Sizes.INT_SIZE);
-            ByteBuffer bloomFilterBuffer = bloomFilterMemory.directBuffer();
-            bloomFilterBuffer.putInt(hashFunctionCount);
-            bloomFilterBuffer.put(bitSet.memory().directBuffer());
+            Memory bloomFilterMemory = bitSet.memory();
+            bloomFilterMemory.directBuffer().putInt(bitSet.usableBytes(), hashFunctionCount);
             return bloomFilterMemory;
         }
     }
@@ -82,8 +80,9 @@ public class BloomFilter implements Offheap {
 
     public BloomFilter(Memory memory) {
         this.memory = memory;
-        this.bitSet = new BitSet(memory);
-        this.hashFunctionCount = memory.directBuffer().getInt(0);
+        this.bitSet = new BitSet(memory, memory.size() - Sizes.INT_SIZE);
+        ByteBuffer directBuffer = memory.directBuffer();
+        this.hashFunctionCount = directBuffer.getInt(directBuffer.capacity() - Sizes.INT_SIZE);
     }
 
     public boolean mightContain(Key key) {
@@ -96,7 +95,7 @@ public class BloomFilter implements Offheap {
             if (nextHash < 0) {
                 nextHash = ~nextHash;
             }
-            if (!bitSet.get(nextHash % bitSet.memory().size())) {
+            if (!bitSet.get(nextHash % bitSet.usableBytes())) {
                 return false;
             }
         }

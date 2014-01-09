@@ -26,10 +26,12 @@ public class BitSet implements Offheap {
 
         private final Memory memory;
         private final ByteBuffer directBuffer;
+        private final int paddingBytes;
 
-        public Builder(long bitCount) {
-            this.memory = Memory.allocate(((memoryOffset(bitCount - 1) + 1) * Sizes.LONG_SIZE));
+        public Builder(long bitCount, int paddingBytes) {
+            this.memory = Memory.allocate(paddingBytes + ((memoryOffset(bitCount - 1) + 1) * Sizes.LONG_SIZE));
             this.directBuffer = memory.directBuffer();
+            this.paddingBytes = paddingBytes;
         }
 
         public void set(long bitIndex, boolean value) {
@@ -45,15 +47,11 @@ public class BitSet implements Offheap {
         }
 
         public BitSet build() {
-            return new BitSet(memory);
+            return new BitSet(memory, memory.size() - paddingBytes);
         }
 
-        public long sizeBytes() {
-            return memory.size();
-        }
-
-        private int memoryOffset(long bitIndex) {
-            return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
+        public int usableBytes() {
+            return memory.size() - paddingBytes;
         }
     }
 
@@ -61,10 +59,12 @@ public class BitSet implements Offheap {
 
     private final Memory memory;
     private final ByteBuffer directBuffer;
+    private final int usableBytes;
 
-    public BitSet(Memory memory) {
+    public BitSet(Memory memory, int usableBytes) {
         this.memory = memory;
         this.directBuffer = memory.directBuffer();
+        this.usableBytes = usableBytes;
     }
 
     public boolean get(long index) {
@@ -72,12 +72,16 @@ public class BitSet implements Offheap {
         return ((directBuffer.getLong(offset) & (1L << index)) != 0);
     }
 
+    public int usableBytes(){
+        return usableBytes;
+    }
+
     @Override
     public Memory memory() {
         return memory;
     }
 
-    private int memoryOffset(long bitIndex) {
+    private static int memoryOffset(long bitIndex) {
         return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
     }
 }
