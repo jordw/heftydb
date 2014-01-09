@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
+public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     public static class Entry {
 
@@ -59,48 +59,61 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
 
     public static class Builder {
 
-        private final Map<Key, Value> items = new LinkedHashMap<Key, Value>();
+        private final Map<Key, Value> entries = new LinkedHashMap<Key, Value>();
 
         public void add(Key key, Value value){
-            items.put(key, value);
+            entries.put(key, value);
         }
 
-        public SortedByteMap build(){
-            return new SortedByteMap(serializeItems());
+        public ByteMap build(){
+            return new ByteMap(serializeEntries());
         }
 
-        private Memory serializeItems(){
+        private Memory serializeEntries(){
             //Allocate memory
             int memorySize = 0;
-            int[] itemOffsets = new int[items.size()];
+            int[] entryOffsets = new int[entries.size()];
 
             memorySize += Sizes.INT_SIZE; //Pointer count
-            memorySize += Sizes.INT_SIZE * items.size(); //Pointers
+            memorySize += Sizes.INT_SIZE * entries.size(); //Pointers
 
             //Compute memory size
-            for (int i = 0; i < items.size(); i++) {
-                itemOffsets[i] = memorySize;
+            int counter = 0;
+
+            for (Map.Entry<Key, Value> entry : entries.entrySet()){
+                entryOffsets[counter] = memorySize;
+                memorySize += Sizes.INT_SIZE;
+                memorySize += entry.getKey().size();
+                memorySize += Sizes.INT_SIZE;
+                memorySize += entry.getValue().size();
+                counter++;
             }
 
             Memory memory = Memory.allocate(memorySize);
             ByteBuffer memoryBuffer = memory.directBuffer();
 
             //Pack pointers
-            memoryBuffer.putInt(items.size());
+            memoryBuffer.putInt(entries.size());
 
-            for (int i = 0; i < itemOffsets.length; i++) {
-                memoryBuffer.putInt(itemOffsets[i]);
+            for (int i = 0; i < entryOffsets.length; i++) {
+                memoryBuffer.putInt(entryOffsets[i]);
             }
 
-            //Pack items
-            for (Map.Entry<Key, Value> item : items.entrySet()) {
-                Key key = item.getKey();
-                Value value = item.getValue();
+            //Pack entries
+            for (Map.Entry<Key, Value> entry : entries.entrySet()) {
+                Key key = entry.getKey();
+                Value value = entry.getValue();
+
+                key.data().rewind();
+                value.data().rewind();
 
                 memoryBuffer.putInt(key.size());
                 memoryBuffer.put(key.data());
                 memoryBuffer.putInt(value.size());
                 memoryBuffer.put(value.data());
+
+                key.data().rewind();
+                value.data().rewind();
             }
 
             return memory;
@@ -109,12 +122,12 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
 
     private final Memory memory;
     private final ByteBuffer directBuffer;
-    private final int itemCount;
+    private final int entryCount;
 
-    public SortedByteMap(Memory memory){
+    public ByteMap(Memory memory){
         this.memory = memory;
         this.directBuffer = memory.directBuffer();
-        this.itemCount = memory.directBuffer().getInt(0);
+        this.entryCount = memory.directBuffer().getInt(0);
     }
 
     public Entry get(int index){
@@ -123,7 +136,7 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
 
     public int floorIndex(Key key){
         int low = 0;
-        int high = itemCount - 1;
+        int high = entryCount - 1;
 
         //Binary search
         while (low <= high) {
@@ -147,20 +160,20 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
     public Iterator<Entry> iterator() {
         return new Iterator<Entry>() {
 
-            int currentItemIndex = 0;
+            int currententryIndex = 0;
 
             @Override
             public boolean hasNext() {
-                return currentItemIndex < itemCount;
+                return currententryIndex < entryCount;
             }
 
             @Override
             public Entry next() {
-                if (currentItemIndex >= itemCount) {
+                if (currententryIndex >= entryCount) {
                     throw new NoSuchElementException();
                 }
 
-                return getEntry(currentItemIndex);
+                return getEntry(currententryIndex++);
             }
 
             @Override
@@ -177,21 +190,21 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
 
     @Override
     public String toString() {
-        List<Entry> items = new ArrayList<Entry>();
-        for (Entry item : this) {
-            items.add(item);
+        List<Entry> entries = new ArrayList<Entry>();
+        for (Entry entry : this) {
+            entries.add(entry);
         }
 
-        return "SortedByteMap{items=" + items + "}";
+        return "ByteMap{entries=" + entries + "}";
     }
 
     private Entry getEntry(int index){
-        int itemOffset = itemOffset(index);
+        int entryOffset = entryOffset(index);
 
         //Key
-        int keySize = directBuffer.getInt(itemOffset);
+        int keySize = directBuffer.getInt(entryOffset);
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-        int keyOffset = itemOffset + Sizes.INT_SIZE;
+        int keyOffset = entryOffset + Sizes.INT_SIZE;
 
         for (int i = keyOffset; i < keyOffset + keySize; i++){
             keyBuffer.put(directBuffer.get(i));
@@ -215,12 +228,12 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
     }
 
     private Key getKey(int index){
-        int itemOffset = itemOffset(index);
+        int entryOffset = entryOffset(index);
 
         //Key
-        int keySize = directBuffer.getInt(itemOffset);
+        int keySize = directBuffer.getInt(entryOffset);
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-        int keyOffset = itemOffset + Sizes.INT_SIZE;
+        int keyOffset = entryOffset + Sizes.INT_SIZE;
 
         for (int i = keyOffset; i < keyOffset + keySize; i++){
             keyBuffer.put(directBuffer.get(i));
@@ -231,7 +244,7 @@ public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
         return new Key(keyBuffer);
     }
 
-    private int itemOffset(int index) {
+    private int entryOffset(int index) {
         return directBuffer.getInt(pointerOffset(index));
     }
 
