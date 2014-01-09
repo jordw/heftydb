@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
-import com.jordanwilliams.heftydb.offheap.SortedByteMap;
+import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -27,7 +27,7 @@ public class RecordBlockNew {
 
     public static class Builder {
 
-        private final SortedByteMap.Builder byteMapBuilder = new SortedByteMap.Builder();
+        private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
 
         private int sizeBytes;
 
@@ -42,9 +42,9 @@ public class RecordBlockNew {
         }
     }
 
-    private final SortedByteMap byteMap;
+    private final ByteMap byteMap;
 
-    public RecordBlockNew(SortedByteMap byteMap){
+    public RecordBlockNew(ByteMap byteMap){
         this.byteMap = byteMap;
     }
 
