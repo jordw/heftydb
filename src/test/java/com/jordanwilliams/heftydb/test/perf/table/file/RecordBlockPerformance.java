@@ -24,7 +24,7 @@ import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import java.util.List;
 import java.util.Random;
 
-public class DataBlockPerformance {
+public class RecordBlockPerformance {
 
     public static void main(String[] args) {
         RecordGenerator generator = new RecordGenerator();

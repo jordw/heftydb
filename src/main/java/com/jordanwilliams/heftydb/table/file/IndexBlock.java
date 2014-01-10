@@ -16,14 +16,14 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,12 +31,13 @@ public class IndexBlock implements Offheap {
 
     public static class Builder {
 
-        private final RecordBlock.Builder recordBlockBuilder = new RecordBlock.Builder();
+        private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
 
         private int sizeBytes;
 
         public void addRecord(IndexRecord indexRecord) {
-            recordBlockBuilder.addRecord(toRecord(indexRecord));
+            byteMapBuilder.add(new Key(indexRecord.startKey().data(), indexRecord.snapshotId()),
+                    new Value(indexRecordValue(indexRecord)));
             sizeBytes += indexRecord.sizeBytes();
         }
 
@@ -45,17 +46,11 @@ public class IndexBlock implements Offheap {
         }
 
         public IndexBlock build() {
-            return new IndexBlock(recordBlockBuilder.build());
+            return new IndexBlock(byteMapBuilder.build());
         }
 
-        private Record toRecord(IndexRecord indexRecord){
-            return new Record(indexRecord.startKey(), new Value(indexRecordContents(indexRecord)),
-                    indexRecord.snapshotId());
-        }
-
-        private ByteBuffer indexRecordContents(IndexRecord indexRecord){
+        private ByteBuffer indexRecordValue(IndexRecord indexRecord){
             ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentsSizeBytes());
-            contentsBuffer.order(ByteOrder.nativeOrder());
             contentsBuffer.putLong(indexRecord.offset());
             contentsBuffer.put(indexRecord.isLeaf() ? (byte) 1 : (byte) 0);
             contentsBuffer.rewind();
@@ -63,10 +58,10 @@ public class IndexBlock implements Offheap {
         }
     }
 
-    private final RecordBlock recordBlock;
+    private final ByteMap byteMap;
 
-    public IndexBlock(RecordBlock recordBlock) {
-        this.recordBlock = recordBlock;
+    public IndexBlock(ByteMap byteMap) {
+        this.byteMap = byteMap;
     }
 
     public IndexRecord startRecord() {
@@ -74,14 +69,14 @@ public class IndexBlock implements Offheap {
     }
 
     public IndexRecord get(Key key, long maxSnapshotId){
-        int closestIndex = recordBlock.closestRecordIndex(key, maxSnapshotId);
+        int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
 
         if (closestIndex < 0){
             return null;
         }
 
-        if (closestIndex >= recordBlock.recordCount()){
-            closestIndex = recordBlock.recordCount() - 1;
+        if (closestIndex >= byteMap.entryCount()){
+            closestIndex = byteMap.entryCount() - 1;
         }
 
         IndexRecord indexRecord = deserializeRecord(closestIndex);
@@ -90,11 +85,23 @@ public class IndexBlock implements Offheap {
 
     @Override
     public Memory memory() {
-        return recordBlock.memory();
+        return byteMap.memory();
     }
 
     private IndexRecord deserializeRecord(int recordIndex){
-        return null;
+        ByteMap.Entry entry = byteMap.get(recordIndex);
+        ByteBuffer entryKeyBuffer = entry.key().data();
+        ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
+
+        for (int i = 0; i < recordKeyBuffer.capacity(); i++){
+            recordKeyBuffer.put(i, entryKeyBuffer.get(i));
+        }
+
+        long snapshotId = entryKeyBuffer.getLong(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
+        long offset = entry.value().data().getLong(0);
+        boolean isLeaf = entry.value().data().get(Sizes.LONG_SIZE) == (byte) 1;
+
+        return new IndexRecord(new Key(recordKeyBuffer), snapshotId, offset, isLeaf);
     }
 
     @Override

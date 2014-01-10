@@ -57,18 +57,18 @@ public class IndexBlockTest {
     @Test
     public void findRecordTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Awesome")), 1);
-        Assert.assertEquals("Offset matches", 1, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 2, indexRecord.offset());
     }
 
     @Test
     public void findRecordMidTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Box")), 1);
-        Assert.assertEquals("Offset matches", 2, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 3, indexRecord.offset());
     }
 
     @Test
     public void findRecordEndTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Toast")), 1);
-        Assert.assertEquals("Offset matches", 2, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 5, indexRecord.offset());
     }
 }

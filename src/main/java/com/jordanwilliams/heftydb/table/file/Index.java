@@ -63,7 +63,7 @@ public class Index {
         Memory indexMemory = Memory.allocate(indexBlockSize);
         ByteBuffer indexBuffer = indexMemory.directBuffer();
         indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
-        return new IndexBlock(new RecordBlock(new ByteMap(indexMemory)));
+        return new IndexBlock(new ByteMap(indexMemory));
     }
 
     public static Index open(long tableId, Paths paths) throws IOException {
