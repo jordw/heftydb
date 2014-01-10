@@ -144,8 +144,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         //Binary search
         while (low <= high) {
             int mid = (low + high) >>> 1;
-            Key compareKey = getKey(mid);
-            int compare = compareKey.compareTo(key);
+            int compare = compareKeys(key, mid);
 
             if (compare < 0) {
                 low = mid + 1;
@@ -249,6 +248,33 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         keyBuffer.rewind();
 
         return new Key(keyBuffer);
+    }
+
+    private int compareKeys(Key key, int index){
+        int entryOffset = entryOffset(index);
+        int keySize = directBuffer.getInt(entryOffset);
+        entryOffset += Sizes.INT_SIZE;
+
+        int compareCount = Math.min(keySize, key.data().remaining());
+        int remaining = keySize;
+
+        for (int i = 0; i < compareCount; i++) {
+            byte thisVal = directBuffer.get(entryOffset + i);
+            byte thatVal = key.data().get(i);
+            remaining--;
+
+            if (thisVal == thatVal) {
+                continue;
+            }
+
+            if (thisVal < thatVal) {
+                return -1;
+            }
+
+            return 1;
+        }
+
+        return remaining - key.data().remaining();
     }
 
     private int entryOffset(int index) {
