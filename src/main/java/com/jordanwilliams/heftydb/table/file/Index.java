@@ -43,12 +43,17 @@ public class Index {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()){
-            currentIndexBlock.memory().release();
+            if (currentIndexBlock != rootIndexBlock){
+                currentIndexBlock.memory().release();
+            }
+
             currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
             currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
         }
 
-        currentIndexBlock.memory().release();
+        if (currentIndexBlock != rootIndexBlock){
+            currentIndexBlock.memory().release();
+        }
 
         return currentIndexRecord.offset();
     }
@@ -63,6 +68,7 @@ public class Index {
         Memory indexMemory = Memory.allocate(indexBlockSize);
         ByteBuffer indexBuffer = indexMemory.directBuffer();
         indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
+        indexBuffer.rewind();
         return new IndexBlock(new ByteMap(indexMemory));
     }
 

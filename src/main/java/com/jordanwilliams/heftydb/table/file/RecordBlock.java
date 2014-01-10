@@ -67,14 +67,6 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         return closestRecord.key().equals(key) ? closestRecord : null;
     }
 
-    public int closestRecordIndex(Key key, long maxSnapshotId){
-        return 0;
-    }
-
-    public int recordCount(){
-        return byteMap.entryCount();
-    }
-
     public Record startRecord() {
         return deserializeRecord(0);
     }
@@ -88,12 +80,12 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
             @Override
             public boolean hasNext() {
-                return currentRecordIndex < 0;
+                return currentRecordIndex < byteMap.entryCount();
             }
 
             @Override
             public Record next() {
-                if (currentRecordIndex >= 0) {
+                if (currentRecordIndex >= byteMap.entryCount()) {
                     throw new NoSuchElementException();
                 }
 

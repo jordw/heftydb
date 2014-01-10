@@ -57,7 +57,7 @@ public class IndexTest extends RecordTest {
 
         for (Record record : records) {
             long blockOffset = index.recordBlockOffset(record.key(), record.snapshotId());
-            Assert.assertTrue("Index blocks are found", blockOffset > 0);
+            Assert.assertTrue("Index blocks are found", blockOffset >= 0);
         }
 
         index.close();

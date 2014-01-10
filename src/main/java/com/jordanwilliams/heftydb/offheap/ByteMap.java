@@ -167,20 +167,20 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     public Iterator<Entry> iterator() {
         return new Iterator<Entry>() {
 
-            int currententryIndex = 0;
+            int currentEntryIndex = 0;
 
             @Override
             public boolean hasNext() {
-                return currententryIndex < entryCount;
+                return currentEntryIndex < entryCount;
             }
 
             @Override
             public Entry next() {
-                if (currententryIndex >= entryCount) {
+                if (currentEntryIndex >= entryCount) {
                     throw new NoSuchElementException();
                 }
 
-                return getEntry(currententryIndex++);
+                return getEntry(currentEntryIndex++);
             }
 
             @Override

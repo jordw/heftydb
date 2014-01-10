@@ -25,9 +25,11 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-public class IndexBlock implements Offheap {
+public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     public static class Builder {
 
@@ -88,6 +90,45 @@ public class IndexBlock implements Offheap {
         return byteMap.memory();
     }
 
+    @Override
+    public Iterator<IndexRecord> iterator() {
+
+        return new Iterator<IndexRecord>() {
+
+            int currentRecordIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentRecordIndex < byteMap.entryCount();
+            }
+
+            @Override
+            public IndexRecord next() {
+                if (currentRecordIndex >= byteMap.entryCount()) {
+                    throw new NoSuchElementException();
+                }
+
+                return deserializeRecord(currentRecordIndex++);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    @Override
+    public String toString() {
+        List<IndexRecord> records = new ArrayList<IndexRecord>();
+
+        for (IndexRecord indexRecord : this){
+            records.add(indexRecord);
+        }
+
+        return "IndexBlock{records=" + records + "}";
+    }
+
     private IndexRecord deserializeRecord(int recordIndex){
         ByteMap.Entry entry = byteMap.get(recordIndex);
         ByteBuffer entryKeyBuffer = entry.key().data();
@@ -102,11 +143,5 @@ public class IndexBlock implements Offheap {
         boolean isLeaf = entry.value().data().get(Sizes.LONG_SIZE) == (byte) 1;
 
         return new IndexRecord(new Key(recordKeyBuffer), snapshotId, offset, isLeaf);
-    }
-
-    @Override
-    public String toString() {
-        List<IndexRecord> records = new ArrayList<IndexRecord>();
-        return "IndexBlock{records=" + records + "}";
     }
 }

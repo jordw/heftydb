@@ -96,6 +96,7 @@ public class IndexWriter {
     private IndexRecord writeIndexBlock(IndexBlock indexBlock) throws IOException {
         ByteBuffer indexBlockBuffer = indexBlock.memory().directBuffer();
         long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
+        indexBlockBuffer.rewind();
         indexFile.append(indexBlockBuffer);
         IndexRecord startRecord = indexBlock.startRecord();
         IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), startRecord.snapshotId(),
