@@ -16,12 +16,14 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,9 +33,11 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     public static class Builder {
 
+        private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
         private int sizeBytes;
 
         public void addRecord(Record record) {
+            byteMapBuilder.add(new Key(record.key().data(), record.snapshotId()), record.value());
             sizeBytes += record.size();
         }
 
@@ -42,18 +46,25 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         }
 
         public RecordBlock build() {
-            return new RecordBlock(null);
+            return new RecordBlock(byteMapBuilder.build());
         }
     }
 
-    private final Memory memory;
+    private final ByteMap byteMap;
 
-    public RecordBlock(Memory memory) {
-        this.memory = memory;
+    public RecordBlock(ByteMap byteMap) {
+        this.byteMap = byteMap;
     }
 
     public Record get(Key key, long maxSnapshotId) {
-        return null;
+        int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
+
+        if (closestIndex < 0 || closestIndex >= byteMap.entryCount()){
+            return null;
+        }
+
+        Record closestRecord = deserializeRecord(closestIndex);
+        return closestRecord.key().equals(key) ? closestRecord : null;
     }
 
     public int closestRecordIndex(Key key, long maxSnapshotId){
@@ -61,7 +72,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
     }
 
     public int recordCount(){
-        return 0;
+        return byteMap.entryCount();
     }
 
     public Record startRecord() {
@@ -100,7 +111,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     @Override
     public Memory memory() {
-        return memory;
+        return byteMap.memory();
     }
 
     @Override
@@ -114,12 +125,15 @@ public class RecordBlock implements Iterable<Record>, Offheap {
     }
 
     private Record deserializeRecord(int recordIndex) {
-        return null;
-    }
+        ByteMap.Entry entry = byteMap.get(recordIndex);
+        ByteBuffer entryKeyBuffer = entry.key().data();
+        ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
 
-    private static int pointerOffset(int pointerIndex) {
-        int pointerOffset = Sizes.INT_SIZE;
-        pointerOffset += pointerIndex * Sizes.INT_SIZE;
-        return pointerOffset;
+        for (int i = 0; i < recordKeyBuffer.capacity(); i++){
+            recordKeyBuffer.put(i, entryKeyBuffer.get(i));
+        }
+
+        long snapshotId = entryKeyBuffer.getLong(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
+        return new Record(new Key(recordKeyBuffer), entry.value(), snapshotId);
     }
 }

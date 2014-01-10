@@ -18,6 +18,7 @@ package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
+import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -62,7 +63,7 @@ public class Index {
         Memory indexMemory = Memory.allocate(indexBlockSize);
         ByteBuffer indexBuffer = indexMemory.directBuffer();
         indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
-        return new IndexBlock(new RecordBlock(indexMemory));
+        return new IndexBlock(new RecordBlock(new ByteMap(indexMemory)));
     }
 
     public static Index open(long tableId, Paths paths) throws IOException {

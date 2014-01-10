@@ -107,8 +107,11 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 key.data().rewind();
                 value.data().rewind();
 
+                //Key
                 memoryBuffer.putInt(key.size());
                 memoryBuffer.put(key.data());
+
+                //Value
                 memoryBuffer.putInt(value.size());
                 memoryBuffer.put(value.data());
 
@@ -154,6 +157,10 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         }
 
         return low - 1;
+    }
+
+    public int entryCount(){
+        return entryCount;
     }
 
     @Override
