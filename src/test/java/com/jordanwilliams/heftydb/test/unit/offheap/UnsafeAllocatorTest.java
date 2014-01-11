@@ -17,17 +17,17 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 
-import com.jordanwilliams.heftydb.offheap.JVMAllocator;
+import com.jordanwilliams.heftydb.offheap.UnsafeAllocator;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class JVMAllocatorTest {
+public class UnsafeAllocatorTest {
 
     @Test
     public void allocateFreeTest() {
-        JVMAllocator jvmAllocator = new JVMAllocator();
-        long address = jvmAllocator.allocate(128);
+        UnsafeAllocator unsafeAllocator = new UnsafeAllocator();
+        long address = unsafeAllocator.allocate(128);
         Assert.assertTrue("Address is non-zero", address != 0);
-        jvmAllocator.free(address);
+        unsafeAllocator.free(address);
     }
 }

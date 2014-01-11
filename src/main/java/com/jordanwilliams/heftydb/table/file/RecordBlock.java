@@ -39,7 +39,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
         private final com.google.common.cache.Cache<String, RecordBlock> cache;
 
-        public Cache(long maxSizeBytes){
+        public Cache(long maxSizeBytes) {
             cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, RecordBlock>() {
                 @Override
                 public int weigh(String key, RecordBlock value) {
@@ -53,19 +53,19 @@ public class RecordBlock implements Iterable<Record>, Offheap {
             }).maximumWeight(maxSizeBytes).build();
         }
 
-        public Cache(){
+        public Cache() {
             this(1024000);
         }
 
-        public RecordBlock get(long tableId, long offset){
+        public RecordBlock get(long tableId, long offset) {
             return cache.getIfPresent(key(tableId, offset));
         }
 
-        public void put(long tableId, long offset, RecordBlock recordBlock){
+        public void put(long tableId, long offset, RecordBlock recordBlock) {
             cache.put(key(tableId, offset), recordBlock);
         }
 
-        private String key(long tableId, long offset){
+        private String key(long tableId, long offset) {
             return new StringBuilder().append(tableId).append(offset).toString();
         }
     }
@@ -98,7 +98,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
     public Record get(Key key, long maxSnapshotId) {
         int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
 
-        if (closestIndex < 0 || closestIndex >= byteMap.entryCount()){
+        if (closestIndex < 0 || closestIndex >= byteMap.entryCount()) {
             return null;
         }
 
@@ -160,7 +160,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         ByteBuffer entryKeyBuffer = entry.key().data();
         ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
 
-        for (int i = 0; i < recordKeyBuffer.capacity(); i++){
+        for (int i = 0; i < recordKeyBuffer.capacity(); i++) {
             recordKeyBuffer.put(i, entryKeyBuffer.get(i));
         }
 

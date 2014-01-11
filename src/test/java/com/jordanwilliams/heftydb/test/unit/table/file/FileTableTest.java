@@ -41,14 +41,14 @@ public class FileTableTest extends RecordTest {
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);
 
-        for (Record record : records){
+        for (Record record : records) {
             tableWriter.write(record);
         }
 
         tableWriter.finish();
         FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
 
-        for (Record record : records){
+        for (Record record : records) {
             Record read = fileTable.get(record.key(), record.snapshotId());
             Assert.assertEquals("Records match", record, read);
         }

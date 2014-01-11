@@ -34,7 +34,7 @@ public class IndexRecord {
     }
 
     public IndexRecord(Key startKey, long snapshotId, long offset) {
-        this (startKey, snapshotId, offset, true);
+        this(startKey, snapshotId, offset, true);
     }
 
     public Key startKey() {
@@ -50,16 +50,16 @@ public class IndexRecord {
     }
 
     public int sizeBytes() {
-        return  Sizes.INT_SIZE + //Key size
+        return Sizes.INT_SIZE + //Key size
                 startKey.size() + //Key
                 Sizes.LONG_SIZE + //SnapshotId
                 Sizes.LONG_SIZE + //Offset
                 1; //Leaf flag
     }
 
-    public int contentsSizeBytes(){
-               return Sizes.LONG_SIZE + //Offset
-               1; //Leaf flag
+    public int contentsSizeBytes() {
+        return Sizes.LONG_SIZE + //Offset
+                1; //Leaf flag
     }
 
     public boolean isLeaf() {

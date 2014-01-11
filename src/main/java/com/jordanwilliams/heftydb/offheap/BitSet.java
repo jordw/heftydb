@@ -54,7 +54,7 @@ public class BitSet implements Offheap {
             return memory.size() - paddingBytes;
         }
 
-        public long bitCount(){
+        public long bitCount() {
             return usableBytes() * 8;
         }
     }
@@ -76,11 +76,11 @@ public class BitSet implements Offheap {
         return ((directBuffer.getLong(offset) & (1L << index)) != 0);
     }
 
-    public int usableBytes(){
+    public int usableBytes() {
         return usableBytes;
     }
 
-    public long bitCount(){
+    public long bitCount() {
         return usableBytes * 8;
     }
 

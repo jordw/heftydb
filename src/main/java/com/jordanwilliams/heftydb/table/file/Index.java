@@ -45,7 +45,7 @@ public class Index {
     public long recordBlockOffset(Key key, long maxSnapshotId) throws IOException {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
 
-        while (currentIndexRecord != null && !currentIndexRecord.isLeaf()){
+        while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
             IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
             currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
         }
@@ -61,7 +61,7 @@ public class Index {
     private IndexBlock readIndexBlock(long blockOffset) throws IOException {
         IndexBlock indexBlock = cache.get(tableId, blockOffset);
 
-        if (indexBlock == null){
+        if (indexBlock == null) {
             int indexBlockSize = indexFile.readInt(blockOffset);
             Memory indexMemory = Memory.allocate(indexBlockSize);
             ByteBuffer indexBuffer = indexMemory.directBuffer();

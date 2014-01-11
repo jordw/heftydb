@@ -30,7 +30,7 @@ public class Key implements Comparable<Key> {
         this.data = data;
     }
 
-    public Key(ByteBuffer data, long snapshotId){
+    public Key(ByteBuffer data, long snapshotId) {
         this.data = versionedKeyBuffer(data, snapshotId);
     }
 

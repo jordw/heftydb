@@ -41,7 +41,7 @@ public class Memory {
 
     private long baseAddress;
 
-    private Memory(int sizeBytes){
+    private Memory(int sizeBytes) {
         this.baseAddress = allocator.allocate(sizeBytes);
         this.size = sizeBytes;
         this.directBuffer = rawDirectBuffer(baseAddress, sizeBytes);
@@ -55,11 +55,11 @@ public class Memory {
         return new Memory(sizeBytes);
     }
 
-    public ByteBuffer directBuffer(){
+    public ByteBuffer directBuffer() {
         return directBuffer;
     }
 
-    public boolean isFree(){
+    public boolean isFree() {
         return baseAddress == 0;
     }
 

@@ -21,7 +21,7 @@ import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 
-public class JVMAllocator implements Allocator {
+public class UnsafeAllocator implements Allocator {
 
     static final Unsafe unsafe;
 

@@ -70,8 +70,7 @@ public class FileTable implements Table {
     private final RecordBlock.Cache recordCache;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws
-            IOException {
+    private FileTable(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = Index.open(tableId, paths, indexCache);
@@ -95,13 +94,13 @@ public class FileTable implements Table {
         try {
             long blockOffset = index.recordBlockOffset(key, snapshotId);
 
-            if (blockOffset < 0){
+            if (blockOffset < 0) {
                 return null;
             }
 
             RecordBlock recordBlock = readRecordBlock(blockOffset);
             return recordBlock.get(key, snapshotId);
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -144,7 +143,7 @@ public class FileTable implements Table {
     private RecordBlock readRecordBlock(long offset) throws IOException {
         RecordBlock recordBlock = recordCache.get(tableId, offset);
 
-        if (recordBlock == null){
+        if (recordBlock == null) {
             int recordBlockSize = tableFile.readInt(offset);
             Memory recordBlockMemory = Memory.allocate(recordBlockSize);
             ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
@@ -157,10 +156,7 @@ public class FileTable implements Table {
         return recordBlock;
     }
 
-    public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache,
-                                 IndexBlock.Cache indexCache)
-            throws
-            IOException {
+    public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
         return new FileTable(tableId, paths, recordCache, indexCache);
     }
 }

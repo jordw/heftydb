@@ -39,7 +39,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
         private final com.google.common.cache.Cache<String, IndexBlock> cache;
 
-        public Cache(long maxSizeBytes){
+        public Cache(long maxSizeBytes) {
             cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, IndexBlock>() {
                 @Override
                 public int weigh(String key, IndexBlock value) {
@@ -53,19 +53,19 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
             }).maximumWeight(maxSizeBytes).build();
         }
 
-        public Cache(){
+        public Cache() {
             this(1024000);
         }
 
-        public IndexBlock get(long tableId, long offset){
+        public IndexBlock get(long tableId, long offset) {
             return cache.getIfPresent(key(tableId, offset));
         }
 
-        public void put(long tableId, long offset, IndexBlock indexBlock){
+        public void put(long tableId, long offset, IndexBlock indexBlock) {
             cache.put(key(tableId, offset), indexBlock);
         }
 
-        private String key(long tableId, long offset){
+        private String key(long tableId, long offset) {
             return new StringBuilder().append(tableId).append(offset).toString();
         }
     }
@@ -77,8 +77,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         private int sizeBytes;
 
         public void addRecord(IndexRecord indexRecord) {
-            byteMapBuilder.add(new Key(indexRecord.startKey().data(), indexRecord.snapshotId()),
-                    new Value(indexRecordValue(indexRecord)));
+            byteMapBuilder.add(new Key(indexRecord.startKey().data(), indexRecord.snapshotId()), new Value(indexRecordValue(indexRecord)));
             sizeBytes += indexRecord.sizeBytes();
         }
 
@@ -90,7 +89,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
             return new IndexBlock(byteMapBuilder.build());
         }
 
-        private ByteBuffer indexRecordValue(IndexRecord indexRecord){
+        private ByteBuffer indexRecordValue(IndexRecord indexRecord) {
             ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentsSizeBytes());
             contentsBuffer.putLong(indexRecord.offset());
             contentsBuffer.put(indexRecord.isLeaf() ? (byte) 1 : (byte) 0);
@@ -109,14 +108,14 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         return deserializeRecord(0);
     }
 
-    public IndexRecord get(Key key, long maxSnapshotId){
+    public IndexRecord get(Key key, long maxSnapshotId) {
         int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
 
-        if (closestIndex < 0){
+        if (closestIndex < 0) {
             return null;
         }
 
-        if (closestIndex >= byteMap.entryCount()){
+        if (closestIndex >= byteMap.entryCount()) {
             closestIndex = byteMap.entryCount() - 1;
         }
 
@@ -160,19 +159,19 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     public String toString() {
         List<IndexRecord> records = new ArrayList<IndexRecord>();
 
-        for (IndexRecord indexRecord : this){
+        for (IndexRecord indexRecord : this) {
             records.add(indexRecord);
         }
 
         return "IndexBlock{records=" + records + "}";
     }
 
-    private IndexRecord deserializeRecord(int recordIndex){
+    private IndexRecord deserializeRecord(int recordIndex) {
         ByteMap.Entry entry = byteMap.get(recordIndex);
         ByteBuffer entryKeyBuffer = entry.key().data();
         ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
 
-        for (int i = 0; i < recordKeyBuffer.capacity(); i++){
+        for (int i = 0; i < recordKeyBuffer.capacity(); i++) {
             recordKeyBuffer.put(i, entryKeyBuffer.get(i));
         }
 

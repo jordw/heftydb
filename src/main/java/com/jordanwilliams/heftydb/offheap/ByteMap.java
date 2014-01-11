@@ -40,11 +40,11 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             this.value = value;
         }
 
-        public Key key(){
+        public Key key() {
             return key;
         }
 
-        public Value value(){
+        public Value value() {
             return value;
         }
 
@@ -61,15 +61,15 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
         private final Map<Key, Value> entries = new LinkedHashMap<Key, Value>();
 
-        public void add(Key key, Value value){
+        public void add(Key key, Value value) {
             entries.put(key, value);
         }
 
-        public ByteMap build(){
+        public ByteMap build() {
             return new ByteMap(serializeEntries());
         }
 
-        private Memory serializeEntries(){
+        private Memory serializeEntries() {
             //Allocate memory
             int memorySize = 0;
             int[] entryOffsets = new int[entries.size()];
@@ -80,7 +80,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             //Compute memory size
             int counter = 0;
 
-            for (Map.Entry<Key, Value> entry : entries.entrySet()){
+            for (Map.Entry<Key, Value> entry : entries.entrySet()) {
                 entryOffsets[counter] = memorySize;
                 memorySize += Sizes.INT_SIZE;
                 memorySize += entry.getKey().size();
@@ -127,17 +127,17 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private final ByteBuffer directBuffer;
     private final int entryCount;
 
-    public ByteMap(Memory memory){
+    public ByteMap(Memory memory) {
         this.memory = memory;
         this.directBuffer = memory.directBuffer();
         this.entryCount = memory.directBuffer().getInt(0);
     }
 
-    public Entry get(int index){
+    public Entry get(int index) {
         return getEntry(index);
     }
 
-    public int floorIndex(Key key){
+    public int floorIndex(Key key) {
         int low = 0;
         int high = entryCount - 1;
 
@@ -158,7 +158,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return low - 1;
     }
 
-    public int entryCount(){
+    public int entryCount() {
         return entryCount;
     }
 
@@ -204,7 +204,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return "ByteMap{entries=" + entries + "}";
     }
 
-    private Entry getEntry(int index){
+    private Entry getEntry(int index) {
         int entryOffset = entryOffset(index);
 
         //Key
@@ -212,7 +212,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
         int keyOffset = entryOffset + Sizes.INT_SIZE;
 
-        for (int i = keyOffset; i < keyOffset + keySize; i++){
+        for (int i = keyOffset; i < keyOffset + keySize; i++) {
             keyBuffer.put(directBuffer.get(i));
         }
 
@@ -224,7 +224,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
         valueOffset += Sizes.INT_SIZE;
 
-        for (int i = valueOffset; i < valueOffset + valueSize; i++){
+        for (int i = valueOffset; i < valueOffset + valueSize; i++) {
             valueBuffer.put(directBuffer.get(i));
         }
 
@@ -233,7 +233,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return new Entry(new Key(keyBuffer), new Value(valueBuffer));
     }
 
-    private Key getKey(int index){
+    private Key getKey(int index) {
         int entryOffset = entryOffset(index);
 
         //Key
@@ -241,7 +241,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
         int keyOffset = entryOffset + Sizes.INT_SIZE;
 
-        for (int i = keyOffset; i < keyOffset + keySize; i++){
+        for (int i = keyOffset; i < keyOffset + keySize; i++) {
             keyBuffer.put(directBuffer.get(i));
         }
 
@@ -250,7 +250,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return new Key(keyBuffer);
     }
 
-    private int compareKeys(Key key, int index){
+    private int compareKeys(Key key, int index) {
         int entryOffset = entryOffset(index);
         int keySize = directBuffer.getInt(entryOffset);
         entryOffset += Sizes.INT_SIZE;

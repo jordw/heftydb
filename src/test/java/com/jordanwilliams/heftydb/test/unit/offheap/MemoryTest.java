@@ -17,11 +17,8 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 public class MemoryTest {
 
