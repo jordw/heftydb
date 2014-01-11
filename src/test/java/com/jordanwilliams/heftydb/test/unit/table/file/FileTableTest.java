@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
+import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.write.FileTableWriter;
@@ -44,7 +45,7 @@ public class FileTableTest extends RecordTest {
         }
 
         tableWriter.finish();
-        FileTable fileTable = FileTable.open(1, paths);
+        FileTable fileTable = FileTable.open(1, paths, new IndexBlock.Cache());
 
         for (Record record : records){
             Record read = fileTable.get(record.key(), record.snapshotId());

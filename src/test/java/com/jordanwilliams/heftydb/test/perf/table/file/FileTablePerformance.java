@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
+import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
@@ -43,7 +44,7 @@ public class FileTablePerformance {
 
         fileTableWriter.finish();
 
-        FileTable fileTable = FileTable.open(1, paths);
+        FileTable fileTable = FileTable.open(1, paths, new IndexBlock.Cache(4096000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();

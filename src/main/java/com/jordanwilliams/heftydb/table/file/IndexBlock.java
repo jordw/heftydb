@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Weigher;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
@@ -30,6 +32,36 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class IndexBlock implements Iterable<IndexRecord>, Offheap {
+
+    public static class Cache {
+
+        private final com.google.common.cache.Cache<String, IndexBlock> cache;
+
+        public Cache(long maxSizeBytes){
+            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, IndexBlock>() {
+                @Override
+                public int weigh(String key, IndexBlock value) {
+                    return key.length() + value.memory().size();
+                }
+            }).maximumWeight(maxSizeBytes).build();
+        }
+
+        public Cache(){
+            this(1024000);
+        }
+
+        public IndexBlock get(long tableId, long offset){
+            return cache.getIfPresent(key(tableId, offset));
+        }
+
+        public void put(long tableId, long offset, IndexBlock indexBlock){
+            cache.put(key(tableId, offset), indexBlock);
+        }
+
+        private String key(long tableId, long offset){
+            return new StringBuilder().append(tableId).append(offset).toString();
+        }
+    }
 
     public static class Builder {
 

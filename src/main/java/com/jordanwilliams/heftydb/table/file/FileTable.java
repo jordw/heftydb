@@ -69,9 +69,9 @@ public class FileTable implements Table {
     private final MetaTable metaTable;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, Paths paths) throws IOException {
+    private FileTable(long tableId, Paths paths, IndexBlock.Cache indexCache) throws IOException {
         this.tableId = tableId;
-        this.index = Index.open(tableId, paths);
+        this.index = Index.open(tableId, paths, indexCache);
         this.filter = Filter.open(tableId, paths);
         this.tableFile = MutableDataFile.open(paths.tablePath(tableId));
         this.metaTable = MetaTable.open(tableId, paths);
@@ -142,7 +142,7 @@ public class FileTable implements Table {
         return new RecordBlock(new ByteMap(recordBlockMemory));
     }
 
-    public static FileTable open(long tableId, Paths paths) throws IOException {
-        return new FileTable(tableId, paths);
+    public static FileTable open(long tableId, Paths paths, IndexBlock.Cache indexCache) throws IOException {
+        return new FileTable(tableId, paths, indexCache);
     }
 }

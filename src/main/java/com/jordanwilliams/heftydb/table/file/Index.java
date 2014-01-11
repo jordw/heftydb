@@ -29,11 +29,15 @@ import java.nio.ByteBuffer;
 
 public class Index {
 
+    private final long tableId;
     private final DataFile indexFile;
     private final IndexBlock rootIndexBlock;
+    private final IndexBlock.Cache cache;
 
-    private Index(long tableId, Paths paths) throws IOException {
+    private Index(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
+        this.tableId = tableId;
         this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
+        this.cache = cache;
         long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
     }
@@ -66,15 +70,22 @@ public class Index {
     }
 
     private IndexBlock readIndexBlock(long blockOffset) throws IOException {
-        int indexBlockSize = indexFile.readInt(blockOffset);
-        Memory indexMemory = Memory.allocate(indexBlockSize);
-        ByteBuffer indexBuffer = indexMemory.directBuffer();
-        indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
-        indexBuffer.rewind();
-        return new IndexBlock(new ByteMap(indexMemory));
+        IndexBlock indexBlock = cache.get(tableId, blockOffset);
+
+        if (indexBlock == null){
+            int indexBlockSize = indexFile.readInt(blockOffset);
+            Memory indexMemory = Memory.allocate(indexBlockSize);
+            ByteBuffer indexBuffer = indexMemory.directBuffer();
+            indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
+            indexBuffer.rewind();
+            indexBlock = new IndexBlock(new ByteMap(indexMemory));
+            cache.put(tableId, blockOffset, indexBlock);
+        }
+
+        return indexBlock;
     }
 
-    public static Index open(long tableId, Paths paths) throws IOException {
-        return new Index(tableId, paths);
+    public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
+        return new Index(tableId, paths, cache);
     }
 }
