@@ -37,7 +37,7 @@ public class FileTableWriter {
     private final MetaTableWriter metaWriter;
     private final DataFile tableDataFile;
 
-    private RecordBlock.Builder RecordBlockBuilder;
+    private RecordBlock.Builder recordBlockBuilder;
 
     private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxRecordBlockSizeBytes, int level) throws IOException {
         this.tableId = tableId;
@@ -45,25 +45,24 @@ public class FileTableWriter {
         this.level = level;
         this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlockSizeBytes);
         this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
-        this.RecordBlockBuilder = new RecordBlock.Builder();
+        this.recordBlockBuilder = new RecordBlock.Builder();
         this.maxRecordBlockSizeBytes = maxRecordBlockSizeBytes;
         this.metaWriter = MetaTableWriter.open(tableId, paths, level);
         this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
     }
 
     public void write(Record record) throws IOException {
-        if (RecordBlockBuilder.sizeBytes() >= maxRecordBlockSizeBytes) {
+        if (recordBlockBuilder.sizeBytes() >= maxRecordBlockSizeBytes) {
             writeRecordBlock();
         }
 
-        RecordBlockBuilder.addRecord(record);
+        recordBlockBuilder.addRecord(record);
         filterWriter.write(record);
         metaWriter.write(record);
     }
 
     public void finish() throws IOException {
         writeRecordBlock();
-        tableDataFile.appendInt(level);
         filterWriter.finish();
         indexWriter.finish();
         metaWriter.finish();
@@ -71,14 +70,16 @@ public class FileTableWriter {
     }
 
     private void writeRecordBlock() throws IOException {
-        RecordBlock RecordBlock = RecordBlockBuilder.build();
-        ByteBuffer RecordBlockBuffer = RecordBlock.memory().directBuffer();
-        long RecordBlockOffset = tableDataFile.appendInt(RecordBlockBuffer.capacity());
-        tableDataFile.append(RecordBlockBuffer);
-        Record startRecord = RecordBlock.startRecord();
-        indexWriter.write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), RecordBlockOffset));
-        RecordBlock.memory().release();
-        RecordBlockBuilder = new RecordBlock.Builder();
+        RecordBlock recordBlock = recordBlockBuilder.build();
+        ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
+        long recordBlockOffset = tableDataFile.appendInt(recordBlockBuffer.capacity());
+        recordBlockBuffer.rewind();
+        tableDataFile.append(recordBlockBuffer);
+        tableDataFile.appendLong(recordBlockBuffer.capacity());
+        Record startRecord = recordBlock.startRecord();
+        indexWriter.write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), recordBlockOffset));
+        recordBlock.memory().release();
+        recordBlockBuilder = new RecordBlock.Builder();
     }
 
     public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxRecordBlockSizeBytes, int level) throws IOException {

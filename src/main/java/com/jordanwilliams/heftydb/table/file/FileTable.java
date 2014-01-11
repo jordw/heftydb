@@ -18,15 +18,50 @@ package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
+import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class FileTable implements Table {
+
+    private static class TableIterator implements Iterator<Record> {
+
+        private final IterationDirection iterationDirection;
+        private final Key startKey;
+
+        private final Queue<Iterator<Record>> nextRecordIterator = new LinkedList<Iterator<Record>>();
+        private final Queue<RecordBlock> nextRecordBlock = new LinkedList<RecordBlock>();
+
+        private TableIterator(Key startKey, IterationDirection iterationDirection) {
+            this.startKey = startKey;
+            this.iterationDirection = iterationDirection;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Record next() {
+            return null;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     private final long tableId;
     private final Index index;
@@ -54,7 +89,13 @@ public class FileTable implements Table {
 
     @Override
     public Record get(Key key, long snapshotId) {
-        return null;
+        try {
+            long blockOffset = index.recordBlockOffset(key, snapshotId);
+            RecordBlock recordBlock = readRecordBlock(blockOffset);
+            return recordBlock.get(key, snapshotId);
+        } catch (IOException e){
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -90,6 +131,15 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> iterator() {
         return null;
+    }
+
+    private RecordBlock readRecordBlock(long offset) throws IOException {
+        int recordBlockSize = tableFile.readInt(offset);
+        Memory recordBlockMemory = Memory.allocate(recordBlockSize);
+        ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
+        tableFile.read(recordBlockBuffer, offset + Sizes.INT_SIZE);
+        recordBlockBuffer.rewind();
+        return new RecordBlock(new ByteMap(recordBlockMemory));
     }
 
     public static FileTable open(long tableId, Paths paths) throws IOException {
