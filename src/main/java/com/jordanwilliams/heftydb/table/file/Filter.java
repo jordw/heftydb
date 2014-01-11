@@ -44,6 +44,10 @@ public class Filter implements Offheap {
         return bloomFilter.mightContain(key);
     }
 
+    public void close(){
+        bloomFilter.memory().release();
+    }
+
     @Override
     public Memory memory() {
         return bloomFilter.memory();

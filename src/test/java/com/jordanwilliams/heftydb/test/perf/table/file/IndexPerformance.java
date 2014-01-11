@@ -37,7 +37,7 @@ public class IndexPerformance {
         List<Record> records = generator.testRecords(1, 500000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 32000, 1);
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 32000, 32000, 1);
         for (Record record : records) {
             fileTableWriter.write(record);
         }

@@ -26,4 +26,11 @@ public class ByteBuffers {
     public static ByteBuffer fromString(String string) {
         return ByteBuffer.wrap(string.getBytes(Charset.defaultCharset()));
     }
+
+    public static ByteBuffer fromInt(int value){
+        ByteBuffer intBuffer = ByteBuffer.allocate(Sizes.INT_SIZE);
+        intBuffer.putInt(value);
+        intBuffer.rewind();
+        return intBuffer;
+    }
 }

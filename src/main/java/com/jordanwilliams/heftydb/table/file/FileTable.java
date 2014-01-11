@@ -94,6 +94,11 @@ public class FileTable implements Table {
     public Record get(Key key, long snapshotId) {
         try {
             long blockOffset = index.recordBlockOffset(key, snapshotId);
+
+            if (blockOffset < 0){
+                return null;
+            }
+
             RecordBlock recordBlock = readRecordBlock(blockOffset);
             return recordBlock.get(key, snapshotId);
         } catch (IOException e){

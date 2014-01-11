@@ -39,7 +39,8 @@ public class FileTableWriter {
 
     private RecordBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxRecordBlockSizeBytes, int level) throws IOException {
+    private FileTableWriter(long tableId, Paths paths, long approxRecordCount,
+                            int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level) throws IOException {
         this.tableId = tableId;
         this.paths = paths;
         this.level = level;
@@ -82,7 +83,9 @@ public class FileTableWriter {
         recordBlockBuilder = new RecordBlock.Builder();
     }
 
-    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxRecordBlockSizeBytes, int level) throws IOException {
-        return new FileTableWriter(tableId, paths, approxRecordCount, maxRecordBlockSizeBytes, level);
+    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSizeBytes,
+                                       int maxRecordBlockSizeBytes, int level) throws IOException {
+        return new FileTableWriter(tableId, paths, approxRecordCount, maxIndexBlockSizeBytes,
+                maxRecordBlockSizeBytes, level);
     }
 }

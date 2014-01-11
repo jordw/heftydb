@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
+    private static final Allocator allocator = Allocator.allocator;
     private static final Constructor directBufferConstructor;
 
     static {
@@ -41,7 +42,7 @@ public class Memory {
     private long baseAddress;
 
     private Memory(int sizeBytes){
-        this.baseAddress = Allocator.allocate(sizeBytes);
+        this.baseAddress = allocator.allocate(sizeBytes);
         this.size = sizeBytes;
         this.directBuffer = rawDirectBuffer(baseAddress, sizeBytes);
     }
@@ -63,7 +64,7 @@ public class Memory {
     }
 
     public void free() {
-        Allocator.free(baseAddress);
+        allocator.free(baseAddress);
         baseAddress = 0;
     }
 

@@ -39,7 +39,7 @@ public class FileTableTest extends RecordTest {
     @Test
     public void readWriteTest() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 1);
+        FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);
 
         for (Record record : records){
             tableWriter.write(record);

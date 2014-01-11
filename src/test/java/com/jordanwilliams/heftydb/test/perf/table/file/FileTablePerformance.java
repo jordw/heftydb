@@ -17,45 +17,51 @@
 package com.jordanwilliams.heftydb.test.perf.table.file;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
+import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.util.ByteBuffers;
 import com.jordanwilliams.heftydb.write.FileTableWriter;
 
-import java.util.List;
 import java.util.Random;
 
 public class FileTablePerformance {
 
+    private static final int RECORD_COUNT = 25000000;
+
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
-        RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 500000, 10, 16, 100);
+        KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
+        Value value = new Value(keyValueGenerator.testValue(100));
 
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 64000, 1);
-        for (Record record : records) {
-            fileTableWriter.write(record);
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
+        for (int i = 0; i < RECORD_COUNT; i++) {
+            value.data().rewind();
+            fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
         }
 
         fileTableWriter.finish();
 
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(8192000), new IndexBlock.Cache(4096000));
+        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(32768000),
+                new IndexBlock.Cache(4096000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
-        int iterations = 1000000;
+        int iterations = 50000000;
 
         for (int i = 0; i < iterations; i++) {
-            fileTable.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
+            fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
         }
 
         System.out.println(iterations / watch.elapsedSeconds());
-        TestFileUtils.cleanUpTestFiles();
+         TestFileUtils.cleanUpTestFiles();
     }
 }

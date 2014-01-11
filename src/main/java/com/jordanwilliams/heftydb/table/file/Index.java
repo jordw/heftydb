@@ -43,15 +43,14 @@ public class Index {
     }
 
     public long recordBlockOffset(Key key, long maxSnapshotId) throws IOException {
-        IndexBlock currentIndexBlock = rootIndexBlock;
         IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()){
-            currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
+            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
             currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
         }
 
-        return currentIndexRecord.offset();
+        return currentIndexRecord == null ? -1 : currentIndexRecord.offset();
     }
 
     public void close() throws IOException {

@@ -120,8 +120,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
             closestIndex = byteMap.entryCount() - 1;
         }
 
-        IndexRecord indexRecord = deserializeRecord(closestIndex);
-        return indexRecord;
+        return deserializeRecord(closestIndex);
     }
 
     @Override

@@ -16,11 +16,31 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
-public interface Allocator {
+import com.sun.jna.Library;
+import com.sun.jna.Native;
 
-    public long allocate(long bytes);
+public class JEMallocAllocator implements Allocator {
 
-    public void free(long address);
+    private interface JEMalloc extends Library {
 
-    public static Allocator allocator = new JEMallocAllocator();
+        long malloc(long size);
+
+        void free(long address);
+    }
+
+    private final JEMalloc library;
+
+    public JEMallocAllocator() {
+        library = (JEMalloc) Native.loadLibrary("jemalloc", JEMalloc.class);
+    }
+
+    @Override
+    public long allocate(long bytes) {
+        return library.malloc(bytes);
+    }
+
+    @Override
+    public void free(long address) {
+        library.free(address);
+    }
 }
