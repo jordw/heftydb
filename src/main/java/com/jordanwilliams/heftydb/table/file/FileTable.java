@@ -67,10 +67,13 @@ public class FileTable implements Table {
     private final Index index;
     private final Filter filter;
     private final MetaTable metaTable;
+    private final RecordBlock.Cache recordCache;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, Paths paths, IndexBlock.Cache indexCache) throws IOException {
+    private FileTable(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws
+            IOException {
         this.tableId = tableId;
+        this.recordCache = recordCache;
         this.index = Index.open(tableId, paths, indexCache);
         this.filter = Filter.open(tableId, paths);
         this.tableFile = MutableDataFile.open(paths.tablePath(tableId));
@@ -134,15 +137,25 @@ public class FileTable implements Table {
     }
 
     private RecordBlock readRecordBlock(long offset) throws IOException {
-        int recordBlockSize = tableFile.readInt(offset);
-        Memory recordBlockMemory = Memory.allocate(recordBlockSize);
-        ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
-        tableFile.read(recordBlockBuffer, offset + Sizes.INT_SIZE);
-        recordBlockBuffer.rewind();
-        return new RecordBlock(new ByteMap(recordBlockMemory));
+        RecordBlock recordBlock = recordCache.get(tableId, offset);
+
+        if (recordBlock == null){
+            int recordBlockSize = tableFile.readInt(offset);
+            Memory recordBlockMemory = Memory.allocate(recordBlockSize);
+            ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
+            tableFile.read(recordBlockBuffer, offset + Sizes.INT_SIZE);
+            recordBlockBuffer.rewind();
+            recordBlock = new RecordBlock(new ByteMap(recordBlockMemory));
+            recordCache.put(tableId, offset, recordBlock);
+        }
+
+        return recordBlock;
     }
 
-    public static FileTable open(long tableId, Paths paths, IndexBlock.Cache indexCache) throws IOException {
-        return new FileTable(tableId, paths, indexCache);
+    public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache,
+                                 IndexBlock.Cache indexCache)
+            throws
+            IOException {
+        return new FileTable(tableId, paths, recordCache, indexCache);
     }
 }

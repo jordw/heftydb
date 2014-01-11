@@ -19,9 +19,8 @@ package com.jordanwilliams.heftydb.test.perf.table.file;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.FileTable;
+import com.jordanwilliams.heftydb.table.file.Index;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
@@ -30,29 +29,29 @@ import com.jordanwilliams.heftydb.write.FileTableWriter;
 import java.util.List;
 import java.util.Random;
 
-public class FileTablePerformance {
+public class IndexPerformance {
 
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
         RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 500000, 10, 16, 100);
+        List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 64000, 1);
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 64000, 32000, 1);
         for (Record record : records) {
             fileTableWriter.write(record);
         }
 
         fileTableWriter.finish();
 
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(8192000), new IndexBlock.Cache(4096000));
+        Index index = Index.open(1, paths, new IndexBlock.Cache(4096000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
         int iterations = 1000000;
 
         for (int i = 0; i < iterations; i++) {
-            fileTable.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
+            index.recordBlockOffset(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
         }
 
         System.out.println(iterations / watch.elapsedSeconds());
