@@ -29,7 +29,7 @@ public class BitSet implements Offheap {
         private final int paddingBytes;
 
         public Builder(long bitCount, int paddingBytes) {
-            this.memory = Memory.allocate(paddingBytes + ((memoryOffset(bitCount - 1) + 1) * Sizes.LONG_SIZE));
+            this.memory = Memory.allocate(paddingBytes + (memoryOffset(bitCount) + Sizes.LONG_SIZE));
             this.directBuffer = memory.directBuffer();
             this.paddingBytes = paddingBytes;
         }
@@ -53,6 +53,10 @@ public class BitSet implements Offheap {
         public int usableBytes() {
             return memory.size() - paddingBytes;
         }
+
+        public long bitCount(){
+            return usableBytes() * 8;
+        }
     }
 
     private static final int ADDRESS_BITS_PER_WORD = 6;
@@ -74,6 +78,10 @@ public class BitSet implements Offheap {
 
     public int usableBytes(){
         return usableBytes;
+    }
+
+    public long bitCount(){
+        return usableBytes * 8;
     }
 
     @Override

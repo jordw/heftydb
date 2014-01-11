@@ -34,10 +34,10 @@ public class IndexPerformance {
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
         RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
+        List<Record> records = generator.testRecords(1, 500000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 64000, 32000, 1);
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 32000, 1);
         for (Record record : records) {
             fileTableWriter.write(record);
         }

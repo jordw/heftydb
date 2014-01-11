@@ -47,7 +47,7 @@ public class BloomFilter implements Offheap {
                     nextHash = ~nextHash;
                 }
 
-                bitSetBuilder.set(nextHash % bitSetBuilder.usableBytes(), true);
+                bitSetBuilder.set(nextHash % bitSetBuilder.bitCount(), true);
             }
         }
 
@@ -95,7 +95,7 @@ public class BloomFilter implements Offheap {
             if (nextHash < 0) {
                 nextHash = ~nextHash;
             }
-            if (!bitSet.get(nextHash % bitSet.usableBytes())) {
+            if (!bitSet.get(nextHash % bitSet.bitCount())) {
                 return false;
             }
         }
