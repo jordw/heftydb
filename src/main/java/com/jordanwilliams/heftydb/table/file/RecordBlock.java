@@ -17,6 +17,8 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
@@ -42,6 +44,11 @@ public class RecordBlock implements Iterable<Record>, Offheap {
                 @Override
                 public int weigh(String key, RecordBlock value) {
                     return key.length() + value.memory().size();
+                }
+            }).removalListener(new RemovalListener<String, RecordBlock>() {
+                @Override
+                public void onRemoval(RemovalNotification<String, RecordBlock> objectObjectRemovalNotification) {
+                    objectObjectRemovalNotification.getValue().memory().release();
                 }
             }).maximumWeight(maxSizeBytes).build();
         }

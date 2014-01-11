@@ -47,18 +47,8 @@ public class Index {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()){
-            //Make sure we don't free the root
-            if (currentIndexBlock != rootIndexBlock){
-                currentIndexBlock.memory().release();
-            }
-
             currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
             currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
-        }
-
-        //Don't free the root
-        if (currentIndexBlock != rootIndexBlock){
-            currentIndexBlock.memory().release();
         }
 
         return currentIndexRecord.offset();
