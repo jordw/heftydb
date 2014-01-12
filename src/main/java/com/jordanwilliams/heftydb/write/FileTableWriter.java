@@ -25,12 +25,15 @@ import com.jordanwilliams.heftydb.table.file.RecordBlock;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileTableWriter {
 
     private final long tableId;
     private final int maxRecordBlockSizeBytes;
     private final int level;
+    private final List<Long> recordBlockOffsets = new ArrayList<Long>();
     private final Paths paths;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
@@ -63,6 +66,8 @@ public class FileTableWriter {
 
     public void finish() throws IOException {
         writeRecordBlock();
+        writeBlockOffsets();
+
         filterWriter.finish();
         indexWriter.finish();
         metaWriter.finish();
@@ -72,14 +77,24 @@ public class FileTableWriter {
     private void writeRecordBlock() throws IOException {
         RecordBlock recordBlock = recordBlockBuilder.build();
         ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
+
         long recordBlockOffset = tableDataFile.appendInt(recordBlockBuffer.capacity());
+        recordBlockOffsets.add(recordBlockOffset);
         recordBlockBuffer.rewind();
         tableDataFile.append(recordBlockBuffer);
-        tableDataFile.appendLong(recordBlockBuffer.capacity());
+
         Record startRecord = recordBlock.startRecord();
         indexWriter.write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), recordBlockOffset));
         recordBlock.memory().release();
         recordBlockBuilder = new RecordBlock.Builder();
+    }
+
+    private void writeBlockOffsets() throws IOException {
+        for (long offset : recordBlockOffsets){
+            tableDataFile.appendLong(offset);
+        }
+
+        tableDataFile.appendInt(recordBlockOffsets.size());
     }
 
     public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level) throws IOException {
