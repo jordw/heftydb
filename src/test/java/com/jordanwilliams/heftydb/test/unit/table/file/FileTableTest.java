@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 public class FileTableTest extends RecordTest {
@@ -51,6 +52,25 @@ public class FileTableTest extends RecordTest {
         for (Record record : records) {
             Record read = fileTable.get(record.key(), record.snapshotId());
             Assert.assertEquals("Records match", record, read);
+        }
+    }
+
+    @Test
+    public void iteratorTest() throws IOException {
+        Paths paths = ConfigGenerator.testPaths();
+        FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);
+
+        for (Record record : records) {
+            tableWriter.write(record);
+        }
+
+        tableWriter.finish();
+        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
+        Iterator<Record> tableRecordIterator = fileTable.iterator();
+        Iterator<Record> recordIterator = records.iterator();
+
+        while (tableRecordIterator.hasNext()){
+            Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
         }
     }
 }

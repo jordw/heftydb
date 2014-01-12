@@ -40,14 +40,27 @@ public class FileTable implements Table {
     private class TableIterator implements Iterator<Record> {
 
         private final boolean ascending;
+        private final IterationDirection iterationDirection;
         private final Queue<Record> nextRecord = new LinkedList<Record>();
+        private final Iterator<Long> blockOffsets;
 
         private Iterator<Record> recordIterator;
         private RecordBlock recordBlock;
-        private long nextBlockOffset;
 
         public TableIterator(Key startKey, IterationDirection iterationDirection) {
-            this.ascending = iterationDirection.equals(IterationDirection.ASCENDING);
+            try {
+                this.iterationDirection = iterationDirection;
+                this.ascending = iterationDirection.equals(IterationDirection.ASCENDING);
+                this.blockOffsets = blockOffsets(startKey);
+
+                if (startKey != null){
+                    long blockOffset = index.recordBlockOffset(startKey, ascending ? 0 : Long.MAX_VALUE);
+                    this.recordBlock = readRecordBlock(blockOffset, false);
+                    this.recordIterator = recordBlock.iteratorFrom(startKey, iterationDirection);
+                }
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
         }
 
         public TableIterator(IterationDirection iterationDirection) {
@@ -61,11 +74,13 @@ public class FileTable implements Table {
             }
 
             if (recordIterator == null || !recordIterator.hasNext()) {
-                nextRecordBlock();
-
-                if (recordIterator == null) {
+                if (!nextRecordBlock()){
                     return false;
                 }
+            }
+
+            if (!recordIterator.hasNext()){
+                return false;
             }
 
             nextRecord.add(recordIterator.next());
@@ -86,10 +101,33 @@ public class FileTable implements Table {
             throw new UnsupportedOperationException();
         }
 
-        private void nextRecordBlock() {
-            if (recordBlock != null) {
-                recordBlock.memory().release();
+        private boolean nextRecordBlock() {
+            try {
+                if (recordBlock != null) {
+                    recordBlock.memory().release();
+                }
+
+                if (!blockOffsets.hasNext()){
+                    return false;
+                }
+
+                this.recordBlock = readRecordBlock(blockOffsets.next(), false);
+                this.recordIterator = recordBlock.iterator(iterationDirection);
+
+                return true;
+            } catch (IOException e){
+                throw new RuntimeException(e);
             }
+        }
+
+        private Iterator<Long> blockOffsets(Key startKey) throws IOException {
+            if (startKey == null){
+                return ascending ? recordBlockOffsets.iterator() : recordBlockOffsets.descendingIterator();
+            }
+
+            long startingBlockOffset = index.recordBlockOffset(startKey, ascending ? 0 : Long.MAX_VALUE);
+            return ascending ? recordBlockOffsets.tailSet(startingBlockOffset, true).iterator() : recordBlockOffsets.headSet
+                    (startingBlockOffset, true).descendingIterator();
         }
     }
 

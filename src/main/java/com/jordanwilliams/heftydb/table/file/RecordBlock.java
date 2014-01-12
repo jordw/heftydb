@@ -102,7 +102,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
         @Override
         public boolean hasNext() {
-            return ascending ? currentRecordIndex < byteMap.entryCount() - 1 : currentRecordIndex > 0;
+            return ascending ? currentRecordIndex < byteMap.entryCount(): currentRecordIndex > 0;
         }
 
         @Override
