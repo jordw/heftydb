@@ -29,6 +29,4 @@ public interface Config {
     public Path tableDirectory();
 
     public Path logDirectory();
-
-    public boolean mmapReads();
 }

@@ -138,6 +138,16 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     public int floorIndex(Key key) {
+        int index = binarySearch(key);
+        return Math.abs(index);
+    }
+
+    public int ceilingIndex(Key key){
+        int index = binarySearch(key);
+        return index < 0 ? Math.abs(index) + 1 : index;
+    }
+
+    private int binarySearch(Key key){
         int low = 0;
         int high = entryCount - 1;
 
@@ -155,7 +165,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             }
         }
 
-        return low - 1;
+        return -(low - 1);
     }
 
     public int entryCount() {
@@ -250,31 +260,31 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return new Key(keyBuffer);
     }
 
-    private int compareKeys(Key key, int index) {
-        int entryOffset = entryOffset(index);
+    private int compareKeys(Key compareKey, int bufferKeyIndex) {
+        int entryOffset = entryOffset(bufferKeyIndex);
         int keySize = directBuffer.getInt(entryOffset);
         entryOffset += Sizes.INT_SIZE;
 
-        int compareCount = Math.min(keySize, key.data().remaining());
+        int compareCount = Math.min(keySize, compareKey.data().remaining());
         int remaining = keySize;
 
         for (int i = 0; i < compareCount; i++) {
-            byte thisVal = directBuffer.get(entryOffset + i);
-            byte thatVal = key.data().get(i);
+            byte bufferKeyVal = directBuffer.get(entryOffset + i);
+            byte compareKeyVal = compareKey.data().get(i);
             remaining--;
 
-            if (thisVal == thatVal) {
+            if (bufferKeyVal == compareKeyVal) {
                 continue;
             }
 
-            if (thisVal < thatVal) {
+            if (bufferKeyVal < compareKeyVal) {
                 return -1;
             }
 
             return 1;
         }
 
-        return remaining - key.data().remaining();
+        return remaining - compareKey.data().remaining();
     }
 
     private int entryOffset(int index) {

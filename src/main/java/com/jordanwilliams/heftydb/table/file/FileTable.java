@@ -34,32 +34,62 @@ import java.util.Queue;
 
 public class FileTable implements Table {
 
-    private static class TableIterator implements Iterator<Record> {
+    private class TableIterator implements Iterator<Record> {
 
         private final IterationDirection iterationDirection;
         private final Key startKey;
 
-        private final Queue<Iterator<Record>> nextRecordIterator = new LinkedList<Iterator<Record>>();
-        private final Queue<RecordBlock> nextRecordBlock = new LinkedList<RecordBlock>();
+        private final Queue<Record> nextRecord = new LinkedList<Record>();
+        private Iterator<Record> recordIterator;
+        private RecordBlock recordBlock;
 
-        private TableIterator(Key startKey, IterationDirection iterationDirection) {
+        public TableIterator(Key startKey, IterationDirection iterationDirection) {
             this.startKey = startKey;
             this.iterationDirection = iterationDirection;
         }
 
+        public TableIterator(IterationDirection iterationDirection){
+            this(null, iterationDirection);
+        }
+
         @Override
         public boolean hasNext() {
-            return false;
+            if (!nextRecord.isEmpty()){
+                return true;
+            }
+
+            if (recordIterator == null || !recordIterator.hasNext()){
+                nextRecordBlock();
+
+                if (recordIterator == null){
+                    return false;
+                }
+            }
+
+            nextRecord.add(recordIterator.next());
+            return true;
         }
 
         @Override
         public Record next() {
-            return null;
+            if (nextRecord.isEmpty()){
+                hasNext();
+            }
+
+            return nextRecord.poll();
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+
+        private void nextRecordBlock(){
+            if (recordBlock != null){
+                recordBlock.memory().release();
+            }
+
+
         }
     }
 
@@ -106,12 +136,12 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Iterator<Record> iterator(IterationDirection direction, long snapshotId) {
+    public Iterator<Record> iterator(IterationDirection direction, long maxSnapshotId) {
         return null;
     }
 
     @Override
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long sn) {
+    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long maxSnapshotId) {
         return null;
     }
 
@@ -141,6 +171,10 @@ public class FileTable implements Table {
     }
 
     private RecordBlock readRecordBlock(long offset) throws IOException {
+        return readRecordBlock(offset, true);
+    }
+
+    private RecordBlock readRecordBlock(long offset, boolean cache) throws IOException {
         RecordBlock recordBlock = recordCache.get(tableId, offset);
 
         if (recordBlock == null) {
