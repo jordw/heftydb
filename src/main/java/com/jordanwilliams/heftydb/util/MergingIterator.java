@@ -105,9 +105,7 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
     @Override
     public T next() {
         if (next.isEmpty()) {
-            boolean hasNext = hasNext();
-
-            if (!hasNext) {
+            if (!hasNext()) {
                 throw new NoSuchElementException();
             }
         }

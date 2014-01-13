@@ -116,6 +116,7 @@ public class FileTable implements Table {
 
                 return true;
             } catch (IOException e){
+                recordBlock.memory().release();
                 throw new RuntimeException(e);
             }
         }

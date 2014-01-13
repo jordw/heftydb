@@ -16,8 +16,10 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
+import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
@@ -28,27 +30,24 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class FileTableTest extends RecordTest {
 
-    public FileTableTest(List<Record> testRecords) {
+    private final FileTable fileTable;
+
+    public FileTableTest(List<Record> testRecords) throws IOException {
         super(testRecords);
+        this.fileTable = openFileTable();
     }
 
     @Test
     public void readWriteTest() throws IOException {
-        Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);
-
-        for (Record record : records) {
-            tableWriter.write(record);
-        }
-
-        tableWriter.finish();
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
-
         for (Record record : records) {
             Record read = fileTable.get(record.key(), record.snapshotId());
             Assert.assertEquals("Records match", record, read);
@@ -56,7 +55,37 @@ public class FileTableTest extends RecordTest {
     }
 
     @Test
-    public void iteratorTest() throws IOException {
+    public void allIteratorTest() throws IOException {
+        Iterator<Record> tableRecordIterator = fileTable.iterator();
+        Iterator<Record> recordIterator = records.iterator();
+
+        while (tableRecordIterator.hasNext()){
+            Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
+        }
+    }
+
+    @Test
+    public void ascendingIteratorTest() throws IOException {
+        Iterator<Record> tableRecordIterator = fileTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+        Iterator<Record> recordIterator = latestRecords(records).iterator();
+
+        while (tableRecordIterator.hasNext()){
+            Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
+        }
+    }
+
+    @Test
+    public void descendingIteratorTest() throws IOException {
+        Iterator<Record> tableRecordIterator = fileTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        List<Record> latestRecords = latestRecords(records);
+        ListIterator<Record> recordIterator = latestRecords.listIterator(latestRecords.size());
+
+        while (tableRecordIterator.hasNext()){
+            Assert.assertEquals("Records match", recordIterator.previous(), tableRecordIterator.next());
+        }
+    }
+
+    private FileTable openFileTable() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);
 
@@ -65,12 +94,26 @@ public class FileTableTest extends RecordTest {
         }
 
         tableWriter.finish();
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
-        Iterator<Record> tableRecordIterator = fileTable.iterator();
-        Iterator<Record> recordIterator = records.iterator();
+        return FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
+    }
 
-        while (tableRecordIterator.hasNext()){
-            Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
+    private List<Record> latestRecords(List<Record> records){
+        SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
+
+        for (Record record : records){
+            Record known = latestRecordMap.get(record.key());
+
+            if (known == null || known.snapshotId() < record.snapshotId()){
+                latestRecordMap.put(record.key(), record);
+            }
         }
+
+        List<Record> latestRecords = new ArrayList<Record>();
+
+        for (Record record : latestRecordMap.values()){
+            latestRecords.add(record);
+        }
+
+        return latestRecords;
     }
 }
