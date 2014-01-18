@@ -22,7 +22,6 @@ import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,110 +32,102 @@ import java.util.ListIterator;
 
 public class RecordBlockTest {
 
-  private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
-  private static final Key TEST_KEY_2 = new Key(ByteBuffers.fromString("Bad as I want to be"));
-  private static final Key TEST_KEY_3 = new Key(ByteBuffers.fromString("Dog I am a test key"));
-  private static final RecordBlock TEST_BLOCK;
-  private static final List<Record> TEST_RECORDS = new ArrayList<Record>();
+    private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
+    private static final Key TEST_KEY_2 = new Key(ByteBuffers.fromString("Bad as I want to be"));
+    private static final Key TEST_KEY_3 = new Key(ByteBuffers.fromString("Dog I am a test key"));
+    private static final RecordBlock TEST_BLOCK;
+    private static final List<Record> TEST_RECORDS = new ArrayList<Record>();
 
-  static {
-    TEST_RECORDS.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 1));
-    TEST_RECORDS.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 2));
-    TEST_RECORDS.add(new Record(TEST_KEY_2, Value.TOMBSTONE_VALUE, 3));
-    TEST_RECORDS.add(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 4));
-    TEST_RECORDS.add(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 5));
+    static {
+        TEST_RECORDS.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 1));
+        TEST_RECORDS.add(new Record(TEST_KEY_1, Value.TOMBSTONE_VALUE, 2));
+        TEST_RECORDS.add(new Record(TEST_KEY_2, Value.TOMBSTONE_VALUE, 3));
+        TEST_RECORDS.add(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 4));
+        TEST_RECORDS.add(new Record(TEST_KEY_3, Value.TOMBSTONE_VALUE, 5));
 
-    RecordBlock.Builder builder = new RecordBlock.Builder();
-    for (Record record : TEST_RECORDS) {
-      builder.addRecord(record);
+        RecordBlock.Builder builder = new RecordBlock.Builder();
+        for (Record record : TEST_RECORDS) {
+            builder.addRecord(record);
+        }
+
+        TEST_BLOCK = builder.build();
     }
 
-    TEST_BLOCK = builder.build();
-  }
-
-  @Test
-  public void findRecordExistsTest() {
-    Record record = TEST_BLOCK.get(TEST_KEY_1, Long.MAX_VALUE);
-    Assert.assertEquals("Record matches", 2, record.snapshotId());
-  }
-
-  @Test
-  public void findRecordExistsEndTest() {
-    Record record = TEST_BLOCK.get(TEST_KEY_3, Long.MAX_VALUE);
-    Assert.assertEquals("Record matches", 5, record.snapshotId());
-  }
-
-  @Test
-  public void findRecordMissingTest() {
-    Record
-        record =
-        TEST_BLOCK.get(new Key(ByteBuffers.fromString("Doesn't exist")), Long.MAX_VALUE);
-    Assert.assertNull("Record is null", record);
-  }
-
-  @Test
-  public void recordIteratorTest() {
-    Iterator<Record> blockRecords = TEST_BLOCK.iterator();
-    Iterator<Record> expectedRecords = TEST_RECORDS.iterator();
-
-    while (blockRecords.hasNext()) {
-      Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+    @Test
+    public void findRecordExistsTest() {
+        Record record = TEST_BLOCK.get(TEST_KEY_1, Long.MAX_VALUE);
+        Assert.assertEquals("Record matches", 2, record.snapshotId());
     }
-  }
 
-  @Test
-  public void descendingIteratorTest() {
-    Iterator<Record> blockRecords = TEST_BLOCK.iterator(Table.IterationDirection.DESCENDING);
-    ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(5);
-
-    while (blockRecords.hasNext()) {
-      Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
+    @Test
+    public void findRecordExistsEndTest() {
+        Record record = TEST_BLOCK.get(TEST_KEY_3, Long.MAX_VALUE);
+        Assert.assertEquals("Record matches", 5, record.snapshotId());
     }
-  }
 
-  @Test
-  public void rangeIteratorTest() {
-    Iterator<Record>
-        blockRecords =
-        TEST_BLOCK.iteratorFrom(TEST_KEY_2, Table.IterationDirection.ASCENDING);
-    ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
-
-    while (blockRecords.hasNext()) {
-      Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+    @Test
+    public void findRecordMissingTest() {
+        Record record = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Doesn't exist")), Long.MAX_VALUE);
+        Assert.assertNull("Record is null", record);
     }
-  }
 
-  @Test
-  public void rangeIteratorInexactTest() {
-    Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box")),
-                                                            Table.IterationDirection.ASCENDING);
-    ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+    @Test
+    public void recordIteratorTest() {
+        Iterator<Record> blockRecords = TEST_BLOCK.iterator();
+        Iterator<Record> expectedRecords = TEST_RECORDS.iterator();
 
-    while (blockRecords.hasNext()) {
-      Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+        while (blockRecords.hasNext()) {
+            Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+        }
     }
-  }
 
-  @Test
-  public void descendingRangeIteratorTest() {
-    Iterator<Record>
-        blockRecords =
-        TEST_BLOCK.iteratorFrom(TEST_KEY_2, Table.IterationDirection.DESCENDING);
-    ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
+    @Test
+    public void descendingIteratorTest() {
+        Iterator<Record> blockRecords = TEST_BLOCK.iterator(Table.IterationDirection.DESCENDING);
+        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(5);
 
-    while (blockRecords.hasNext()) {
-      Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
+        while (blockRecords.hasNext()) {
+            Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
+        }
     }
-  }
 
-  @Test
-  public void descendingRangeIteratorInexactTest() {
-    Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box")),
-                                                            Table.IterationDirection.DESCENDING);
-    ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+    @Test
+    public void rangeIteratorTest() {
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(TEST_KEY_2, Table.IterationDirection.ASCENDING);
+        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
 
-    while (blockRecords.hasNext()) {
-      Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
+        while (blockRecords.hasNext()) {
+            Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+        }
     }
-  }
+
+    @Test
+    public void rangeIteratorInexactTest() {
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box")), Table.IterationDirection.ASCENDING);
+        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+
+        while (blockRecords.hasNext()) {
+            Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
+        }
+    }
+
+    @Test
+    public void descendingRangeIteratorTest() {
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(TEST_KEY_2, Table.IterationDirection.DESCENDING);
+        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
+
+        while (blockRecords.hasNext()) {
+            Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
+        }
+    }
+
+    @Test
+    public void descendingRangeIteratorInexactTest() {
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box")), Table.IterationDirection.DESCENDING);
+        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+
+        while (blockRecords.hasNext()) {
+            Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
+        }
+    }
 }

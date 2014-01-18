@@ -25,7 +25,6 @@ import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.write.IndexWriter;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,33 +34,33 @@ import java.util.List;
 
 public class IndexTest extends RecordTest {
 
-  public IndexTest(List<Record> testRecords) {
-    super(testRecords);
-  }
-
-  @Test
-  public void readWriteTest() throws IOException {
-    Paths paths = ConfigGenerator.testPaths();
-    IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
-
-    List<Key> keys = new ArrayList<Key>();
-    int count = 0;
-
-    for (Record record : records) {
-      keys.add(record.key());
-      indexWriter.write(new IndexRecord(record.key(), record.snapshotId(), count));
-      count++;
+    public IndexTest(List<Record> testRecords) {
+        super(testRecords);
     }
 
-    indexWriter.finish();
+    @Test
+    public void readWriteTest() throws IOException {
+        Paths paths = ConfigGenerator.testPaths();
+        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
 
-    Index index = Index.open(1, paths, new IndexBlock.Cache());
+        List<Key> keys = new ArrayList<Key>();
+        int count = 0;
 
-    for (Record record : records) {
-      long blockOffset = index.recordBlockOffset(record.key(), record.snapshotId());
-      Assert.assertTrue("Index blocks are found", blockOffset >= 0);
+        for (Record record : records) {
+            keys.add(record.key());
+            indexWriter.write(new IndexRecord(record.key(), record.snapshotId(), count));
+            count++;
+        }
+
+        indexWriter.finish();
+
+        Index index = Index.open(1, paths, new IndexBlock.Cache());
+
+        for (Record record : records) {
+            long blockOffset = index.recordBlockOffset(record.key(), record.snapshotId());
+            Assert.assertTrue("Index blocks are found", blockOffset >= 0);
+        }
+
+        index.close();
     }
-
-    index.close();
-  }
 }

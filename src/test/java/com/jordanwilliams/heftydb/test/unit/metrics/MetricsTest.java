@@ -19,42 +19,41 @@ package com.jordanwilliams.heftydb.test.unit.metrics;
 import com.jordanwilliams.heftydb.metrics.CounterMetric;
 import com.jordanwilliams.heftydb.metrics.HistogramMetric;
 import com.jordanwilliams.heftydb.metrics.RateMetric;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 public class MetricsTest {
 
-  @Test
-  public void rateMetricTest() {
-    RateMetric rateTest = new RateMetric("testRateMetric");
-    rateTest.record(RateMetric.Sample.SUCCESS);
-    rateTest.record(RateMetric.Sample.FAILURE);
+    @Test
+    public void rateMetricTest() {
+        RateMetric rateTest = new RateMetric("testRateMetric");
+        rateTest.record(RateMetric.Sample.SUCCESS);
+        rateTest.record(RateMetric.Sample.FAILURE);
 
-    Assert.assertEquals("Rate", 0.5, rateTest.rate(), 0);
-  }
-
-  @Test
-  public void histogramMetricTest() {
-    HistogramMetric numericTest = new HistogramMetric("testNumericMetric");
-
-    for (int i = 0; i < 100; i++) {
-      numericTest.record(i);
+        Assert.assertEquals("Rate", 0.5, rateTest.rate(), 0);
     }
 
-    Assert.assertEquals("Average", 49.5, numericTest.avg(), 0);
-    Assert.assertEquals("P50", 50, numericTest.percentile(50), 0);
-    Assert.assertEquals("P90", 90, numericTest.percentile(90), 0);
-  }
+    @Test
+    public void histogramMetricTest() {
+        HistogramMetric numericTest = new HistogramMetric("testNumericMetric");
 
-  @Test
-  public void counterMetricTest() {
-    CounterMetric counterTest = new CounterMetric("testCounterMetric");
-    counterTest.increment();
-    counterTest.decrement();
-    counterTest.add(10);
-    counterTest.subtract(9);
+        for (int i = 0; i < 100; i++) {
+            numericTest.record(i);
+        }
 
-    Assert.assertEquals("Counter", 1, counterTest.value());
-  }
+        Assert.assertEquals("Average", 49.5, numericTest.avg(), 0);
+        Assert.assertEquals("P50", 50, numericTest.percentile(50), 0);
+        Assert.assertEquals("P90", 90, numericTest.percentile(90), 0);
+    }
+
+    @Test
+    public void counterMetricTest() {
+        CounterMetric counterTest = new CounterMetric("testCounterMetric");
+        counterTest.increment();
+        counterTest.decrement();
+        counterTest.add(10);
+        counterTest.subtract(9);
+
+        Assert.assertEquals("Counter", 1, counterTest.value());
+    }
 }

@@ -24,21 +24,21 @@ import java.nio.file.Paths;
 
 public class TestFileUtils {
 
-  public static final Path TEMP_PATH = Paths.get("/tmp/heftytest");
+    public static final Path TEMP_PATH = Paths.get("/tmp/heftytest");
 
-  public static void cleanUpTestFiles() throws IOException {
-    DirectoryStream<Path> filePaths = Files.newDirectoryStream(TEMP_PATH);
+    public static void cleanUpTestFiles() throws IOException {
+        DirectoryStream<Path> filePaths = Files.newDirectoryStream(TEMP_PATH);
 
-    for (Path f : filePaths) {
-      if (Files.exists(f)) {
-        Files.delete(f);
-      }
+        for (Path f : filePaths) {
+            if (Files.exists(f)) {
+                Files.delete(f);
+            }
+        }
     }
-  }
 
-  public static void createTestDirectory() throws IOException {
-    if (!Files.exists(TEMP_PATH)) {
-      Files.createDirectory(TEMP_PATH);
+    public static void createTestDirectory() throws IOException {
+        if (!Files.exists(TEMP_PATH)) {
+            Files.createDirectory(TEMP_PATH);
+        }
     }
-  }
 }

@@ -26,107 +26,103 @@ import java.util.Queue;
 
 public class MergingIterator<T extends Comparable> implements Iterator<T> {
 
-  public static class ComparableIterator<T extends Comparable>
-      implements Comparable<ComparableIterator<T>> {
+    public static class ComparableIterator<T extends Comparable> implements Comparable<ComparableIterator<T>> {
 
-    private final Iterator<T> delegate;
-    private T current;
+        private final Iterator<T> delegate;
+        private T current;
 
-    private ComparableIterator(Iterator<T> delegate) {
-      this.delegate = delegate;
+        private ComparableIterator(Iterator<T> delegate) {
+            this.delegate = delegate;
 
-      if (delegate.hasNext()) {
-        current = delegate.next();
-      }
+            if (delegate.hasNext()) {
+                current = delegate.next();
+            }
+        }
+
+        T currentRecord() {
+            return current;
+        }
+
+        boolean advance() {
+            if (delegate.hasNext()) {
+                current = delegate.next();
+                return true;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int compareTo(ComparableIterator<T> other) {
+            return current.compareTo(other.current);
+        }
     }
 
-    T currentRecord() {
-      return current;
+    private final Queue<T> next = new LinkedList<T>();
+    private final PriorityQueue<ComparableIterator<T>> iteratorHeap = new PriorityQueue<ComparableIterator<T>>();
+
+    public MergingIterator(List<Iterator<T>> iterators) {
+        buildIteratorHeap(iterators);
     }
 
-    boolean advance() {
-      if (delegate.hasNext()) {
-        current = delegate.next();
-        return true;
-      }
-
-      return false;
+    public MergingIterator(Iterator<T>... iterators) {
+        buildIteratorHeap(Arrays.asList(iterators));
     }
 
     @Override
-    public int compareTo(ComparableIterator<T> other) {
-      return current.compareTo(other.current);
-    }
-  }
+    public boolean hasNext() {
+        //Still have a previously fetched record
+        if (!next.isEmpty()) {
+            return true;
+        }
 
-  private final Queue<T> next = new LinkedList<T>();
-  private final
-  PriorityQueue<ComparableIterator<T>>
-      iteratorHeap =
-      new PriorityQueue<ComparableIterator<T>>();
+        //All iterators are exhausted
+        if (iteratorHeap.isEmpty()) {
+            return false;
+        }
 
-  public MergingIterator(List<Iterator<T>> iterators) {
-    buildIteratorHeap(iterators);
-  }
+        //Fetch new records
+        ComparableIterator<T> nextIterator = iteratorHeap.poll();
+        T nextCandidate = nextIterator.currentRecord();
 
-  public MergingIterator(Iterator<T>... iterators) {
-    buildIteratorHeap(Arrays.asList(iterators));
-  }
+        if (nextCandidate != null) {
+            next.add(nextCandidate);
+        }
 
-  @Override
-  public boolean hasNext() {
-    //Still have a previously fetched record
-    if (!next.isEmpty()) {
-      return true;
-    }
+        //Put the iterator back on the heap if it's not exhausted
+        if (nextIterator.advance()) {
+            iteratorHeap.add(nextIterator);
+        }
 
-    //All iterators are exhausted
-    if (iteratorHeap.isEmpty()) {
-      return false;
-    }
+        //If we still don't have any new records, then the underlying iterators are exhausted
+        if (next.isEmpty()) {
+            return false;
+        }
 
-    //Fetch new records
-    ComparableIterator<T> nextIterator = iteratorHeap.poll();
-    T nextCandidate = nextIterator.currentRecord();
-
-    if (nextCandidate != null) {
-      next.add(nextCandidate);
+        return true;
     }
 
-    //Put the iterator back on the heap if it's not exhausted
-    if (nextIterator.advance()) {
-      iteratorHeap.add(nextIterator);
+    @Override
+    public T next() {
+        if (next.isEmpty()) {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+        }
+
+        return next.poll();
     }
 
-    //If we still don't have any new records, then the underlying iterators are exhausted
-    if (next.isEmpty()) {
-      return false;
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 
-    return true;
-  }
-
-  @Override
-  public T next() {
-    if (next.isEmpty()) {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
+    private void buildIteratorHeap(List<Iterator<T>> iteratorList) {
+        for (Iterator<T> iterator : iteratorList) {
+            if (iterator.hasNext()) {
+                iteratorHeap.add(new ComparableIterator<T>(iterator));
+            }
+        }
     }
-
-    return next.poll();
-  }
-
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
-
-  private void buildIteratorHeap(List<Iterator<T>> iteratorList) {
-    for (Iterator<T> iterator : iteratorList) {
-      if (iterator.hasNext()) {
-        iteratorHeap.add(new ComparableIterator<T>(iterator));
-      }
-    }
-  }
 }

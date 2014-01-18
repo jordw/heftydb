@@ -32,59 +32,57 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 public class RecordGenerator {
 
-  private final KeyValueGenerator testDataGenerator = new KeyValueGenerator();
+    private final KeyValueGenerator testDataGenerator = new KeyValueGenerator();
 
-  public static ConcurrentNavigableMap<Key, Record> toMap(List<Record> records) {
-    ConcurrentNavigableMap<Key, Record> recordMap = new ConcurrentSkipListMap<Key, Record>();
+    public static ConcurrentNavigableMap<Key, Record> toMap(List<Record> records) {
+        ConcurrentNavigableMap<Key, Record> recordMap = new ConcurrentSkipListMap<Key, Record>();
 
-    for (Record record : records) {
-      recordMap.put(record.key(), record);
+        for (Record record : records) {
+            recordMap.put(record.key(), record);
+        }
+
+        return recordMap;
     }
 
-    return recordMap;
-  }
+    public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse, int keySize, int valueSize) {
+        int snapshotId = startingSnapshotId;
+        List<Record> records = new ArrayList<Record>(recordCount);
 
-  public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse,
-                                  int keySize, int valueSize) {
-    int snapshotId = startingSnapshotId;
-    List<Record> records = new ArrayList<Record>(recordCount);
+        for (int i = 0; i < recordCount; i++) {
+            ByteBuffer key = testDataGenerator.testKey(keySize, keyReuse);
+            ByteBuffer value = testDataGenerator.testValue(valueSize);
+            records.add(new Record(new Key(key), new Value(value), snapshotId));
+            snapshotId++;
+        }
 
-    for (int i = 0; i < recordCount; i++) {
-      ByteBuffer key = testDataGenerator.testKey(keySize, keyReuse);
-      ByteBuffer value = testDataGenerator.testValue(valueSize);
-      records.add(new Record(new Key(key), new Value(value), snapshotId));
-      snapshotId++;
+        Collections.sort(records);
+
+        return records;
     }
 
-    Collections.sort(records);
-
-    return records;
-  }
-
-  public List<Record> testRecords(int recordCount, int keyReuse, int keySize, int valueSize) {
-    return testRecords(0, recordCount, keyReuse, keySize, valueSize);
-  }
-
-  public List<Record> testRecords(int recordCount, int keyReuse) {
-    return testRecords(recordCount, keyReuse, 16, 100);
-  }
-
-  public Iterator<Record> testRecordIterator(int recordCount, int keyReuse, int keySize,
-                                             int valueSize) {
-    return testRecords(recordCount, keyReuse, keySize, valueSize).iterator();
-  }
-
-  public List<Record> latestRecords(List<Record> records, long snapshotId) {
-    SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
-
-    for (Record record : records) {
-      Record existing = latestRecordMap.get(record.key());
-
-      if (existing == null || record.snapshotId() > existing.snapshotId()) {
-        latestRecordMap.put(record.key(), record);
-      }
+    public List<Record> testRecords(int recordCount, int keyReuse, int keySize, int valueSize) {
+        return testRecords(0, recordCount, keyReuse, keySize, valueSize);
     }
 
-    return new ArrayList<Record>(latestRecordMap.values());
-  }
+    public List<Record> testRecords(int recordCount, int keyReuse) {
+        return testRecords(recordCount, keyReuse, 16, 100);
+    }
+
+    public Iterator<Record> testRecordIterator(int recordCount, int keyReuse, int keySize, int valueSize) {
+        return testRecords(recordCount, keyReuse, keySize, valueSize).iterator();
+    }
+
+    public List<Record> latestRecords(List<Record> records, long snapshotId) {
+        SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
+
+        for (Record record : records) {
+            Record existing = latestRecordMap.get(record.key());
+
+            if (existing == null || record.snapshotId() > existing.snapshotId()) {
+                latestRecordMap.put(record.key(), record);
+            }
+        }
+
+        return new ArrayList<Record>(latestRecordMap.values());
+    }
 }

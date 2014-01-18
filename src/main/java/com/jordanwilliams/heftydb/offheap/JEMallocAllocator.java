@@ -21,26 +21,26 @@ import com.sun.jna.Native;
 
 public class JEMallocAllocator implements Allocator {
 
-  private interface JEMalloc extends Library {
+    private interface JEMalloc extends Library {
 
-    long malloc(long size);
+        long malloc(long size);
 
-    void free(long address);
-  }
+        void free(long address);
+    }
 
-  private final JEMalloc library;
+    private final JEMalloc library;
 
-  public JEMallocAllocator() {
-    library = (JEMalloc) Native.loadLibrary("jemalloc", JEMalloc.class);
-  }
+    public JEMallocAllocator() {
+        library = (JEMalloc) Native.loadLibrary("jemalloc", JEMalloc.class);
+    }
 
-  @Override
-  public long allocate(long bytes) {
-    return library.malloc(bytes);
-  }
+    @Override
+    public long allocate(long bytes) {
+        return library.malloc(bytes);
+    }
 
-  @Override
-  public void free(long address) {
-    library.free(address);
-  }
+    @Override
+    public void free(long address) {
+        library.free(address);
+    }
 }

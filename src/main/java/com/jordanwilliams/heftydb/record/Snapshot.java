@@ -18,43 +18,43 @@ package com.jordanwilliams.heftydb.record;
 
 public class Snapshot {
 
-  private final long id;
+    private final long id;
 
-  public Snapshot(long id) {
-    this.id = id;
-  }
-
-  public long id() {
-    return id;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public Snapshot(long id) {
+        this.id = id;
     }
 
-    Snapshot snapshot = (Snapshot) o;
-
-    if (id != snapshot.id) {
-      return false;
+    public long id() {
+        return id;
     }
 
-    return true;
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-  @Override
-  public int hashCode() {
-    return (int) (id ^ (id >>> 32));
-  }
+        Snapshot snapshot = (Snapshot) o;
 
-  @Override
-  public String toString() {
-    return "Snapshot{" +
-           "id=" + id +
-           '}';
-  }
+        if (id != snapshot.id) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
+
+    @Override
+    public String toString() {
+        return "Snapshot{" +
+                "id=" + id +
+                '}';
+    }
 }

@@ -34,36 +34,33 @@ import java.util.Random;
 
 public class FileTablePerformance {
 
-  private static final int RECORD_COUNT = 25000000;
+    private static final int RECORD_COUNT = 25000000;
 
-  public static void main(String[] args) throws Exception {
-    TestFileUtils.createTestDirectory();
-    KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
-    Value value = new Value(keyValueGenerator.testValue(100));
+    public static void main(String[] args) throws Exception {
+        TestFileUtils.createTestDirectory();
+        KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
+        Value value = new Value(keyValueGenerator.testValue(100));
 
-    Paths paths = ConfigGenerator.testPaths();
-    FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
-    for (int i = 0; i < RECORD_COUNT; i++) {
-      value.data().rewind();
-      fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+        Paths paths = ConfigGenerator.testPaths();
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
+        for (int i = 0; i < RECORD_COUNT; i++) {
+            value.data().rewind();
+            fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+        }
+
+        fileTableWriter.finish();
+
+        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(32768000), new IndexBlock.Cache(4096000));
+
+        Random random = new Random(System.nanoTime());
+        StopWatch watch = StopWatch.start();
+        int iterations = 50000000;
+
+        for (int i = 0; i < iterations; i++) {
+            fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
+        }
+
+        System.out.println(iterations / watch.elapsedSeconds());
+        TestFileUtils.cleanUpTestFiles();
     }
-
-    fileTableWriter.finish();
-
-    FileTable
-        fileTable =
-        FileTable.open(1, paths, new RecordBlock.Cache(32768000), new IndexBlock.Cache(4096000));
-
-    Random random = new Random(System.nanoTime());
-    StopWatch watch = StopWatch.start();
-    int iterations = 50000000;
-
-    for (int i = 0; i < iterations; i++) {
-      fileTable
-          .get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
-    }
-
-    System.out.println(iterations / watch.elapsedSeconds());
-    TestFileUtils.cleanUpTestFiles();
-  }
 }

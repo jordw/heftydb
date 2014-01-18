@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 
 public class ConfigGenerator {
 
-  public static Paths testPaths() {
-    return new Paths(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
-  }
+    public static Paths testPaths() {
+        return new Paths(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
+    }
 }

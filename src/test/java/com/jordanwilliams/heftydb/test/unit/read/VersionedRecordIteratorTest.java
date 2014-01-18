@@ -21,7 +21,6 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,44 +30,44 @@ import java.util.List;
 
 public class VersionedRecordIteratorTest {
 
-  private static final Key KEY_1 = new Key(ByteBuffers.fromString("test key 1"));
-  private static final Key KEY_2 = new Key(ByteBuffers.fromString("test key 2"));
+    private static final Key KEY_1 = new Key(ByteBuffers.fromString("test key 1"));
+    private static final Key KEY_2 = new Key(ByteBuffers.fromString("test key 2"));
 
-  private static final List<Record> SOURCE_RECORDS = new ArrayList<Record>();
-  private static final List<Record> FILTERED_RECORDS = new ArrayList<Record>();
-  private static final List<Record> SNAPSHOT_RECORDS = new ArrayList<Record>();
+    private static final List<Record> SOURCE_RECORDS = new ArrayList<Record>();
+    private static final List<Record> FILTERED_RECORDS = new ArrayList<Record>();
+    private static final List<Record> SNAPSHOT_RECORDS = new ArrayList<Record>();
 
-  static {
-    SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 1));
-    SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 2));
-    SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
-    SOURCE_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 4));
-    SOURCE_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 5));
+    static {
+        SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 1));
+        SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 2));
+        SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
+        SOURCE_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 4));
+        SOURCE_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 5));
 
-    FILTERED_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
-    FILTERED_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 5));
+        FILTERED_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
+        FILTERED_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 5));
 
-    SNAPSHOT_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
-    SNAPSHOT_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 4));
-  }
-
-  @Test
-  public void filterRecordTest() {
-    Iterator<Record> filteredIterator = FILTERED_RECORDS.iterator();
-    Iterator<Record> versionedIterator = new VersionedRecordIterator(6, SOURCE_RECORDS.iterator());
-
-    while (versionedIterator.hasNext()) {
-      Assert.assertEquals("Records match", versionedIterator.next(), filteredIterator.next());
+        SNAPSHOT_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
+        SNAPSHOT_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 4));
     }
-  }
 
-  @Test
-  public void respectSnapshotTest() {
-    Iterator<Record> snapshotIterator = SNAPSHOT_RECORDS.iterator();
-    Iterator<Record> versionedIterator = new VersionedRecordIterator(4, SOURCE_RECORDS.iterator());
+    @Test
+    public void filterRecordTest() {
+        Iterator<Record> filteredIterator = FILTERED_RECORDS.iterator();
+        Iterator<Record> versionedIterator = new VersionedRecordIterator(6, SOURCE_RECORDS.iterator());
 
-    while (versionedIterator.hasNext()) {
-      Assert.assertEquals("Records match", versionedIterator.next(), snapshotIterator.next());
+        while (versionedIterator.hasNext()) {
+            Assert.assertEquals("Records match", versionedIterator.next(), filteredIterator.next());
+        }
     }
-  }
+
+    @Test
+    public void respectSnapshotTest() {
+        Iterator<Record> snapshotIterator = SNAPSHOT_RECORDS.iterator();
+        Iterator<Record> versionedIterator = new VersionedRecordIterator(4, SOURCE_RECORDS.iterator());
+
+        while (versionedIterator.hasNext()) {
+            Assert.assertEquals("Records match", versionedIterator.next(), snapshotIterator.next());
+        }
+    }
 }

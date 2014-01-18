@@ -29,33 +29,32 @@ import java.util.Random;
 
 public class MemoryTablePerformance {
 
-  private static final int RECORD_COUNT = 128000;
+    private static final int RECORD_COUNT = 128000;
 
-  public static void main(String[] args) throws Exception {
-    TestFileUtils.createTestDirectory();
-    KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
-    Value value = new Value(keyValueGenerator.testValue(100));
+    public static void main(String[] args) throws Exception {
+        TestFileUtils.createTestDirectory();
+        KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
+        Value value = new Value(keyValueGenerator.testValue(100));
 
-    StopWatch watch = StopWatch.start();
-    MemoryTable memTable = new MemoryTable(1);
+        StopWatch watch = StopWatch.start();
+        MemoryTable memTable = new MemoryTable(1);
 
-    for (int i = 0; i < RECORD_COUNT; i++) {
-      memTable.put(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+        for (int i = 0; i < RECORD_COUNT; i++) {
+            memTable.put(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+        }
+
+        System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());
+        TestFileUtils.cleanUpTestFiles();
+
+        Random random = new Random(System.nanoTime());
+        watch = StopWatch.start();
+        int iterations = 10000000;
+
+        for (int i = 0; i < iterations; i++) {
+            memTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
+        }
+
+        System.out.println("Reads " + iterations / watch.elapsedSeconds());
+        TestFileUtils.cleanUpTestFiles();
     }
-
-    System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());
-    TestFileUtils.cleanUpTestFiles();
-
-    Random random = new Random(System.nanoTime());
-    watch = StopWatch.start();
-    int iterations = 10000000;
-
-    for (int i = 0; i < iterations; i++) {
-      memTable
-          .get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
-    }
-
-    System.out.println("Reads " + iterations / watch.elapsedSeconds());
-    TestFileUtils.cleanUpTestFiles();
-  }
 }

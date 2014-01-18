@@ -21,16 +21,16 @@ import java.nio.charset.Charset;
 
 public class ByteBuffers {
 
-  public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
+    public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
 
-  public static ByteBuffer fromString(String string) {
-    return ByteBuffer.wrap(string.getBytes(Charset.defaultCharset()));
-  }
+    public static ByteBuffer fromString(String string) {
+        return ByteBuffer.wrap(string.getBytes(Charset.defaultCharset()));
+    }
 
-  public static ByteBuffer fromInt(int value) {
-    ByteBuffer intBuffer = ByteBuffer.allocate(Sizes.INT_SIZE);
-    intBuffer.putInt(value);
-    intBuffer.rewind();
-    return intBuffer;
-  }
+    public static ByteBuffer fromInt(int value) {
+        ByteBuffer intBuffer = ByteBuffer.allocate(Sizes.INT_SIZE);
+        intBuffer.putInt(value);
+        intBuffer.rewind();
+        return intBuffer;
+    }
 }

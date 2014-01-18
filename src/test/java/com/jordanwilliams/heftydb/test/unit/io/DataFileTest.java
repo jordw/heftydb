@@ -21,7 +21,6 @@ import com.jordanwilliams.heftydb.io.MappedDataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.test.base.FileTest;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,76 +32,66 @@ import java.nio.file.StandardOpenOption;
 
 public class DataFileTest extends FileTest {
 
-  private static final Path TEST_FILE = TestFileUtils.TEMP_PATH.resolve("testfile");
-  private static final
-  ByteBuffer
-      TEST_BYTES =
-      ByteBuffer.wrap("I am some very impressive test data".getBytes());
-  private static final
-  ByteBuffer
-      MORE_TEST_BYTES =
-      ByteBuffer.wrap("Test data is very interesting".getBytes());
+    private static final Path TEST_FILE = TestFileUtils.TEMP_PATH.resolve("testfile");
+    private static final ByteBuffer TEST_BYTES = ByteBuffer.wrap("I am some very impressive test data".getBytes());
+    private static final ByteBuffer MORE_TEST_BYTES = ByteBuffer.wrap("Test data is very interesting".getBytes());
 
-  @Test
-  public void mutableDataFileTest() throws IOException {
-    TEST_BYTES.rewind();
-    MORE_TEST_BYTES.rewind();
+    @Test
+    public void mutableDataFileTest() throws IOException {
+        TEST_BYTES.rewind();
+        MORE_TEST_BYTES.rewind();
 
-    MutableDataFile file = MutableDataFile.open(TEST_FILE);
+        MutableDataFile file = MutableDataFile.open(TEST_FILE);
 
-    file.append(TEST_BYTES);
-    file.append(MORE_TEST_BYTES);
+        file.append(TEST_BYTES);
+        file.append(MORE_TEST_BYTES);
 
-    TEST_BYTES.rewind();
-    file.write(TEST_BYTES, file.size());
+        TEST_BYTES.rewind();
+        file.write(TEST_BYTES, file.size());
 
-    ByteBuffer readBuffer = ByteBuffer.allocate(TEST_BYTES.capacity());
-    file.read(readBuffer, 0);
+        ByteBuffer readBuffer = ByteBuffer.allocate(TEST_BYTES.capacity());
+        file.read(readBuffer, 0);
 
-    TEST_BYTES.rewind();
-    readBuffer.rewind();
+        TEST_BYTES.rewind();
+        readBuffer.rewind();
 
-    Assert.assertEquals("Read bytes", TEST_BYTES, readBuffer);
-    Assert.assertEquals("File size", (TEST_BYTES.capacity() * 2) + MORE_TEST_BYTES.capacity(),
-                        file.size());
-  }
+        Assert.assertEquals("Read bytes", TEST_BYTES, readBuffer);
+        Assert.assertEquals("File size", (TEST_BYTES.capacity() * 2) + MORE_TEST_BYTES.capacity(), file.size());
+    }
 
-  @Test
-  public void mutableDataFilePrimitiveTest() throws IOException {
-    MutableDataFile file = MutableDataFile.open(TEST_FILE);
+    @Test
+    public void mutableDataFilePrimitiveTest() throws IOException {
+        MutableDataFile file = MutableDataFile.open(TEST_FILE);
 
-    file.appendInt(4);
-    file.appendLong(8);
-    file.writeInt(4, file.size());
-    file.writeLong(8, file.size());
+        file.appendInt(4);
+        file.appendLong(8);
+        file.writeInt(4, file.size());
+        file.writeLong(8, file.size());
 
-    Assert.assertEquals("Values match", 4, file.readInt(0));
-    Assert.assertEquals("Values match", 8, file.readLong(4));
-    Assert.assertEquals("Values match", 4, file.readInt(12));
-    Assert.assertEquals("Values match", 8, file.readLong(16));
-  }
+        Assert.assertEquals("Values match", 4, file.readInt(0));
+        Assert.assertEquals("Values match", 8, file.readLong(4));
+        Assert.assertEquals("Values match", 4, file.readInt(12));
+        Assert.assertEquals("Values match", 8, file.readLong(16));
+    }
 
-  @Test
-  public void mappedDataFileTest() throws IOException {
-    TEST_BYTES.rewind();
-    MORE_TEST_BYTES.rewind();
+    @Test
+    public void mappedDataFileTest() throws IOException {
+        TEST_BYTES.rewind();
+        MORE_TEST_BYTES.rewind();
 
-    FileChannel
-        channel =
-        FileChannel.open(TEST_FILE, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        FileChannel channel = FileChannel.open(TEST_FILE, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-    channel.write(TEST_BYTES);
-    channel.write(MORE_TEST_BYTES);
-    channel.close();
+        channel.write(TEST_BYTES);
+        channel.write(MORE_TEST_BYTES);
+        channel.close();
 
-    MappedDataFile file = MappedDataFile.open(TEST_FILE);
+        MappedDataFile file = MappedDataFile.open(TEST_FILE);
 
-    ByteBuffer readBuffer = ByteBuffer.allocate(TEST_BYTES.capacity());
-    file.read(readBuffer, 0);
-    readBuffer.flip();
+        ByteBuffer readBuffer = ByteBuffer.allocate(TEST_BYTES.capacity());
+        file.read(readBuffer, 0);
+        readBuffer.flip();
 
-    Assert.assertEquals("Read bytes", TEST_BYTES, readBuffer);
-    Assert
-        .assertEquals("File size", TEST_BYTES.capacity() + MORE_TEST_BYTES.capacity(), file.size());
-  }
+        Assert.assertEquals("Read bytes", TEST_BYTES, readBuffer);
+        Assert.assertEquals("File size", TEST_BYTES.capacity() + MORE_TEST_BYTES.capacity(), file.size());
+    }
 }

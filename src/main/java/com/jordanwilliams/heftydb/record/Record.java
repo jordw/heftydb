@@ -21,85 +21,85 @@ import net.jcip.annotations.Immutable;
 @Immutable
 public class Record implements Comparable<Record> {
 
-  private final Key key;
-  private final Value value;
-  private final long snapshotId;
+    private final Key key;
+    private final Value value;
+    private final long snapshotId;
 
-  public Record(Key key, Value value, long snapshotId) {
-    this.key = key;
-    this.value = value;
-    this.snapshotId = snapshotId;
-  }
-
-  public Key key() {
-    return key;
-  }
-
-  public Value value() {
-    return value;
-  }
-
-  public long snapshotId() {
-    return snapshotId;
-  }
-
-  public int size() {
-    return key.size() + value().size();
-  }
-
-  @Override
-  public int compareTo(Record o) {
-    int compared = key.compareTo(o.key);
-
-    if (compared != 0) {
-      return compared;
+    public Record(Key key, Value value, long snapshotId) {
+        this.key = key;
+        this.value = value;
+        this.snapshotId = snapshotId;
     }
 
-    if (snapshotId == o.snapshotId) {
-      return 0;
+    public Key key() {
+        return key;
     }
 
-    return snapshotId > o.snapshotId ? 1 : -1;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    public Value value() {
+        return value;
     }
 
-    Record record = (Record) o;
-
-    if (snapshotId != record.snapshotId) {
-      return false;
-    }
-    if (key != null ? !key.equals(record.key) : record.key != null) {
-      return false;
-    }
-    if (value != null ? !value.equals(record.value) : record.value != null) {
-      return false;
+    public long snapshotId() {
+        return snapshotId;
     }
 
-    return true;
-  }
+    public int size() {
+        return key.size() + value().size();
+    }
 
-  @Override
-  public int hashCode() {
-    int result = key != null ? key.hashCode() : 0;
-    result = 31 * result + (value != null ? value.hashCode() : 0);
-    result = 31 * result + (int) (snapshotId ^ (snapshotId >>> 32));
-    return result;
-  }
+    @Override
+    public int compareTo(Record o) {
+        int compared = key.compareTo(o.key);
 
-  @Override
-  public String toString() {
-    return "Record{" +
-           "key=" + key +
-           ", value=" + value +
-           ", snapshotId=" + snapshotId +
-           '}';
-  }
+        if (compared != 0) {
+            return compared;
+        }
+
+        if (snapshotId == o.snapshotId) {
+            return 0;
+        }
+
+        return snapshotId > o.snapshotId ? 1 : -1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Record record = (Record) o;
+
+        if (snapshotId != record.snapshotId) {
+            return false;
+        }
+        if (key != null ? !key.equals(record.key) : record.key != null) {
+            return false;
+        }
+        if (value != null ? !value.equals(record.value) : record.value != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = key != null ? key.hashCode() : 0;
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (int) (snapshotId ^ (snapshotId >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Record{" +
+                "key=" + key +
+                ", value=" + value +
+                ", snapshotId=" + snapshotId +
+                '}';
+    }
 }

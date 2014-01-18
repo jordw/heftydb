@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.unit.offheap;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,30 +27,30 @@ import java.util.Set;
 
 public class BloomFilterTest {
 
-  @Test
-  public void readWriteTest() {
-    Set<Key> testKeys = testKeys();
-    BloomFilter.Builder testFilterBuilder = new BloomFilter.Builder(1000, 0.01);
+    @Test
+    public void readWriteTest() {
+        Set<Key> testKeys = testKeys();
+        BloomFilter.Builder testFilterBuilder = new BloomFilter.Builder(1000, 0.01);
 
-    for (Key key : testKeys) {
-      testFilterBuilder.put(key);
+        for (Key key : testKeys) {
+            testFilterBuilder.put(key);
+        }
+
+        BloomFilter testFilter = testFilterBuilder.build();
+
+        for (Key key : testKeys) {
+            Assert.assertTrue("Key is in filter", testFilter.mightContain(key));
+        }
     }
 
-    BloomFilter testFilter = testFilterBuilder.build();
+    private static Set<Key> testKeys() {
+        KeyValueGenerator generator = new KeyValueGenerator();
+        Set<Key> testDataSet = new HashSet<Key>();
 
-    for (Key key : testKeys) {
-      Assert.assertTrue("Key is in filter", testFilter.mightContain(key));
+        for (int i = 0; i < 1000; i++) {
+            testDataSet.add(new Key(generator.testKey(100, 0)));
+        }
+
+        return testDataSet;
     }
-  }
-
-  private static Set<Key> testKeys() {
-    KeyValueGenerator generator = new KeyValueGenerator();
-    Set<Key> testDataSet = new HashSet<Key>();
-
-    for (int i = 0; i < 1000; i++) {
-      testDataSet.add(new Key(generator.testKey(100, 0)));
-    }
-
-    return testDataSet;
-  }
 }

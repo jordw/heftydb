@@ -20,13 +20,13 @@ import java.nio.file.Path;
 
 public interface Config {
 
-  public int memoryTableSizeBytes();
+    public int memoryTableSizeBytes();
 
-  public int tableWriterThreads();
+    public int tableWriterThreads();
 
-  public int tableCompactionThreads();
+    public int tableCompactionThreads();
 
-  public Path tableDirectory();
+    public Path tableDirectory();
 
-  public Path logDirectory();
+    public Path logDirectory();
 }

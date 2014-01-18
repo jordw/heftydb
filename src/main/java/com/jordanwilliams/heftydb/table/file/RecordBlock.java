@@ -20,7 +20,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
-
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
@@ -37,163 +36,155 @@ import java.util.NoSuchElementException;
 
 public class RecordBlock implements Iterable<Record>, Offheap {
 
-  public static class Cache {
+    public static class Cache {
 
-    private final com.google.common.cache.Cache<String, RecordBlock> cache;
+        private final com.google.common.cache.Cache<String, RecordBlock> cache;
 
-    public Cache(long maxSizeBytes) {
-      cache =
-          CacheBuilder.newBuilder().concurrencyLevel(64)
-              .weigher(new Weigher<String, RecordBlock>() {
+        public Cache(long maxSizeBytes) {
+            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, RecordBlock>() {
                 @Override
                 public int weigh(String key, RecordBlock value) {
-                  return key.length() + value.memory().size();
+                    return key.length() + value.memory().size();
                 }
-              }).removalListener(new RemovalListener<String, RecordBlock>() {
-            @Override
-            public void onRemoval(
-                RemovalNotification<String, RecordBlock> objectObjectRemovalNotification) {
-              objectObjectRemovalNotification.getValue().memory().release();
+            }).removalListener(new RemovalListener<String, RecordBlock>() {
+                @Override
+                public void onRemoval(RemovalNotification<String, RecordBlock> objectObjectRemovalNotification) {
+                    objectObjectRemovalNotification.getValue().memory().release();
+                }
+            }).maximumWeight(maxSizeBytes).build();
+        }
+
+        public Cache() {
+            this(1024000);
+        }
+
+        public RecordBlock get(long tableId, long offset) {
+            return cache.getIfPresent(key(tableId, offset));
+        }
+
+        public void put(long tableId, long offset, RecordBlock recordBlock) {
+            cache.put(key(tableId, offset), recordBlock);
+        }
+
+        private String key(long tableId, long offset) {
+            return new StringBuilder().append(tableId).append(offset).toString();
+        }
+    }
+
+    public static class Builder {
+
+        private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
+        private int sizeBytes;
+
+        public void addRecord(Record record) {
+            byteMapBuilder.add(new Key(record.key().data(), record.snapshotId()), record.value());
+            sizeBytes += record.size();
+        }
+
+        public int sizeBytes() {
+            return sizeBytes;
+        }
+
+        public RecordBlock build() {
+            return new RecordBlock(byteMapBuilder.build());
+        }
+    }
+
+    private class BlockIterator implements Iterator<Record> {
+
+        private final boolean ascending;
+        private int currentRecordIndex;
+
+        public BlockIterator(int startIndex, Table.IterationDirection iterationDirection) {
+            this.currentRecordIndex = startIndex;
+            this.ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return ascending ? currentRecordIndex < byteMap.entryCount() : currentRecordIndex > -1;
+        }
+
+        @Override
+        public Record next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
             }
-          }).maximumWeight(maxSizeBytes).build();
+
+            Record record = deserializeRecord(currentRecordIndex);
+            currentRecordIndex += ascending ? 1 : -1;
+            return record;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    public Cache() {
-      this(1024000);
+    private final ByteMap byteMap;
+
+    public RecordBlock(ByteMap byteMap) {
+        this.byteMap = byteMap;
     }
 
-    public RecordBlock get(long tableId, long offset) {
-      return cache.getIfPresent(key(tableId, offset));
+    public Record get(Key key, long maxSnapshotId) {
+        int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
+
+        if (closestIndex < 0 || closestIndex >= byteMap.entryCount()) {
+            return null;
+        }
+
+        Record closestRecord = deserializeRecord(closestIndex);
+        return closestRecord.key().equals(key) ? closestRecord : null;
     }
 
-    public void put(long tableId, long offset, RecordBlock recordBlock) {
-      cache.put(key(tableId, offset), recordBlock);
+    public Record startRecord() {
+        return deserializeRecord(0);
     }
 
-    private String key(long tableId, long offset) {
-      return new StringBuilder().append(tableId).append(offset).toString();
-    }
-  }
-
-  public static class Builder {
-
-    private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
-    private int sizeBytes;
-
-    public void addRecord(Record record) {
-      byteMapBuilder.add(new Key(record.key().data(), record.snapshotId()), record.value());
-      sizeBytes += record.size();
+    public Iterator<Record> iterator(Table.IterationDirection iterationDirection) {
+        int startIndex = iterationDirection.equals(Table.IterationDirection.ASCENDING) ? 0 : byteMap.entryCount() - 1;
+        return new BlockIterator(startIndex, iterationDirection);
     }
 
-    public int sizeBytes() {
-      return sizeBytes;
-    }
-
-    public RecordBlock build() {
-      return new RecordBlock(byteMapBuilder.build());
-    }
-  }
-
-  private class BlockIterator implements Iterator<Record> {
-
-    private final boolean ascending;
-    private int currentRecordIndex;
-
-    public BlockIterator(int startIndex, Table.IterationDirection iterationDirection) {
-      this.currentRecordIndex = startIndex;
-      this.ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
+    public Iterator<Record> iteratorFrom(Key key, Table.IterationDirection iterationDirection) {
+        boolean ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
+        Key versionedKey = new Key(key.data(), 0);
+        int startIndex = ascending ? byteMap.ceilingIndex(versionedKey) : byteMap.floorIndex(versionedKey);
+        return new BlockIterator(startIndex, iterationDirection);
     }
 
     @Override
-    public boolean hasNext() {
-      return ascending ? currentRecordIndex < byteMap.entryCount() : currentRecordIndex > -1;
+    public Iterator<Record> iterator() {
+        return new BlockIterator(0, Table.IterationDirection.ASCENDING);
     }
 
     @Override
-    public Record next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-
-      Record record = deserializeRecord(currentRecordIndex);
-      currentRecordIndex += ascending ? 1 : -1;
-      return record;
+    public Memory memory() {
+        return byteMap.memory();
     }
 
     @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-  }
+    public String toString() {
+        List<Record> records = new ArrayList<Record>();
+        for (Record record : this) {
+            records.add(record);
+        }
 
-  private final ByteMap byteMap;
-
-  public RecordBlock(ByteMap byteMap) {
-    this.byteMap = byteMap;
-  }
-
-  public Record get(Key key, long maxSnapshotId) {
-    int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
-
-    if (closestIndex < 0 || closestIndex >= byteMap.entryCount()) {
-      return null;
+        return "RecordBlock{records=" + records + "}";
     }
 
-    Record closestRecord = deserializeRecord(closestIndex);
-    return closestRecord.key().equals(key) ? closestRecord : null;
-  }
+    private Record deserializeRecord(int recordIndex) {
+        ByteMap.Entry entry = byteMap.get(recordIndex);
+        ByteBuffer entryKeyBuffer = entry.key().data();
+        ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
 
-  public Record startRecord() {
-    return deserializeRecord(0);
-  }
+        for (int i = 0; i < recordKeyBuffer.capacity(); i++) {
+            recordKeyBuffer.put(i, entryKeyBuffer.get(i));
+        }
 
-  public Iterator<Record> iterator(Table.IterationDirection iterationDirection) {
-    int
-        startIndex =
-        iterationDirection.equals(Table.IterationDirection.ASCENDING) ? 0
-                                                                      : byteMap.entryCount() - 1;
-    return new BlockIterator(startIndex, iterationDirection);
-  }
-
-  public Iterator<Record> iteratorFrom(Key key, Table.IterationDirection iterationDirection) {
-    boolean ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
-    Key versionedKey = new Key(key.data(), 0);
-    int
-        startIndex =
-        ascending ? byteMap.ceilingIndex(versionedKey) : byteMap.floorIndex(versionedKey);
-    return new BlockIterator(startIndex, iterationDirection);
-  }
-
-  @Override
-  public Iterator<Record> iterator() {
-    return new BlockIterator(0, Table.IterationDirection.ASCENDING);
-  }
-
-  @Override
-  public Memory memory() {
-    return byteMap.memory();
-  }
-
-  @Override
-  public String toString() {
-    List<Record> records = new ArrayList<Record>();
-    for (Record record : this) {
-      records.add(record);
+        long snapshotId = entryKeyBuffer.getLong(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
+        return new Record(new Key(recordKeyBuffer), entry.value(), snapshotId);
     }
-
-    return "RecordBlock{records=" + records + "}";
-  }
-
-  private Record deserializeRecord(int recordIndex) {
-    ByteMap.Entry entry = byteMap.get(recordIndex);
-    ByteBuffer entryKeyBuffer = entry.key().data();
-    ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
-
-    for (int i = 0; i < recordKeyBuffer.capacity(); i++) {
-      recordKeyBuffer.put(i, entryKeyBuffer.get(i));
-    }
-
-    long snapshotId = entryKeyBuffer.getLong(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
-    return new Record(new Key(recordKeyBuffer), entry.value(), snapshotId);
-  }
 }

@@ -26,76 +26,74 @@ import java.util.TreeSet;
 
 public class VersionedRecordIterator implements Iterator<Record> {
 
-  private final Iterator<Record> recordIterator;
-  private final Queue<Record> nextRecord = new LinkedList<Record>();
-  private final long maxSnapshotId;
-  private final SortedSet<Record> currentKeyRecords = new TreeSet<Record>();
+    private final Iterator<Record> recordIterator;
+    private final Queue<Record> nextRecord = new LinkedList<Record>();
+    private final long maxSnapshotId;
+    private final SortedSet<Record> currentKeyRecords = new TreeSet<Record>();
 
-  public VersionedRecordIterator(long maxSnapshotId, Iterator<Record> recordIterator) {
-    this.maxSnapshotId = maxSnapshotId;
-    this.recordIterator = recordIterator;
-  }
-
-  @Override
-  public boolean hasNext() {
-    if (!nextRecord.isEmpty()) {
-      return true;
+    public VersionedRecordIterator(long maxSnapshotId, Iterator<Record> recordIterator) {
+        this.maxSnapshotId = maxSnapshotId;
+        this.recordIterator = recordIterator;
     }
 
-    Record record = fetchNextRecord();
+    @Override
+    public boolean hasNext() {
+        if (!nextRecord.isEmpty()) {
+            return true;
+        }
 
-    if (record == null) {
-      return false;
+        Record record = fetchNextRecord();
+
+        if (record == null) {
+            return false;
+        }
+
+        nextRecord.add(record);
+
+        return true;
     }
 
-    nextRecord.add(record);
+    @Override
+    public Record next() {
+        if (nextRecord.isEmpty()) {
+            hasNext();
+        }
 
-    return true;
-  }
-
-  @Override
-  public Record next() {
-    if (nextRecord.isEmpty()) {
-      hasNext();
+        return nextRecord.poll();
     }
 
-    return nextRecord.poll();
-  }
-
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
-
-  private Record fetchNextRecord() {
-    while (recordIterator.hasNext()) {
-      Record next = recordIterator.next();
-
-      if (next.snapshotId() > maxSnapshotId) {
-        continue;
-      }
-
-      boolean
-          nextKeyEqualCurrent =
-          currentKeyRecords.isEmpty() || next.key().equals(currentKeyRecords.last().key());
-
-      if (nextKeyEqualCurrent) {
-        currentKeyRecords.add(next);
-        continue;
-      }
-
-      Record newest = currentKeyRecords.last();
-      currentKeyRecords.clear();
-      currentKeyRecords.add(next);
-      return newest;
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 
-    if (currentKeyRecords.isEmpty()) {
-      return null;
-    }
+    private Record fetchNextRecord() {
+        while (recordIterator.hasNext()) {
+            Record next = recordIterator.next();
 
-    Record newest = currentKeyRecords.last();
-    currentKeyRecords.clear();
-    return newest;
-  }
+            if (next.snapshotId() > maxSnapshotId) {
+                continue;
+            }
+
+            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().equals(currentKeyRecords.last().key());
+
+            if (nextKeyEqualCurrent) {
+                currentKeyRecords.add(next);
+                continue;
+            }
+
+            Record newest = currentKeyRecords.last();
+            currentKeyRecords.clear();
+            currentKeyRecords.add(next);
+            return newest;
+        }
+
+        if (currentKeyRecords.isEmpty()) {
+            return null;
+        }
+
+        Record newest = currentKeyRecords.last();
+        currentKeyRecords.clear();
+        return newest;
+    }
 }

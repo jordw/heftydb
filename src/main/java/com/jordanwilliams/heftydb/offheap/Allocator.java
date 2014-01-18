@@ -18,9 +18,9 @@ package com.jordanwilliams.heftydb.offheap;
 
 public interface Allocator {
 
-  public long allocate(long bytes);
+    public long allocate(long bytes);
 
-  public void free(long address);
+    public void free(long address);
 
-  public static Allocator allocator = new JEMallocAllocator();
+    public static Allocator allocator = new JEMallocAllocator();
 }

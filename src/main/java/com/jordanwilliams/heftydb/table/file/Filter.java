@@ -29,31 +29,31 @@ import java.nio.ByteBuffer;
 
 public class Filter implements Offheap {
 
-  private final BloomFilter bloomFilter;
+    private final BloomFilter bloomFilter;
 
-  private Filter(long tableId, Paths paths) throws IOException {
-    DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
-    Memory filterMemory = Memory.allocate((int) filterFile.size());
-    ByteBuffer filterBuffer = filterMemory.directBuffer();
-    filterFile.read(filterBuffer, filterFile.size());
-    filterFile.close();
-    this.bloomFilter = new BloomFilter(filterMemory);
-  }
+    private Filter(long tableId, Paths paths) throws IOException {
+        DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
+        Memory filterMemory = Memory.allocate((int) filterFile.size());
+        ByteBuffer filterBuffer = filterMemory.directBuffer();
+        filterFile.read(filterBuffer, filterFile.size());
+        filterFile.close();
+        this.bloomFilter = new BloomFilter(filterMemory);
+    }
 
-  public boolean mightContain(Key key) {
-    return bloomFilter.mightContain(key);
-  }
+    public boolean mightContain(Key key) {
+        return bloomFilter.mightContain(key);
+    }
 
-  public void close() {
-    bloomFilter.memory().release();
-  }
+    public void close() {
+        bloomFilter.memory().release();
+    }
 
-  @Override
-  public Memory memory() {
-    return bloomFilter.memory();
-  }
+    @Override
+    public Memory memory() {
+        return bloomFilter.memory();
+    }
 
-  public static Filter open(long tableId, Paths paths) throws IOException {
-    return new Filter(tableId, paths);
-  }
+    public static Filter open(long tableId, Paths paths) throws IOException {
+        return new Filter(tableId, paths);
+    }
 }

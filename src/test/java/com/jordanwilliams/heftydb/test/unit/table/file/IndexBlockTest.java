@@ -21,55 +21,54 @@ import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 public class IndexBlockTest {
 
-  private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
-  private static final Key TEST_KEY_2 = new Key(ByteBuffers.fromString("Bad as I want to be"));
-  private static final Key TEST_KEY_3 = new Key(ByteBuffers.fromString("Dog I am a test key"));
-  private static final IndexBlock TEST_BLOCK;
+    private static final Key TEST_KEY_1 = new Key(ByteBuffers.fromString("An awesome test key"));
+    private static final Key TEST_KEY_2 = new Key(ByteBuffers.fromString("Bad as I want to be"));
+    private static final Key TEST_KEY_3 = new Key(ByteBuffers.fromString("Dog I am a test key"));
+    private static final IndexBlock TEST_BLOCK;
 
-  static {
-    IndexBlock.Builder builder = new IndexBlock.Builder();
-    builder.addRecord(new IndexRecord(TEST_KEY_1, 1, 1));
-    builder.addRecord(new IndexRecord(TEST_KEY_1, 2, 2));
-    builder.addRecord(new IndexRecord(TEST_KEY_2, 3, 3));
-    builder.addRecord(new IndexRecord(TEST_KEY_3, 4, 4));
-    builder.addRecord(new IndexRecord(TEST_KEY_3, 5, 5));
+    static {
+        IndexBlock.Builder builder = new IndexBlock.Builder();
+        builder.addRecord(new IndexRecord(TEST_KEY_1, 1, 1));
+        builder.addRecord(new IndexRecord(TEST_KEY_1, 2, 2));
+        builder.addRecord(new IndexRecord(TEST_KEY_2, 3, 3));
+        builder.addRecord(new IndexRecord(TEST_KEY_3, 4, 4));
+        builder.addRecord(new IndexRecord(TEST_KEY_3, 5, 5));
 
-    TEST_BLOCK = builder.build();
-  }
+        TEST_BLOCK = builder.build();
+    }
 
-  @Test
-  public void findRecordExactMatchTest() {
-    IndexRecord indexRecord = TEST_BLOCK.get(TEST_KEY_1, 1);
-    Assert.assertEquals("Offset matches", 1, indexRecord.offset());
-  }
+    @Test
+    public void findRecordExactMatchTest() {
+        IndexRecord indexRecord = TEST_BLOCK.get(TEST_KEY_1, 1);
+        Assert.assertEquals("Offset matches", 1, indexRecord.offset());
+    }
 
-  @Test
-  public void findRecordExactMatchEndTest() {
-    IndexRecord indexRecord = TEST_BLOCK.get(TEST_KEY_3, 4);
-    Assert.assertEquals("Offset matches", 4, indexRecord.offset());
-  }
+    @Test
+    public void findRecordExactMatchEndTest() {
+        IndexRecord indexRecord = TEST_BLOCK.get(TEST_KEY_3, 4);
+        Assert.assertEquals("Offset matches", 4, indexRecord.offset());
+    }
 
-  @Test
-  public void findRecordTest() {
-    IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Awesome")), 1);
-    Assert.assertEquals("Offset matches", 2, indexRecord.offset());
-  }
+    @Test
+    public void findRecordTest() {
+        IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Awesome")), 1);
+        Assert.assertEquals("Offset matches", 2, indexRecord.offset());
+    }
 
-  @Test
-  public void findRecordMidTest() {
-    IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Box")), 1);
-    Assert.assertEquals("Offset matches", 3, indexRecord.offset());
-  }
+    @Test
+    public void findRecordMidTest() {
+        IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Box")), 1);
+        Assert.assertEquals("Offset matches", 3, indexRecord.offset());
+    }
 
-  @Test
-  public void findRecordEndTest() {
-    IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Toast")), 1);
-    Assert.assertEquals("Offset matches", 5, indexRecord.offset());
-  }
+    @Test
+    public void findRecordEndTest() {
+        IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Toast")), 1);
+        Assert.assertEquals("Offset matches", 5, indexRecord.offset());
+    }
 }

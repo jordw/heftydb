@@ -27,31 +27,29 @@ import java.nio.ByteBuffer;
 
 public class FilterWriter {
 
-  private static final double FILTER_FALSE_POSITIVE_PROBABILITY = 0.01;
+    private static final double FILTER_FALSE_POSITIVE_PROBABILITY = 0.01;
 
-  private final BloomFilter.Builder filterBuilder;
-  private final DataFile filterFile;
+    private final BloomFilter.Builder filterBuilder;
+    private final DataFile filterFile;
 
-  private FilterWriter(long tableId, Paths paths, long approxRecordCount) throws IOException {
-    this.filterBuilder =
-        new BloomFilter.Builder(approxRecordCount, FILTER_FALSE_POSITIVE_PROBABILITY);
-    this.filterFile = MutableDataFile.open(paths.filterPath(tableId));
-  }
+    private FilterWriter(long tableId, Paths paths, long approxRecordCount) throws IOException {
+        this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FILTER_FALSE_POSITIVE_PROBABILITY);
+        this.filterFile = MutableDataFile.open(paths.filterPath(tableId));
+    }
 
-  public void write(Record record) throws IOException {
-    filterBuilder.put(record.key());
-  }
+    public void write(Record record) throws IOException {
+        filterBuilder.put(record.key());
+    }
 
-  public void finish() throws IOException {
-    BloomFilter filter = filterBuilder.build();
-    ByteBuffer filterBuffer = filter.memory().directBuffer();
-    filterFile.append(filterBuffer);
-    filterFile.close();
-    filter.memory().release();
-  }
+    public void finish() throws IOException {
+        BloomFilter filter = filterBuilder.build();
+        ByteBuffer filterBuffer = filter.memory().directBuffer();
+        filterFile.append(filterBuffer);
+        filterFile.close();
+        filter.memory().release();
+    }
 
-  public static FilterWriter open(long tableId, Paths paths, long approxRecordCount)
-      throws IOException {
-    return new FilterWriter(tableId, paths, approxRecordCount);
-  }
+    public static FilterWriter open(long tableId, Paths paths, long approxRecordCount) throws IOException {
+        return new FilterWriter(tableId, paths, approxRecordCount);
+    }
 }

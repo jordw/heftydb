@@ -17,7 +17,6 @@
 package com.jordanwilliams.heftydb.test.base;
 
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -27,24 +26,24 @@ import java.io.IOException;
 
 public class FileTest {
 
-  @BeforeClass
-  public static void beforeClass() throws IOException {
-    TestFileUtils.createTestDirectory();
-    TestFileUtils.cleanUpTestFiles();
-  }
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        TestFileUtils.createTestDirectory();
+        TestFileUtils.cleanUpTestFiles();
+    }
 
-  @AfterClass
-  public static void afterClass() throws IOException {
-    TestFileUtils.cleanUpTestFiles();
-  }
+    @AfterClass
+    public static void afterClass() throws IOException {
+        TestFileUtils.cleanUpTestFiles();
+    }
 
-  @Before
-  public void beforeTest() throws IOException {
-    TestFileUtils.createTestDirectory();
-  }
+    @Before
+    public void beforeTest() throws IOException {
+        TestFileUtils.createTestDirectory();
+    }
 
-  @After
-  public void afterTest() throws IOException {
-    TestFileUtils.cleanUpTestFiles();
-  }
+    @After
+    public void afterTest() throws IOException {
+        TestFileUtils.cleanUpTestFiles();
+    }
 }

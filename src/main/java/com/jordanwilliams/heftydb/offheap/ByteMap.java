@@ -30,270 +30,270 @@ import java.util.NoSuchElementException;
 
 public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
-  public static class Entry {
+    public static class Entry {
 
-    private final Key key;
-    private final Value value;
+        private final Key key;
+        private final Value value;
 
-    public Entry(Key key, Value value) {
-      this.key = key;
-      this.value = value;
+        public Entry(Key key, Value value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public Key key() {
+            return key;
+        }
+
+        public Value value() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{" +
+                    "key=" + key +
+                    ", value=" + value +
+                    '}';
+        }
     }
 
-    public Key key() {
-      return key;
+    public static class Builder {
+
+        private final Map<Key, Value> entries = new LinkedHashMap<Key, Value>();
+
+        public void add(Key key, Value value) {
+            entries.put(key, value);
+        }
+
+        public ByteMap build() {
+            return new ByteMap(serializeEntries());
+        }
+
+        private Memory serializeEntries() {
+            //Allocate memory
+            int memorySize = 0;
+            int[] entryOffsets = new int[entries.size()];
+
+            memorySize += Sizes.INT_SIZE; //Pointer count
+            memorySize += Sizes.INT_SIZE * entries.size(); //Pointers
+
+            //Compute memory size
+            int counter = 0;
+
+            for (Map.Entry<Key, Value> entry : entries.entrySet()) {
+                entryOffsets[counter] = memorySize;
+                memorySize += Sizes.INT_SIZE;
+                memorySize += entry.getKey().size();
+                memorySize += Sizes.INT_SIZE;
+                memorySize += entry.getValue().size();
+                counter++;
+            }
+
+            Memory memory = Memory.allocate(memorySize);
+            ByteBuffer memoryBuffer = memory.directBuffer();
+
+            //Pack pointers
+            memoryBuffer.putInt(entries.size());
+
+            for (int i = 0; i < entryOffsets.length; i++) {
+                memoryBuffer.putInt(entryOffsets[i]);
+            }
+
+            //Pack entries
+            for (Map.Entry<Key, Value> entry : entries.entrySet()) {
+                Key key = entry.getKey();
+                Value value = entry.getValue();
+
+                key.data().rewind();
+                value.data().rewind();
+
+                //Key
+                memoryBuffer.putInt(key.size());
+                memoryBuffer.put(key.data());
+
+                //Value
+                memoryBuffer.putInt(value.size());
+                memoryBuffer.put(value.data());
+
+                key.data().rewind();
+                value.data().rewind();
+            }
+
+            return memory;
+        }
     }
 
-    public Value value() {
-      return value;
+    private final Memory memory;
+    private final ByteBuffer directBuffer;
+    private final int entryCount;
+
+    public ByteMap(Memory memory) {
+        this.memory = memory;
+        this.directBuffer = memory.directBuffer();
+        this.entryCount = memory.directBuffer().getInt(0);
+    }
+
+    public Entry get(int index) {
+        return getEntry(index);
+    }
+
+    public int floorIndex(Key key) {
+        int index = binarySearch(key);
+        return Math.abs(index);
+    }
+
+    public int ceilingIndex(Key key) {
+        int index = binarySearch(key);
+        return index < 0 ? Math.abs(index) + 1 : index;
+    }
+
+    private int binarySearch(Key key) {
+        int low = 0;
+        int high = entryCount - 1;
+
+        //Binary search
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int compare = compareKeys(key, mid);
+
+            if (compare < 0) {
+                low = mid + 1;
+            } else if (compare > 0) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+
+        return -(low - 1);
+    }
+
+    public int entryCount() {
+        return entryCount;
+    }
+
+    @Override
+    public Iterator<Entry> iterator() {
+        return new Iterator<Entry>() {
+
+            int currentEntryIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentEntryIndex < entryCount;
+            }
+
+            @Override
+            public Entry next() {
+                if (currentEntryIndex >= entryCount) {
+                    throw new NoSuchElementException();
+                }
+
+                return getEntry(currentEntryIndex++);
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    @Override
+    public Memory memory() {
+        return memory;
     }
 
     @Override
     public String toString() {
-      return "Entry{" +
-             "key=" + key +
-             ", value=" + value +
-             '}';
-    }
-  }
-
-  public static class Builder {
-
-    private final Map<Key, Value> entries = new LinkedHashMap<Key, Value>();
-
-    public void add(Key key, Value value) {
-      entries.put(key, value);
-    }
-
-    public ByteMap build() {
-      return new ByteMap(serializeEntries());
-    }
-
-    private Memory serializeEntries() {
-      //Allocate memory
-      int memorySize = 0;
-      int[] entryOffsets = new int[entries.size()];
-
-      memorySize += Sizes.INT_SIZE; //Pointer count
-      memorySize += Sizes.INT_SIZE * entries.size(); //Pointers
-
-      //Compute memory size
-      int counter = 0;
-
-      for (Map.Entry<Key, Value> entry : entries.entrySet()) {
-        entryOffsets[counter] = memorySize;
-        memorySize += Sizes.INT_SIZE;
-        memorySize += entry.getKey().size();
-        memorySize += Sizes.INT_SIZE;
-        memorySize += entry.getValue().size();
-        counter++;
-      }
-
-      Memory memory = Memory.allocate(memorySize);
-      ByteBuffer memoryBuffer = memory.directBuffer();
-
-      //Pack pointers
-      memoryBuffer.putInt(entries.size());
-
-      for (int i = 0; i < entryOffsets.length; i++) {
-        memoryBuffer.putInt(entryOffsets[i]);
-      }
-
-      //Pack entries
-      for (Map.Entry<Key, Value> entry : entries.entrySet()) {
-        Key key = entry.getKey();
-        Value value = entry.getValue();
-
-        key.data().rewind();
-        value.data().rewind();
-
-        //Key
-        memoryBuffer.putInt(key.size());
-        memoryBuffer.put(key.data());
-
-        //Value
-        memoryBuffer.putInt(value.size());
-        memoryBuffer.put(value.data());
-
-        key.data().rewind();
-        value.data().rewind();
-      }
-
-      return memory;
-    }
-  }
-
-  private final Memory memory;
-  private final ByteBuffer directBuffer;
-  private final int entryCount;
-
-  public ByteMap(Memory memory) {
-    this.memory = memory;
-    this.directBuffer = memory.directBuffer();
-    this.entryCount = memory.directBuffer().getInt(0);
-  }
-
-  public Entry get(int index) {
-    return getEntry(index);
-  }
-
-  public int floorIndex(Key key) {
-    int index = binarySearch(key);
-    return Math.abs(index);
-  }
-
-  public int ceilingIndex(Key key) {
-    int index = binarySearch(key);
-    return index < 0 ? Math.abs(index) + 1 : index;
-  }
-
-  private int binarySearch(Key key) {
-    int low = 0;
-    int high = entryCount - 1;
-
-    //Binary search
-    while (low <= high) {
-      int mid = (low + high) >>> 1;
-      int compare = compareKeys(key, mid);
-
-      if (compare < 0) {
-        low = mid + 1;
-      } else if (compare > 0) {
-        high = mid - 1;
-      } else {
-        return mid;
-      }
-    }
-
-    return -(low - 1);
-  }
-
-  public int entryCount() {
-    return entryCount;
-  }
-
-  @Override
-  public Iterator<Entry> iterator() {
-    return new Iterator<Entry>() {
-
-      int currentEntryIndex = 0;
-
-      @Override
-      public boolean hasNext() {
-        return currentEntryIndex < entryCount;
-      }
-
-      @Override
-      public Entry next() {
-        if (currentEntryIndex >= entryCount) {
-          throw new NoSuchElementException();
+        List<Entry> entries = new ArrayList<Entry>();
+        for (Entry entry : this) {
+            entries.add(entry);
         }
 
-        return getEntry(currentEntryIndex++);
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
-  }
-
-  @Override
-  public Memory memory() {
-    return memory;
-  }
-
-  @Override
-  public String toString() {
-    List<Entry> entries = new ArrayList<Entry>();
-    for (Entry entry : this) {
-      entries.add(entry);
+        return "ByteMap{entries=" + entries + "}";
     }
 
-    return "ByteMap{entries=" + entries + "}";
-  }
+    private Entry getEntry(int index) {
+        int entryOffset = entryOffset(index);
 
-  private Entry getEntry(int index) {
-    int entryOffset = entryOffset(index);
+        //Key
+        int keySize = directBuffer.getInt(entryOffset);
+        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
+        int keyOffset = entryOffset + Sizes.INT_SIZE;
 
-    //Key
-    int keySize = directBuffer.getInt(entryOffset);
-    ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-    int keyOffset = entryOffset + Sizes.INT_SIZE;
+        for (int i = keyOffset; i < keyOffset + keySize; i++) {
+            keyBuffer.put(directBuffer.get(i));
+        }
 
-    for (int i = keyOffset; i < keyOffset + keySize; i++) {
-      keyBuffer.put(directBuffer.get(i));
+        keyBuffer.rewind();
+
+        //Value
+        int valueOffset = keyOffset + keySize;
+        int valueSize = directBuffer.getInt(valueOffset);
+        ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
+        valueOffset += Sizes.INT_SIZE;
+
+        for (int i = valueOffset; i < valueOffset + valueSize; i++) {
+            valueBuffer.put(directBuffer.get(i));
+        }
+
+        valueBuffer.rewind();
+
+        return new Entry(new Key(keyBuffer), new Value(valueBuffer));
     }
 
-    keyBuffer.rewind();
+    private Key getKey(int index) {
+        int entryOffset = entryOffset(index);
 
-    //Value
-    int valueOffset = keyOffset + keySize;
-    int valueSize = directBuffer.getInt(valueOffset);
-    ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
-    valueOffset += Sizes.INT_SIZE;
+        //Key
+        int keySize = directBuffer.getInt(entryOffset);
+        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
+        int keyOffset = entryOffset + Sizes.INT_SIZE;
 
-    for (int i = valueOffset; i < valueOffset + valueSize; i++) {
-      valueBuffer.put(directBuffer.get(i));
+        for (int i = keyOffset; i < keyOffset + keySize; i++) {
+            keyBuffer.put(directBuffer.get(i));
+        }
+
+        keyBuffer.rewind();
+
+        return new Key(keyBuffer);
     }
 
-    valueBuffer.rewind();
+    private int compareKeys(Key compareKey, int bufferKeyIndex) {
+        int entryOffset = entryOffset(bufferKeyIndex);
+        int keySize = directBuffer.getInt(entryOffset);
+        entryOffset += Sizes.INT_SIZE;
 
-    return new Entry(new Key(keyBuffer), new Value(valueBuffer));
-  }
+        int compareCount = Math.min(keySize, compareKey.data().remaining());
+        int remaining = keySize;
 
-  private Key getKey(int index) {
-    int entryOffset = entryOffset(index);
+        for (int i = 0; i < compareCount; i++) {
+            byte bufferKeyVal = directBuffer.get(entryOffset + i);
+            byte compareKeyVal = compareKey.data().get(i);
+            remaining--;
 
-    //Key
-    int keySize = directBuffer.getInt(entryOffset);
-    ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-    int keyOffset = entryOffset + Sizes.INT_SIZE;
+            if (bufferKeyVal == compareKeyVal) {
+                continue;
+            }
 
-    for (int i = keyOffset; i < keyOffset + keySize; i++) {
-      keyBuffer.put(directBuffer.get(i));
+            if (bufferKeyVal < compareKeyVal) {
+                return -1;
+            }
+
+            return 1;
+        }
+
+        return remaining - compareKey.data().remaining();
     }
 
-    keyBuffer.rewind();
-
-    return new Key(keyBuffer);
-  }
-
-  private int compareKeys(Key compareKey, int bufferKeyIndex) {
-    int entryOffset = entryOffset(bufferKeyIndex);
-    int keySize = directBuffer.getInt(entryOffset);
-    entryOffset += Sizes.INT_SIZE;
-
-    int compareCount = Math.min(keySize, compareKey.data().remaining());
-    int remaining = keySize;
-
-    for (int i = 0; i < compareCount; i++) {
-      byte bufferKeyVal = directBuffer.get(entryOffset + i);
-      byte compareKeyVal = compareKey.data().get(i);
-      remaining--;
-
-      if (bufferKeyVal == compareKeyVal) {
-        continue;
-      }
-
-      if (bufferKeyVal < compareKeyVal) {
-        return -1;
-      }
-
-      return 1;
+    private int entryOffset(int index) {
+        return directBuffer.getInt(pointerOffset(index));
     }
 
-    return remaining - compareKey.data().remaining();
-  }
-
-  private int entryOffset(int index) {
-    return directBuffer.getInt(pointerOffset(index));
-  }
-
-  private static int pointerOffset(int pointerIndex) {
-    int pointerOffset = Sizes.INT_SIZE;
-    pointerOffset += pointerIndex * Sizes.INT_SIZE;
-    return pointerOffset;
-  }
+    private static int pointerOffset(int pointerIndex) {
+        int pointerOffset = Sizes.INT_SIZE;
+        pointerOffset += pointerIndex * Sizes.INT_SIZE;
+        return pointerOffset;
+    }
 }

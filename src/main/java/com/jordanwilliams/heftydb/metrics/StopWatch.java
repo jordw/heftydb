@@ -21,29 +21,29 @@ import net.jcip.annotations.ThreadSafe;
 @ThreadSafe
 public final class StopWatch {
 
-  private final long startTime;
+    private final long startTime;
 
-  public StopWatch() {
-    startTime = System.nanoTime();
-  }
+    public StopWatch() {
+        startTime = System.nanoTime();
+    }
 
-  public long elapsed() {
-    return System.nanoTime() - startTime;
-  }
+    public long elapsed() {
+        return System.nanoTime() - startTime;
+    }
 
-  public double elapsedMicros() {
-    return (double) elapsed() / 1000;
-  }
+    public double elapsedMicros() {
+        return (double) elapsed() / 1000;
+    }
 
-  public double elapsedMillis() {
-    return (double) elapsed() / 1000000;
-  }
+    public double elapsedMillis() {
+        return (double) elapsed() / 1000000;
+    }
 
-  public double elapsedSeconds() {
-    return (double) elapsed() / 1000000000;
-  }
+    public double elapsedSeconds() {
+        return (double) elapsed() / 1000000000;
+    }
 
-  public static StopWatch start() {
-    return new StopWatch();
-  }
+    public static StopWatch start() {
+        return new StopWatch();
+    }
 }
