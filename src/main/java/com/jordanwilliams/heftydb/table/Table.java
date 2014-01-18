@@ -23,25 +23,25 @@ import java.util.Iterator;
 
 public interface Table extends Iterable<Record> {
 
-    public enum IterationDirection {
-        ASCENDING, DESCENDING
-    }
+  public enum IterationDirection {
+    ASCENDING, DESCENDING
+  }
 
-    public long id();
+  public long id();
 
-    public boolean mightContain(Key key);
+  public boolean mightContain(Key key);
 
-    public Record get(Key key, long snapshotId);
+  public Record get(Key key, long snapshotId);
 
-    public Iterator<Record> iterator(IterationDirection direction, long snapshotId);
+  public Iterator<Record> iterator(IterationDirection direction, long snapshotId);
 
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long sn);
+  public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long sn);
 
-    public long recordCount();
+  public long recordCount();
 
-    public long sizeBytes();
+  public long sizeBytes();
 
-    public int level();
+  public int level();
 
-    public boolean isPersistent();
+  public boolean isPersistent();
 }

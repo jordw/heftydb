@@ -20,59 +20,60 @@ package com.jordanwilliams.heftydb.events;
 import com.jordanwilliams.heftydb.metrics.HistogramMetric;
 import com.jordanwilliams.heftydb.metrics.MetricsCollection;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
+
 import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
 public class DataFileEvents implements Events {
 
-    private static final ThreadLocal<StopWatch> timer = new ThreadLocal<StopWatch>();
+  private static final ThreadLocal<StopWatch> timer = new ThreadLocal<StopWatch>();
 
-    private final MetricsCollection metrics;
-    private final HistogramMetric readTime = new HistogramMetric("readTime", "us");
-    private final HistogramMetric writeTime = new HistogramMetric("writeTime", "us");
-    private final HistogramMetric syncTime = new HistogramMetric("syncTime", "us");
+  private final MetricsCollection metrics;
+  private final HistogramMetric readTime = new HistogramMetric("readTime", "us");
+  private final HistogramMetric writeTime = new HistogramMetric("writeTime", "us");
+  private final HistogramMetric syncTime = new HistogramMetric("syncTime", "us");
 
-    public DataFileEvents(String type) {
-        metrics = new MetricsCollection(type);
-        metrics.put(readTime);
-        metrics.put(writeTime);
-        metrics.put(syncTime);
-    }
+  public DataFileEvents(String type) {
+    metrics = new MetricsCollection(type);
+    metrics.put(readTime);
+    metrics.put(writeTime);
+    metrics.put(syncTime);
+  }
 
-    public void startRead() {
-        timer.set(StopWatch.start());
-    }
+  public void startRead() {
+    timer.set(StopWatch.start());
+  }
 
-    public void finishRead() {
-        readTime.record(timer.get().elapsedMicros());
-        timer.remove();
-    }
+  public void finishRead() {
+    readTime.record(timer.get().elapsedMicros());
+    timer.remove();
+  }
 
-    public void startWrite() {
-        timer.set(StopWatch.start());
-    }
+  public void startWrite() {
+    timer.set(StopWatch.start());
+  }
 
-    public void finishWrite() {
-        writeTime.record(timer.get().elapsedMicros());
-        timer.remove();
-    }
+  public void finishWrite() {
+    writeTime.record(timer.get().elapsedMicros());
+    timer.remove();
+  }
 
-    public void startSync() {
-        timer.set(StopWatch.start());
-    }
+  public void startSync() {
+    timer.set(StopWatch.start());
+  }
 
-    public void finishSync() {
-        syncTime.record(timer.get().elapsedMicros());
-        timer.remove();
-    }
+  public void finishSync() {
+    syncTime.record(timer.get().elapsedMicros());
+    timer.remove();
+  }
 
-    @Override
-    public String summary() {
-        return metrics.summary();
-    }
+  @Override
+  public String summary() {
+    return metrics.summary();
+  }
 
-    @Override
-    public MetricsCollection metrics() {
-        return metrics;
-    }
+  @Override
+  public MetricsCollection metrics() {
+    return metrics;
+  }
 }

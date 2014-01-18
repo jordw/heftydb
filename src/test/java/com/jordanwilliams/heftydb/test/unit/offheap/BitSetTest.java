@@ -18,6 +18,7 @@ package com.jordanwilliams.heftydb.test.unit.offheap;
 
 import com.jordanwilliams.heftydb.offheap.BitSet;
 import com.jordanwilliams.heftydb.util.Sizes;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,23 +26,23 @@ import java.util.Random;
 
 public class BitSetTest {
 
-    @Test
-    public void getSetTest() {
-        BitSet.Builder testSetBuilder = new BitSet.Builder(256, Sizes.INT_SIZE);
-        boolean[] values = new boolean[256];
+  @Test
+  public void getSetTest() {
+    BitSet.Builder testSetBuilder = new BitSet.Builder(256, Sizes.INT_SIZE);
+    boolean[] values = new boolean[256];
 
-        Random random = new Random(System.nanoTime());
+    Random random = new Random(System.nanoTime());
 
-        for (int i = 0; i < 256; i++) {
-            boolean nextValue = random.nextBoolean();
-            testSetBuilder.set(i, nextValue);
-            values[i] = nextValue;
-        }
-
-        BitSet testSet = testSetBuilder.build();
-
-        for (int i = 0; i < 256; i++) {
-            Assert.assertEquals("Values match", values[i], testSet.get(i));
-        }
+    for (int i = 0; i < 256; i++) {
+      boolean nextValue = random.nextBoolean();
+      testSetBuilder.set(i, nextValue);
+      values[i] = nextValue;
     }
+
+    BitSet testSet = testSetBuilder.build();
+
+    for (int i = 0; i < 256; i++) {
+      Assert.assertEquals("Values match", values[i], testSet.get(i));
+    }
+  }
 }

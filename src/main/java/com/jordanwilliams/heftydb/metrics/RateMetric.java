@@ -23,39 +23,39 @@ import java.util.concurrent.atomic.AtomicLong;
 @ThreadSafe
 public class RateMetric implements Metric {
 
-    public enum Sample {
-        SUCCESS, FAILURE
-    }
+  public enum Sample {
+    SUCCESS, FAILURE
+  }
 
-    private final String name;
-    private final AtomicLong successCount = new AtomicLong(), failureCount = new AtomicLong();
+  private final String name;
+  private final AtomicLong successCount = new AtomicLong(), failureCount = new AtomicLong();
 
-    public RateMetric(String name) {
-        this.name = name;
-    }
+  public RateMetric(String name) {
+    this.name = name;
+  }
 
-    public void record(Sample sample) {
-        if (sample.equals(Sample.SUCCESS)) {
-            successCount.incrementAndGet();
-        } else {
-            failureCount.incrementAndGet();
-        }
+  public void record(Sample sample) {
+    if (sample.equals(Sample.SUCCESS)) {
+      successCount.incrementAndGet();
+    } else {
+      failureCount.incrementAndGet();
     }
+  }
 
-    public double rate() {
-        return successCount.doubleValue() / (successCount.doubleValue() + failureCount.doubleValue());
-    }
+  public double rate() {
+    return successCount.doubleValue() / (successCount.doubleValue() + failureCount.doubleValue());
+  }
 
-    @Override
-    public String name() {
-        return name;
-    }
+  @Override
+  public String name() {
+    return name;
+  }
 
-    @Override
-    public String summary() {
-        StringBuilder str = new StringBuilder();
-        str.append(name + " ");
-        str.append("rate:" + (rate() * 100) + "%");
-        return str.toString();
-    }
+  @Override
+  public String summary() {
+    StringBuilder str = new StringBuilder();
+    str.append(name + " ");
+    str.append("rate:" + (rate() * 100) + "%");
+    return str.toString();
+  }
 }

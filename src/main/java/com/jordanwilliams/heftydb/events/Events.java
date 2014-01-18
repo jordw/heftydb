@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.metrics.MetricsCollection;
 
 public interface Events {
 
-    public String summary();
+  public String summary();
 
-    public MetricsCollection metrics();
+  public MetricsCollection metrics();
 }

@@ -29,31 +29,31 @@ import java.util.Random;
 
 public class IndexBlockPerformance {
 
-    public static void main(String[] args) {
-        KeyValueGenerator generator = new KeyValueGenerator();
-        List<Key> keys = new ArrayList<Key>();
+  public static void main(String[] args) {
+    KeyValueGenerator generator = new KeyValueGenerator();
+    List<Key> keys = new ArrayList<Key>();
 
-        for (int i = 0; i < 64000; i++) {
-            keys.add(new Key(generator.testKey(32, 0)));
-        }
-
-        Collections.sort(keys);
-
-        IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
-        for (Key key : keys) {
-            blockBuilder.addRecord(new IndexRecord(key, 1, 0));
-        }
-
-        IndexBlock block = blockBuilder.build();
-
-        Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
-        int iterations = 2000000;
-
-        for (int i = 0; i < iterations; i++) {
-            block.get(keys.get(random.nextInt(keys.size())), 1);
-        }
-
-        System.out.println(iterations / watch.elapsedSeconds());
+    for (int i = 0; i < 64000; i++) {
+      keys.add(new Key(generator.testKey(32, 0)));
     }
+
+    Collections.sort(keys);
+
+    IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
+    for (Key key : keys) {
+      blockBuilder.addRecord(new IndexRecord(key, 1, 0));
+    }
+
+    IndexBlock block = blockBuilder.build();
+
+    Random random = new Random(System.nanoTime());
+    StopWatch watch = StopWatch.start();
+    int iterations = 2000000;
+
+    for (int i = 0; i < iterations; i++) {
+      block.get(keys.get(random.nextInt(keys.size())), 1);
+    }
+
+    System.out.println(iterations / watch.elapsedSeconds());
+  }
 }

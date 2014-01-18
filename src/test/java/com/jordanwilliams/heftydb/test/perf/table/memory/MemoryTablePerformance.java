@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013. Jordan Williams
+ * Copyright (c) 2014. Jordan Williams
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,56 +14,48 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.perf.table.file;
+package com.jordanwilliams.heftydb.test.perf.table.memory;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
-import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.FileTable;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
-import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
+import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-import com.jordanwilliams.heftydb.write.FileTableWriter;
 
 import java.util.Random;
 
-public class FileTablePerformance {
+public class MemoryTablePerformance {
 
-  private static final int RECORD_COUNT = 25000000;
+  private static final int RECORD_COUNT = 128000;
 
   public static void main(String[] args) throws Exception {
     TestFileUtils.createTestDirectory();
     KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
     Value value = new Value(keyValueGenerator.testValue(100));
 
-    Paths paths = ConfigGenerator.testPaths();
-    FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
+    StopWatch watch = StopWatch.start();
+    MemoryTable memTable = new MemoryTable(1);
+
     for (int i = 0; i < RECORD_COUNT; i++) {
-      value.data().rewind();
-      fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+      memTable.put(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
     }
 
-    fileTableWriter.finish();
-
-    FileTable
-        fileTable =
-        FileTable.open(1, paths, new RecordBlock.Cache(32768000), new IndexBlock.Cache(4096000));
+    System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());
+    TestFileUtils.cleanUpTestFiles();
 
     Random random = new Random(System.nanoTime());
-    StopWatch watch = StopWatch.start();
-    int iterations = 50000000;
+    watch = StopWatch.start();
+    int iterations = 10000000;
 
     for (int i = 0; i < iterations; i++) {
-      fileTable
+      memTable
           .get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
     }
 
-    System.out.println(iterations / watch.elapsedSeconds());
+    System.out.println("Reads " + iterations / watch.elapsedSeconds());
     TestFileUtils.cleanUpTestFiles();
   }
 }

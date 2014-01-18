@@ -28,75 +28,75 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Tables {
 
-    private final AtomicLong currentTableId = new AtomicLong();
-    private final NavigableSet<Table> tables = new TreeSet<Table>();
-    private final ReadWriteLock tableLock = new ReentrantReadWriteLock();
+  private final AtomicLong currentTableId = new AtomicLong();
+  private final NavigableSet<Table> tables = new TreeSet<Table>();
+  private final ReadWriteLock tableLock = new ReentrantReadWriteLock();
 
-    public Tables(Collection<Table> initialTables) {
-        this.tables.addAll(initialTables);
-        this.currentTableId.set(tables.last().id());
+  public Tables(Collection<Table> initialTables) {
+    this.tables.addAll(initialTables);
+    this.currentTableId.set(tables.last().id());
+  }
+
+  public long nextId() {
+    return currentTableId.incrementAndGet();
+  }
+
+  public long currentId() {
+    return currentTableId.get();
+  }
+
+  public SortedSet<Table> all() {
+    try {
+      tableLock.readLock().lock();
+      SortedSet<Table> tableSnapshot = new TreeSet<Table>(tables);
+      return tableSnapshot;
+    } finally {
+      tableLock.readLock().unlock();
     }
+  }
 
-    public long nextId() {
-        return currentTableId.incrementAndGet();
-    }
+  public SortedSet<Table> persistent() {
+    try {
+      tableLock.readLock().lock();
+      SortedSet<Table> tableSnapshot = new TreeSet<Table>();
 
-    public long currentId() {
-        return currentTableId.get();
-    }
-
-    public SortedSet<Table> all() {
-        try {
-            tableLock.readLock().lock();
-            SortedSet<Table> tableSnapshot = new TreeSet<Table>(tables);
-            return tableSnapshot;
-        } finally {
-            tableLock.readLock().unlock();
+      for (Table table : tables) {
+        if (table.isPersistent()) {
+          tableSnapshot.add(table);
         }
+      }
+
+      return tableSnapshot;
+    } finally {
+      tableLock.readLock().unlock();
     }
+  }
 
-    public SortedSet<Table> persistent() {
-        try {
-            tableLock.readLock().lock();
-            SortedSet<Table> tableSnapshot = new TreeSet<Table>();
-
-            for (Table table : tables) {
-                if (table.isPersistent()) {
-                    tableSnapshot.add(table);
-                }
-            }
-
-            return tableSnapshot;
-        } finally {
-            tableLock.readLock().unlock();
-        }
+  public void add(Table toAdd) {
+    try {
+      tableLock.writeLock().lock();
+      tables.add(toAdd);
+    } finally {
+      tableLock.writeLock().unlock();
     }
+  }
 
-    public void add(Table toAdd) {
-        try {
-            tableLock.writeLock().lock();
-            tables.add(toAdd);
-        } finally {
-            tableLock.writeLock().unlock();
-        }
+  public void remove(Table toRemove) {
+    try {
+      tableLock.writeLock().lock();
+      tables.remove(toRemove);
+    } finally {
+      tableLock.writeLock().unlock();
     }
+  }
 
-    public void remove(Table toRemove) {
-        try {
-            tableLock.writeLock().lock();
-            tables.remove(toRemove);
-        } finally {
-            tableLock.writeLock().unlock();
-        }
+  public void swap(Table toAdd, Table toRemove) {
+    try {
+      tableLock.writeLock().lock();
+      tables.add(toAdd);
+      tables.remove(toRemove);
+    } finally {
+      tableLock.writeLock().unlock();
     }
-
-    public void swap(Table toAdd, Table toRemove) {
-        try {
-            tableLock.writeLock().lock();
-            tables.add(toAdd);
-            tables.remove(toRemove);
-        } finally {
-            tableLock.writeLock().unlock();
-        }
-    }
+  }
 }

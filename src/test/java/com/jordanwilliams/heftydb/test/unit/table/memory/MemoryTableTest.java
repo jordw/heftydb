@@ -22,6 +22,7 @@ import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,108 +32,125 @@ import java.util.ListIterator;
 
 public class MemoryTableTest extends RecordTest {
 
-    private static final Key MID_KEY = new Key(ByteBuffers.fromString("JKLMNOP"));
+  private static final Key MID_KEY = new Key(ByteBuffers.fromString("JKLMNOP"));
 
-    public MemoryTableTest(List<Record> testRecords) {
-        super(testRecords);
+  public MemoryTableTest(List<Record> testRecords) {
+    super(testRecords);
+  }
+
+  @Test
+  public void readWriteTest() {
+    MemoryTable memoryTable = new MemoryTable(1);
+
+    for (Record record : records) {
+      memoryTable.put(record);
     }
 
-    @Test
-    public void readWriteTest() {
-        MemoryTable memoryTable = new MemoryTable(1);
+    for (Record record : recordGenerator.latestRecords(records, Long.MAX_VALUE)) {
+      Assert.assertEquals("Records match", record, memoryTable.get(record.key(), Long.MAX_VALUE));
+    }
+  }
 
-        for (Record record : records) {
-            memoryTable.put(record);
-        }
+  @Test
+  public void mightContainTest() {
+    MemoryTable memoryTable = new MemoryTable(1);
 
-        for (Record record : recordGenerator.latestRecords(records, Long.MAX_VALUE)) {
-            Assert.assertEquals("Records match", record, memoryTable.get(record.key(), Long.MAX_VALUE));
-        }
+    for (Record record : records) {
+      memoryTable.put(record);
     }
 
-    @Test
-    public void mightContainTest() {
-        MemoryTable memoryTable = new MemoryTable(1);
+    for (Record record : recordGenerator.latestRecords(records, Long.MAX_VALUE)) {
+      Assert.assertTrue("Records are contained", memoryTable.mightContain(record.key()));
+    }
+  }
 
-        for (Record record : records) {
-            memoryTable.put(record);
-        }
+  @Test
+  public void ascendingIteratorTest() {
+    MemoryTable memoryTable = new MemoryTable(1);
 
-        for (Record record : recordGenerator.latestRecords(records, Long.MAX_VALUE)) {
-            Assert.assertTrue("Records are contained", memoryTable.mightContain(record.key()));
-        }
+    for (Record record : records) {
+      memoryTable.put(record);
     }
 
-    @Test
-    public void ascendingIteratorTest() {
-        MemoryTable memoryTable = new MemoryTable(1);
+    Iterator<Record>
+        ascendingIterator =
+        memoryTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+    ListIterator<Record>
+        latestRecordIterator =
+        recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
 
-        for (Record record : records) {
-            memoryTable.put(record);
-        }
+    while (latestRecordIterator.hasNext()) {
+      Assert.assertEquals("Records match", latestRecordIterator.next(), ascendingIterator.next());
+    }
+  }
 
-        Iterator<Record> ascendingIterator = memoryTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
-        ListIterator<Record> latestRecordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
+  @Test
+  public void ascendingRangeIteratorTest() {
+    List<Record> records = recordGenerator.testRecords(100, 20);
+    MemoryTable memoryTable = new MemoryTable(1);
 
-        while (latestRecordIterator.hasNext()) {
-            Assert.assertEquals("Records match", latestRecordIterator.next(), ascendingIterator.next());
-        }
+    for (Record record : records) {
+      memoryTable.put(record);
     }
 
-    @Test
-    public void ascendingRangeIteratorTest() {
-        List<Record> records = recordGenerator.testRecords(100, 20);
-        MemoryTable memoryTable = new MemoryTable(1);
+    Iterator<Record>
+        ascendingRangeIterator =
+        memoryTable.iteratorFrom(MID_KEY, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+    ListIterator<Record>
+        latestRecordIterator =
+        recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
 
-        for (Record record : records) {
-            memoryTable.put(record);
-        }
+    while (latestRecordIterator.hasNext()) {
+      Record next = latestRecordIterator.next();
 
-        Iterator<Record> ascendingRangeIterator = memoryTable.iteratorFrom(MID_KEY, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
-        ListIterator<Record> latestRecordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
+      if (next.key().compareTo(MID_KEY) >= 0) {
+        Assert.assertEquals("Records match", next, ascendingRangeIterator.next());
+      }
+    }
+  }
 
-        while (latestRecordIterator.hasNext()) {
-            Record next = latestRecordIterator.next();
+  @Test
+  public void descendingIteratorTest() {
+    MemoryTable memoryTable = new MemoryTable(1);
 
-            if (next.key().compareTo(MID_KEY) >= 0) {
-                Assert.assertEquals("Records match", next, ascendingRangeIterator.next());
-            }
-        }
+    for (Record record : records) {
+      memoryTable.put(record);
     }
 
-    @Test
-    public void descendingIteratorTest() {
-        MemoryTable memoryTable = new MemoryTable(1);
+    Iterator<Record>
+        descendingIterator =
+        memoryTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+    ListIterator<Record>
+        latestRecordIterator =
+        recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
 
-        for (Record record : records) {
-            memoryTable.put(record);
-        }
+    while (latestRecordIterator.hasPrevious()) {
+      Assert.assertEquals("Records match", latestRecordIterator.previous(),
+                          descendingIterator.next());
+    }
+  }
 
-        Iterator<Record> descendingIterator = memoryTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
-        ListIterator<Record> latestRecordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
+  @Test
+  public void descendingRangeIteratorTest() {
+    MemoryTable memoryTable = new MemoryTable(1);
 
-        while (latestRecordIterator.hasPrevious()) {
-            Assert.assertEquals("Records match", latestRecordIterator.previous(), descendingIterator.next());
-        }
+    for (Record record : records) {
+      memoryTable.put(record);
     }
 
-    @Test
-    public void descendingRangeIteratorTest() {
-        MemoryTable memoryTable = new MemoryTable(1);
+    Iterator<Record>
+        descendingRangeIterator =
+        memoryTable.iteratorFrom(MID_KEY, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+    ListIterator<Record>
+        latestRecordIterator =
+        recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
 
-        for (Record record : records) {
-            memoryTable.put(record);
-        }
+    while (latestRecordIterator.hasPrevious()) {
+      Record next = latestRecordIterator.previous();
 
-        Iterator<Record> descendingRangeIterator = memoryTable.iteratorFrom(MID_KEY, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
-        ListIterator<Record> latestRecordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).listIterator();
-
-        while (latestRecordIterator.hasPrevious()) {
-            Record next = latestRecordIterator.previous();
-
-            if (next.key().compareTo(MID_KEY) <= 0) {
-                Assert.assertEquals("Records match", next, descendingRangeIterator.next());
-            }
-        }
+      if (next.key().compareTo(MID_KEY) <= 0) {
+        Assert.assertEquals("Records match", next, descendingRangeIterator.next());
+      }
     }
+  }
 }

@@ -18,16 +18,17 @@ package com.jordanwilliams.heftydb.test.unit.offheap;
 
 
 import com.jordanwilliams.heftydb.offheap.UnsafeAllocator;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 public class UnsafeAllocatorTest {
 
-    @Test
-    public void allocateFreeTest() {
-        UnsafeAllocator unsafeAllocator = new UnsafeAllocator();
-        long address = unsafeAllocator.allocate(128);
-        Assert.assertTrue("Address is non-zero", address != 0);
-        unsafeAllocator.free(address);
-    }
+  @Test
+  public void allocateFreeTest() {
+    UnsafeAllocator unsafeAllocator = new UnsafeAllocator();
+    long address = unsafeAllocator.allocate(128);
+    Assert.assertTrue("Address is non-zero", address != 0);
+    unsafeAllocator.free(address);
+  }
 }

@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.metrics;
 
 public interface Metric {
 
-    public String name();
+  public String name();
 
-    public String summary();
+  public String summary();
 }

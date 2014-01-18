@@ -17,7 +17,9 @@
 package com.jordanwilliams.heftydb.test.unit.util;
 
 import com.google.common.primitives.Ints;
+
 import com.jordanwilliams.heftydb.util.MergingIterator;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,18 +27,21 @@ import java.util.Iterator;
 
 public class MergingIteratorTest {
 
-    private static final int[] ARRAY1 = {1, 2, 3, 4, 5, 6};
-    private static final int[] ARRAY2 = {1, 4, 5, 7, 9, 10};
-    private static final int[] MERGED_ARRAY = {1, 1, 2, 3, 4, 4, 5, 5, 6, 7, 9, 10};
+  private static final int[] ARRAY1 = {1, 2, 3, 4, 5, 6};
+  private static final int[] ARRAY2 = {1, 4, 5, 7, 9, 10};
+  private static final int[] MERGED_ARRAY = {1, 1, 2, 3, 4, 4, 5, 5, 6, 7, 9, 10};
 
-    @Test
-    public void mergeTest() {
-        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(Ints.asList(ARRAY1).iterator(), Ints.asList(ARRAY2).iterator());
+  @Test
+  public void mergeTest() {
+    MergingIterator<Integer>
+        mergingIterator =
+        new MergingIterator<Integer>(Ints.asList(ARRAY1).iterator(),
+                                     Ints.asList(ARRAY2).iterator());
 
-        Iterator<Integer> mergedIterator = Ints.asList(MERGED_ARRAY).iterator();
+    Iterator<Integer> mergedIterator = Ints.asList(MERGED_ARRAY).iterator();
 
-        while (mergedIterator.hasNext()) {
-            Assert.assertEquals("Merged values match", mergedIterator.next(), mergingIterator.next());
-        }
+    while (mergedIterator.hasNext()) {
+      Assert.assertEquals("Merged values match", mergedIterator.next(), mergingIterator.next());
     }
+  }
 }

@@ -17,6 +17,7 @@
 package com.jordanwilliams.heftydb.record;
 
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+
 import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
@@ -24,52 +25,58 @@ import java.nio.ByteBuffer;
 @Immutable
 public class Value implements Comparable<Value> {
 
-    public static Value TOMBSTONE_VALUE = new Value(ByteBuffers.EMPTY_BUFFER);
+  public static Value TOMBSTONE_VALUE = new Value(ByteBuffers.EMPTY_BUFFER);
 
-    private final ByteBuffer value;
+  private final ByteBuffer value;
 
-    public Value(ByteBuffer value) {
-        this.value = value;
+  public Value(ByteBuffer value) {
+    this.value = value;
+  }
+
+  public ByteBuffer data() {
+    return value;
+  }
+
+  public boolean isEmpty() {
+    return value.capacity() == 0;
+  }
+
+  public int size() {
+    return value.capacity();
+  }
+
+  @Override
+  public int compareTo(Value o) {
+    return value.compareTo(o.value);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
 
-    public ByteBuffer data() {
-        return value;
+    Value value1 = (Value) o;
+
+    if (value != null ? !value.equals(value1.value) : value1.value != null) {
+      return false;
     }
 
-    public boolean isEmpty() {
-        return value.capacity() == 0;
-    }
+    return true;
+  }
 
-    public int size() {
-        return value.capacity();
-    }
+  @Override
+  public int hashCode() {
+    return value != null ? value.hashCode() : 0;
+  }
 
-    @Override
-    public int compareTo(Value o) {
-        return value.compareTo(o.value);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Value value1 = (Value) o;
-
-        if (value != null ? !value.equals(value1.value) : value1.value != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return value != null ? value.hashCode() : 0;
-    }
-
-    @Override
-    public String toString() {
-        return "Value{" +
-                "data=" + new String(value.array()) +
-                "}";
-    }
+  @Override
+  public String toString() {
+    return "Value{" +
+           "data=" + new String(value.array()) +
+           "}";
+  }
 }

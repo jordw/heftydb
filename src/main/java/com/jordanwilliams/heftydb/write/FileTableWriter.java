@@ -30,74 +30,80 @@ import java.util.List;
 
 public class FileTableWriter {
 
-    private final long tableId;
-    private final int maxRecordBlockSizeBytes;
-    private final int level;
-    private final List<Long> recordBlockOffsets = new ArrayList<Long>();
-    private final Paths paths;
-    private final IndexWriter indexWriter;
-    private final FilterWriter filterWriter;
-    private final MetaTableWriter metaWriter;
-    private final DataFile tableDataFile;
+  private final long tableId;
+  private final int maxRecordBlockSizeBytes;
+  private final int level;
+  private final List<Long> recordBlockOffsets = new ArrayList<Long>();
+  private final Paths paths;
+  private final IndexWriter indexWriter;
+  private final FilterWriter filterWriter;
+  private final MetaTableWriter metaWriter;
+  private final DataFile tableDataFile;
 
-    private RecordBlock.Builder recordBlockBuilder;
+  private RecordBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level) throws IOException {
-        this.tableId = tableId;
-        this.paths = paths;
-        this.level = level;
-        this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlockSizeBytes);
-        this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
-        this.recordBlockBuilder = new RecordBlock.Builder();
-        this.maxRecordBlockSizeBytes = maxRecordBlockSizeBytes;
-        this.metaWriter = MetaTableWriter.open(tableId, paths, level);
-        this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
+  private FileTableWriter(long tableId, Paths paths, long approxRecordCount,
+                          int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level)
+      throws IOException {
+    this.tableId = tableId;
+    this.paths = paths;
+    this.level = level;
+    this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlockSizeBytes);
+    this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
+    this.recordBlockBuilder = new RecordBlock.Builder();
+    this.maxRecordBlockSizeBytes = maxRecordBlockSizeBytes;
+    this.metaWriter = MetaTableWriter.open(tableId, paths, level);
+    this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
+  }
+
+  public void write(Record record) throws IOException {
+    if (recordBlockBuilder.sizeBytes() >= maxRecordBlockSizeBytes) {
+      writeRecordBlock();
     }
 
-    public void write(Record record) throws IOException {
-        if (recordBlockBuilder.sizeBytes() >= maxRecordBlockSizeBytes) {
-            writeRecordBlock();
-        }
+    recordBlockBuilder.addRecord(record);
+    filterWriter.write(record);
+    metaWriter.write(record);
+  }
 
-        recordBlockBuilder.addRecord(record);
-        filterWriter.write(record);
-        metaWriter.write(record);
+  public void finish() throws IOException {
+    writeRecordBlock();
+    writeBlockOffsets();
+
+    filterWriter.finish();
+    indexWriter.finish();
+    metaWriter.finish();
+    tableDataFile.close();
+  }
+
+  private void writeRecordBlock() throws IOException {
+    RecordBlock recordBlock = recordBlockBuilder.build();
+    ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
+
+    long recordBlockOffset = tableDataFile.appendInt(recordBlockBuffer.capacity());
+    recordBlockOffsets.add(recordBlockOffset);
+    recordBlockBuffer.rewind();
+    tableDataFile.append(recordBlockBuffer);
+
+    Record startRecord = recordBlock.startRecord();
+    indexWriter
+        .write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), recordBlockOffset));
+    recordBlock.memory().release();
+    recordBlockBuilder = new RecordBlock.Builder();
+  }
+
+  private void writeBlockOffsets() throws IOException {
+    for (long offset : recordBlockOffsets) {
+      tableDataFile.appendLong(offset);
     }
 
-    public void finish() throws IOException {
-        writeRecordBlock();
-        writeBlockOffsets();
+    tableDataFile.appendInt(recordBlockOffsets.size());
+  }
 
-        filterWriter.finish();
-        indexWriter.finish();
-        metaWriter.finish();
-        tableDataFile.close();
-    }
-
-    private void writeRecordBlock() throws IOException {
-        RecordBlock recordBlock = recordBlockBuilder.build();
-        ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
-
-        long recordBlockOffset = tableDataFile.appendInt(recordBlockBuffer.capacity());
-        recordBlockOffsets.add(recordBlockOffset);
-        recordBlockBuffer.rewind();
-        tableDataFile.append(recordBlockBuffer);
-
-        Record startRecord = recordBlock.startRecord();
-        indexWriter.write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), recordBlockOffset));
-        recordBlock.memory().release();
-        recordBlockBuilder = new RecordBlock.Builder();
-    }
-
-    private void writeBlockOffsets() throws IOException {
-        for (long offset : recordBlockOffsets){
-            tableDataFile.appendLong(offset);
-        }
-
-        tableDataFile.appendInt(recordBlockOffsets.size());
-    }
-
-    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level) throws IOException {
-        return new FileTableWriter(tableId, paths, approxRecordCount, maxIndexBlockSizeBytes, maxRecordBlockSizeBytes, level);
-    }
+  public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount,
+                                     int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes,
+                                     int level) throws IOException {
+    return new FileTableWriter(tableId, paths, approxRecordCount, maxIndexBlockSizeBytes,
+                               maxRecordBlockSizeBytes, level);
+  }
 }

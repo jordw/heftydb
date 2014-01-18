@@ -22,74 +22,74 @@ import java.nio.ByteBuffer;
 
 public class BitSet implements Offheap {
 
-    public static class Builder {
-
-        private final Memory memory;
-        private final ByteBuffer directBuffer;
-        private final int paddingBytes;
-
-        public Builder(long bitCount, int paddingBytes) {
-            this.memory = Memory.allocate(paddingBytes + (memoryOffset(bitCount) + Sizes.LONG_SIZE));
-            this.directBuffer = memory.directBuffer();
-            this.paddingBytes = paddingBytes;
-        }
-
-        public void set(long bitIndex, boolean value) {
-            int offset = memoryOffset(bitIndex);
-
-            if (value) {
-                //Set
-                directBuffer.putLong(offset, directBuffer.getLong(offset) | (1L << bitIndex));
-            } else {
-                //Clear
-                directBuffer.putLong(offset, directBuffer.getLong(offset) & ~(1L << bitIndex));
-            }
-        }
-
-        public BitSet build() {
-            return new BitSet(memory, memory.size() - paddingBytes);
-        }
-
-        public int usableBytes() {
-            return memory.size() - paddingBytes;
-        }
-
-        public long bitCount() {
-            return usableBytes() * 8;
-        }
-    }
-
-    private static final int ADDRESS_BITS_PER_WORD = 6;
+  public static class Builder {
 
     private final Memory memory;
     private final ByteBuffer directBuffer;
-    private final int usableBytes;
+    private final int paddingBytes;
 
-    public BitSet(Memory memory, int usableBytes) {
-        this.memory = memory;
-        this.directBuffer = memory.directBuffer();
-        this.usableBytes = usableBytes;
+    public Builder(long bitCount, int paddingBytes) {
+      this.memory = Memory.allocate(paddingBytes + (memoryOffset(bitCount) + Sizes.LONG_SIZE));
+      this.directBuffer = memory.directBuffer();
+      this.paddingBytes = paddingBytes;
     }
 
-    public boolean get(long index) {
-        int offset = memoryOffset(index);
-        return ((directBuffer.getLong(offset) & (1L << index)) != 0);
+    public void set(long bitIndex, boolean value) {
+      int offset = memoryOffset(bitIndex);
+
+      if (value) {
+        //Set
+        directBuffer.putLong(offset, directBuffer.getLong(offset) | (1L << bitIndex));
+      } else {
+        //Clear
+        directBuffer.putLong(offset, directBuffer.getLong(offset) & ~(1L << bitIndex));
+      }
+    }
+
+    public BitSet build() {
+      return new BitSet(memory, memory.size() - paddingBytes);
     }
 
     public int usableBytes() {
-        return usableBytes;
+      return memory.size() - paddingBytes;
     }
 
     public long bitCount() {
-        return usableBytes * 8;
+      return usableBytes() * 8;
     }
+  }
 
-    @Override
-    public Memory memory() {
-        return memory;
-    }
+  private static final int ADDRESS_BITS_PER_WORD = 6;
 
-    private static int memoryOffset(long bitIndex) {
-        return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
-    }
+  private final Memory memory;
+  private final ByteBuffer directBuffer;
+  private final int usableBytes;
+
+  public BitSet(Memory memory, int usableBytes) {
+    this.memory = memory;
+    this.directBuffer = memory.directBuffer();
+    this.usableBytes = usableBytes;
+  }
+
+  public boolean get(long index) {
+    int offset = memoryOffset(index);
+    return ((directBuffer.getLong(offset) & (1L << index)) != 0);
+  }
+
+  public int usableBytes() {
+    return usableBytes;
+  }
+
+  public long bitCount() {
+    return usableBytes * 8;
+  }
+
+  @Override
+  public Memory memory() {
+    return memory;
+  }
+
+  private static int memoryOffset(long bitIndex) {
+    return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
+  }
 }

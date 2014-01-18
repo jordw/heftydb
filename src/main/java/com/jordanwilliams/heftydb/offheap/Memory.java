@@ -22,81 +22,83 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
-    private static final Allocator allocator = Allocator.allocator;
-    private static final Constructor directBufferConstructor;
+  private static final Allocator allocator = Allocator.allocator;
+  private static final Constructor directBufferConstructor;
 
-    static {
-        try {
-            Constructor[] constructors = Class.forName("java.nio.DirectByteBuffer").getDeclaredConstructors();
-            directBufferConstructor = constructors[0];
-            directBufferConstructor.setAccessible(true);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+  static {
+    try {
+      Constructor[]
+          constructors =
+          Class.forName("java.nio.DirectByteBuffer").getDeclaredConstructors();
+      directBufferConstructor = constructors[0];
+      directBufferConstructor.setAccessible(true);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private final AtomicInteger retainCount = new AtomicInteger(1);
+  private final int size;
+  private final ByteBuffer directBuffer;
+
+  private long baseAddress;
+
+  private Memory(int sizeBytes) {
+    this.baseAddress = allocator.allocate(sizeBytes);
+    this.size = sizeBytes;
+    this.directBuffer = rawDirectBuffer(baseAddress, sizeBytes);
+  }
+
+  public static Memory allocate(int sizeBytes) {
+    if (sizeBytes < 0) {
+      throw new IllegalArgumentException();
     }
 
-    private final AtomicInteger retainCount = new AtomicInteger(1);
-    private final int size;
-    private final ByteBuffer directBuffer;
+    return new Memory(sizeBytes);
+  }
 
-    private long baseAddress;
+  public ByteBuffer directBuffer() {
+    return directBuffer;
+  }
 
-    private Memory(int sizeBytes) {
-        this.baseAddress = allocator.allocate(sizeBytes);
-        this.size = sizeBytes;
-        this.directBuffer = rawDirectBuffer(baseAddress, sizeBytes);
+  public boolean isFree() {
+    return baseAddress == 0;
+  }
+
+  public void free() {
+    allocator.free(baseAddress);
+    baseAddress = 0;
+  }
+
+  public int size() {
+    return size;
+  }
+
+  public boolean retain() {
+    while (true) {
+      int retainValue = retainCount.get();
+
+      if (retainValue <= 0) {
+        return false;
+      }
+
+      if (retainCount.compareAndSet(retainValue, retainValue + 1)) {
+        return true;
+      }
     }
+  }
 
-    public static Memory allocate(int sizeBytes) {
-        if (sizeBytes < 0) {
-            throw new IllegalArgumentException();
-        }
-
-        return new Memory(sizeBytes);
+  public void release() {
+    if (retainCount.decrementAndGet() == 0) {
+      free();
     }
+  }
 
-    public ByteBuffer directBuffer() {
-        return directBuffer;
+  private static ByteBuffer rawDirectBuffer(long address, int sizeBytes) {
+    try {
+      return (ByteBuffer) directBufferConstructor.newInstance(address, sizeBytes);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-
-    public boolean isFree() {
-        return baseAddress == 0;
-    }
-
-    public void free() {
-        allocator.free(baseAddress);
-        baseAddress = 0;
-    }
-
-    public int size() {
-        return size;
-    }
-
-    public boolean retain() {
-        while (true) {
-            int retainValue = retainCount.get();
-
-            if (retainValue <= 0) {
-                return false;
-            }
-
-            if (retainCount.compareAndSet(retainValue, retainValue + 1)) {
-                return true;
-            }
-        }
-    }
-
-    public void release() {
-        if (retainCount.decrementAndGet() == 0) {
-            free();
-        }
-    }
-
-    private static ByteBuffer rawDirectBuffer(long address, int sizeBytes) {
-        try {
-            return (ByteBuffer) directBufferConstructor.newInstance(address, sizeBytes);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+  }
 }

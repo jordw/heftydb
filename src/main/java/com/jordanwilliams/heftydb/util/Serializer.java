@@ -21,10 +21,10 @@ import java.nio.ByteBuffer;
 
 public interface Serializer<V> {
 
-    public int sizeBytes(V item);
+  public int sizeBytes(V item);
 
-    public void serialize(V item, ByteBuffer buffer);
+  public void serialize(V item, ByteBuffer buffer);
 
-    public void deserialize(ByteBuffer buffer);
+  public void deserialize(ByteBuffer buffer);
 
 }

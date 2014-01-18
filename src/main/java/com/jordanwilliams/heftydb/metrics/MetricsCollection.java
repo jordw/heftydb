@@ -25,40 +25,40 @@ import java.util.concurrent.ConcurrentHashMap;
 @ThreadSafe
 public class MetricsCollection {
 
-    private final Map<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
-    private final String name;
+  private final Map<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
+  private final String name;
 
-    public MetricsCollection(String name) {
-        this.name = name;
+  public MetricsCollection(String name) {
+    this.name = name;
+  }
+
+  public MetricsCollection() {
+    this("");
+  }
+
+  public void put(Metric metric) {
+    metrics.put(metric.name(), metric);
+  }
+
+  public <T extends Metric> T get(String name) {
+    return (T) metrics.get(name);
+  }
+
+  public String summary() {
+    StringBuilder str = new StringBuilder();
+
+    if (name != null && !name.isEmpty()) {
+      str.append(name + "\n");
     }
 
-    public MetricsCollection() {
-        this("");
+    for (String key : metrics.keySet()) {
+      String summary = metrics.get(key).summary();
+
+      if (summary != null && !summary.isEmpty()) {
+        str.append("    " + summary + "\n");
+      }
     }
 
-    public void put(Metric metric) {
-        metrics.put(metric.name(), metric);
-    }
-
-    public <T extends Metric> T get(String name) {
-        return (T) metrics.get(name);
-    }
-
-    public String summary() {
-        StringBuilder str = new StringBuilder();
-
-        if (name != null && !name.isEmpty()) {
-            str.append(name + "\n");
-        }
-
-        for (String key : metrics.keySet()) {
-            String summary = metrics.get(key).summary();
-
-            if (summary != null && !summary.isEmpty()) {
-                str.append("    " + summary + "\n");
-            }
-        }
-
-        return str.toString();
-    }
+    return str.toString();
+  }
 }

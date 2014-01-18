@@ -18,6 +18,7 @@ package com.jordanwilliams.heftydb.io;
 
 import com.jordanwilliams.heftydb.events.DataFileEvents;
 import com.jordanwilliams.heftydb.util.Sizes;
+
 import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
@@ -31,146 +32,150 @@ import java.util.concurrent.atomic.AtomicLong;
 @ThreadSafe
 public class MutableDataFile implements DataFile {
 
-    private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>() {
-        @Override
-        protected ByteBuffer initialValue() {
-            ByteBuffer primitiveBuffer = ByteBuffer.allocate(Sizes.LONG_SIZE);
-            primitiveBuffer.order(ByteOrder.nativeOrder());
-            return primitiveBuffer;
-        }
-    };
-
-    private static final DataFileEvents events = new DataFileEvents("File IO");
-
-    private final Path path;
-    private final FileChannel channel;
-    private final AtomicLong appendPosition = new AtomicLong();
-
-    private MutableDataFile(Path path) throws IOException {
-        this.path = path;
-        this.channel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-    }
-
+  private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>() {
     @Override
-    public long append(ByteBuffer bufferToWrite) throws IOException {
-        long writtenPosition = appendPosition.getAndAdd(bufferToWrite.limit() - bufferToWrite.position());
-        write(bufferToWrite, writtenPosition);
-        return writtenPosition;
+    protected ByteBuffer initialValue() {
+      ByteBuffer primitiveBuffer = ByteBuffer.allocate(Sizes.LONG_SIZE);
+      primitiveBuffer.order(ByteOrder.nativeOrder());
+      return primitiveBuffer;
     }
+  };
 
-    @Override
-    public long appendInt(int intToWrite) throws IOException {
-        return append(intBuffer(intToWrite));
-    }
+  private static final DataFileEvents events = new DataFileEvents("File IO");
 
-    @Override
-    public long appendLong(long longToWrite) throws IOException {
-        return append(longBuffer(longToWrite));
-    }
+  private final Path path;
+  private final FileChannel channel;
+  private final AtomicLong appendPosition = new AtomicLong();
 
-    @Override
-    public long read(ByteBuffer bufferToRead, long position) throws IOException {
-        events.startRead();
-        long bytesRead = channel.read(bufferToRead, position);
-        events.finishRead();
-        return bytesRead;
-    }
+  private MutableDataFile(Path path) throws IOException {
+    this.path = path;
+    this.channel =
+        FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE,
+                         StandardOpenOption.CREATE);
+  }
 
-    @Override
-    public int readInt(long position) throws IOException {
-        events.startRead();
-        ByteBuffer intBuffer = intBuffer();
-        channel.read(intBuffer, position);
-        intBuffer.rewind();
-        events.finishRead();
-        return intBuffer.getInt();
-    }
+  @Override
+  public long append(ByteBuffer bufferToWrite) throws IOException {
+    long
+        writtenPosition =
+        appendPosition.getAndAdd(bufferToWrite.limit() - bufferToWrite.position());
+    write(bufferToWrite, writtenPosition);
+    return writtenPosition;
+  }
 
-    @Override
-    public long readLong(long position) throws IOException {
-        events.startRead();
-        ByteBuffer longBuffer = longBuffer();
-        channel.read(longBuffer, position);
-        longBuffer.rewind();
-        events.finishRead();
-        return longBuffer.getLong();
-    }
+  @Override
+  public long appendInt(int intToWrite) throws IOException {
+    return append(intBuffer(intToWrite));
+  }
 
-    @Override
-    public long write(ByteBuffer bufferToWrite, long position) throws IOException {
-        events.startWrite();
-        bufferToWrite.rewind();
-        long bytesWritten = channel.write(bufferToWrite, position);
-        events.finishWrite();
-        return bytesWritten;
-    }
+  @Override
+  public long appendLong(long longToWrite) throws IOException {
+    return append(longBuffer(longToWrite));
+  }
 
-    @Override
-    public long writeLong(long longToWrite, long position) throws IOException {
-        return write(longBuffer(longToWrite), position);
-    }
+  @Override
+  public long read(ByteBuffer bufferToRead, long position) throws IOException {
+    events.startRead();
+    long bytesRead = channel.read(bufferToRead, position);
+    events.finishRead();
+    return bytesRead;
+  }
 
-    @Override
-    public long writeInt(int intToWrite, long position) throws IOException {
-        return write(intBuffer(intToWrite), position);
-    }
+  @Override
+  public int readInt(long position) throws IOException {
+    events.startRead();
+    ByteBuffer intBuffer = intBuffer();
+    channel.read(intBuffer, position);
+    intBuffer.rewind();
+    events.finishRead();
+    return intBuffer.getInt();
+  }
 
-    @Override
-    public long size() throws IOException {
-        return channel.size();
-    }
+  @Override
+  public long readLong(long position) throws IOException {
+    events.startRead();
+    ByteBuffer longBuffer = longBuffer();
+    channel.read(longBuffer, position);
+    longBuffer.rewind();
+    events.finishRead();
+    return longBuffer.getLong();
+  }
 
-    @Override
-    public void sync() throws IOException {
-        events.startSync();
-        channel.force(true);
-        events.finishSync();
-    }
+  @Override
+  public long write(ByteBuffer bufferToWrite, long position) throws IOException {
+    events.startWrite();
+    bufferToWrite.rewind();
+    long bytesWritten = channel.write(bufferToWrite, position);
+    events.finishWrite();
+    return bytesWritten;
+  }
 
-    @Override
-    public void close() throws IOException {
-        sync();
-        channel.close();
-    }
+  @Override
+  public long writeLong(long longToWrite, long position) throws IOException {
+    return write(longBuffer(longToWrite), position);
+  }
 
-    @Override
-    public Path path() {
-        return path;
-    }
+  @Override
+  public long writeInt(int intToWrite, long position) throws IOException {
+    return write(intBuffer(intToWrite), position);
+  }
 
-    private ByteBuffer intBuffer() {
-        ByteBuffer buffer = PRIMITIVE_BUFFER.get();
-        buffer.rewind();
-        buffer.limit(Sizes.INT_SIZE);
-        return buffer;
-    }
+  @Override
+  public long size() throws IOException {
+    return channel.size();
+  }
 
-    private ByteBuffer intBuffer(int value) {
-        ByteBuffer intBuffer = intBuffer();
-        intBuffer.putInt(value);
-        intBuffer.rewind();
-        return intBuffer();
-    }
+  @Override
+  public void sync() throws IOException {
+    events.startSync();
+    channel.force(true);
+    events.finishSync();
+  }
 
-    private ByteBuffer longBuffer() {
-        ByteBuffer buffer = PRIMITIVE_BUFFER.get();
-        buffer.rewind();
-        buffer.limit(Sizes.LONG_SIZE);
-        return buffer;
-    }
+  @Override
+  public void close() throws IOException {
+    sync();
+    channel.close();
+  }
 
-    private ByteBuffer longBuffer(long value) {
-        ByteBuffer longBuffer = longBuffer();
-        longBuffer.putLong(value);
-        longBuffer.rewind();
-        return longBuffer;
-    }
+  @Override
+  public Path path() {
+    return path;
+  }
 
-    public static MutableDataFile open(Path path) throws IOException {
-        return new MutableDataFile(path);
-    }
+  private ByteBuffer intBuffer() {
+    ByteBuffer buffer = PRIMITIVE_BUFFER.get();
+    buffer.rewind();
+    buffer.limit(Sizes.INT_SIZE);
+    return buffer;
+  }
 
-    public static DataFileEvents events() {
-        return events;
-    }
+  private ByteBuffer intBuffer(int value) {
+    ByteBuffer intBuffer = intBuffer();
+    intBuffer.putInt(value);
+    intBuffer.rewind();
+    return intBuffer();
+  }
+
+  private ByteBuffer longBuffer() {
+    ByteBuffer buffer = PRIMITIVE_BUFFER.get();
+    buffer.rewind();
+    buffer.limit(Sizes.LONG_SIZE);
+    return buffer;
+  }
+
+  private ByteBuffer longBuffer(long value) {
+    ByteBuffer longBuffer = longBuffer();
+    longBuffer.putLong(value);
+    longBuffer.rewind();
+    return longBuffer;
+  }
+
+  public static MutableDataFile open(Path path) throws IOException {
+    return new MutableDataFile(path);
+  }
+
+  public static DataFileEvents events() {
+    return events;
+  }
 }

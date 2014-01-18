@@ -20,17 +20,17 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class Snapshots {
 
-    private final AtomicLong currentSnapshotId = new AtomicLong();
+  private final AtomicLong currentSnapshotId = new AtomicLong();
 
-    public Snapshots(long startingSnapshotId) {
-        this.currentSnapshotId.set(startingSnapshotId);
-    }
+  public Snapshots(long startingSnapshotId) {
+    this.currentSnapshotId.set(startingSnapshotId);
+  }
 
-    public long nextId() {
-        return currentSnapshotId.incrementAndGet();
-    }
+  public long nextId() {
+    return currentSnapshotId.incrementAndGet();
+  }
 
-    private long currentId() {
-        return currentSnapshotId.get();
-    }
+  private long currentId() {
+    return currentSnapshotId.get();
+  }
 }

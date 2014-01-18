@@ -22,31 +22,31 @@ import java.util.Collection;
 
 public class State {
 
-    private final Tables tables;
-    private final Snapshots snapshots;
-    private final Config config;
-    private final Paths paths;
+  private final Tables tables;
+  private final Snapshots snapshots;
+  private final Config config;
+  private final Paths paths;
 
-    public State(Collection<Table> tables, Config config, Paths paths, long currentSnapshotId) {
-        this.snapshots = new Snapshots(currentSnapshotId);
-        this.tables = new Tables(tables);
-        this.config = config;
-        this.paths = paths;
-    }
+  public State(Collection<Table> tables, Config config, Paths paths, long currentSnapshotId) {
+    this.snapshots = new Snapshots(currentSnapshotId);
+    this.tables = new Tables(tables);
+    this.config = config;
+    this.paths = paths;
+  }
 
-    public Paths files() {
-        return paths;
-    }
+  public Paths files() {
+    return paths;
+  }
 
-    public Tables tables() {
-        return tables;
-    }
+  public Tables tables() {
+    return tables;
+  }
 
-    public Snapshots snapshots() {
-        return snapshots;
-    }
+  public Snapshots snapshots() {
+    return snapshots;
+  }
 
-    public Config config() {
-        return config;
-    }
+  public Config config() {
+    return config;
+  }
 }

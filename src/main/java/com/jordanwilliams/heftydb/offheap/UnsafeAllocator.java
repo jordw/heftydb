@@ -23,25 +23,25 @@ import java.lang.reflect.Field;
 
 public class UnsafeAllocator implements Allocator {
 
-    static final Unsafe unsafe;
+  static final Unsafe unsafe;
 
-    @Override
-    public long allocate(long size) {
-        return unsafe.allocateMemory(size);
-    }
+  @Override
+  public long allocate(long size) {
+    return unsafe.allocateMemory(size);
+  }
 
-    @Override
-    public void free(long address) {
-        unsafe.freeMemory(address);
-    }
+  @Override
+  public void free(long address) {
+    unsafe.freeMemory(address);
+  }
 
-    static {
-        try {
-            Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = (sun.misc.Unsafe) field.get(null);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
+  static {
+    try {
+      Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+      field.setAccessible(true);
+      unsafe = (sun.misc.Unsafe) field.get(null);
+    } catch (Exception e) {
+      throw new AssertionError(e);
     }
+  }
 }

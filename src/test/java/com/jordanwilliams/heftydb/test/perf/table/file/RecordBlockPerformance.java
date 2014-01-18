@@ -26,25 +26,25 @@ import java.util.Random;
 
 public class RecordBlockPerformance {
 
-    public static void main(String[] args) {
-        RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
+  public static void main(String[] args) {
+    RecordGenerator generator = new RecordGenerator();
+    List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
 
-        RecordBlock.Builder blockBuilder = new RecordBlock.Builder();
-        for (Record record : records) {
-            blockBuilder.addRecord(record);
-        }
-
-        RecordBlock block = blockBuilder.build();
-
-        Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
-        int iterations = 2000000;
-
-        for (int i = 0; i < iterations; i++) {
-            block.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
-        }
-
-        System.out.println(iterations / watch.elapsedSeconds());
+    RecordBlock.Builder blockBuilder = new RecordBlock.Builder();
+    for (Record record : records) {
+      blockBuilder.addRecord(record);
     }
+
+    RecordBlock block = blockBuilder.build();
+
+    Random random = new Random(System.nanoTime());
+    StopWatch watch = StopWatch.start();
+    int iterations = 2000000;
+
+    for (int i = 0; i < iterations; i++) {
+      block.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
+    }
+
+    System.out.println(iterations / watch.elapsedSeconds());
+  }
 }

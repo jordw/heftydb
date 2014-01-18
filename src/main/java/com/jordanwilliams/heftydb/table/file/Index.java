@@ -29,52 +29,52 @@ import java.nio.ByteBuffer;
 
 public class Index {
 
-    private final long tableId;
-    private final DataFile indexFile;
-    private final IndexBlock rootIndexBlock;
-    private final IndexBlock.Cache cache;
+  private final long tableId;
+  private final DataFile indexFile;
+  private final IndexBlock rootIndexBlock;
+  private final IndexBlock.Cache cache;
 
-    private Index(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
-        this.tableId = tableId;
-        this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
-        this.cache = cache;
-        long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
-        this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
+  private Index(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
+    this.tableId = tableId;
+    this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
+    this.cache = cache;
+    long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
+    this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
+  }
+
+  public long recordBlockOffset(Key key, long maxSnapshotId) throws IOException {
+    IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
+
+    while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
+      IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
+      currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
     }
 
-    public long recordBlockOffset(Key key, long maxSnapshotId) throws IOException {
-        IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
+    return currentIndexRecord == null ? -1 : currentIndexRecord.offset();
+  }
 
-        while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
-            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
-            currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
-        }
+  public void close() throws IOException {
+    indexFile.close();
+    rootIndexBlock.memory().release();
+  }
 
-        return currentIndexRecord == null ? -1 : currentIndexRecord.offset();
+  private IndexBlock readIndexBlock(long blockOffset) throws IOException {
+    IndexBlock indexBlock = cache.get(tableId, blockOffset);
+
+    if (indexBlock == null) {
+      int indexBlockSize = indexFile.readInt(blockOffset);
+      Memory indexMemory = Memory.allocate(indexBlockSize);
+      ByteBuffer indexBuffer = indexMemory.directBuffer();
+      indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
+      indexBuffer.rewind();
+      indexBlock = new IndexBlock(new ByteMap(indexMemory));
+      cache.put(tableId, blockOffset, indexBlock);
     }
 
-    public void close() throws IOException {
-        indexFile.close();
-        rootIndexBlock.memory().release();
-    }
+    return indexBlock;
+  }
 
-    private IndexBlock readIndexBlock(long blockOffset) throws IOException {
-        IndexBlock indexBlock = cache.get(tableId, blockOffset);
-
-        if (indexBlock == null) {
-            int indexBlockSize = indexFile.readInt(blockOffset);
-            Memory indexMemory = Memory.allocate(indexBlockSize);
-            ByteBuffer indexBuffer = indexMemory.directBuffer();
-            indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
-            indexBuffer.rewind();
-            indexBlock = new IndexBlock(new ByteMap(indexMemory));
-            cache.put(tableId, blockOffset, indexBlock);
-        }
-
-        return indexBlock;
-    }
-
-    public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
-        return new Index(tableId, paths, cache);
-    }
+  public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
+    return new Index(tableId, paths, cache);
+  }
 }

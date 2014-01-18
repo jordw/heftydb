@@ -20,5 +20,5 @@ import com.jordanwilliams.heftydb.record.Record;
 
 public interface MutableTable extends Table {
 
-    public void put(Record record);
+  public void put(Record record);
 }
