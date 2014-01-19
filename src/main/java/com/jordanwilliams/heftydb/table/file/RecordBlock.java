@@ -150,7 +150,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     public Iterator<Record> iteratorFrom(Key key, Table.IterationDirection iterationDirection) {
         boolean ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
-        Key versionedKey = new Key(key.data(), 0);
+        Key versionedKey = new Key(key.data(), ascending ? 0 : Long.MAX_VALUE);
         int startIndex = ascending ? byteMap.ceilingIndex(versionedKey) : byteMap.floorIndex(versionedKey);
         return new BlockIterator(startIndex, iterationDirection);
     }

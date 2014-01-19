@@ -98,6 +98,19 @@ public class FileTableTest extends RecordTest {
         }
     }
 
+    @Test
+    public void descendingRangeIteratorTest() throws IOException {
+        List<Record> latestRecords = latestRecords(records);
+        int medianKeyIndex = latestRecords.size() / 2;
+        Key medianKey = latestRecords.get(medianKeyIndex).key();
+        Iterator<Record> tableRecordIterator = fileTable.iteratorFrom(medianKey, Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        ListIterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex + 1);
+
+        while (tableRecordIterator.hasNext()) {
+            Assert.assertEquals("Records match", recordIterator.previous(), tableRecordIterator.next());
+        }
+    }
+
     private FileTable openFileTable() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);

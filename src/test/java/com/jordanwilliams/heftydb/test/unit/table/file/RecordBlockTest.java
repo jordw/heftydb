@@ -114,7 +114,7 @@ public class RecordBlockTest {
     @Test
     public void descendingRangeIteratorTest() {
         Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(TEST_KEY_2, Table.IterationDirection.DESCENDING);
-        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
+        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());

@@ -226,6 +226,10 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     private Entry getEntry(int index) {
+        if (index < 0 || index >= entryCount){
+            throw new IndexOutOfBoundsException("Index: " + index + " " + (entryCount - 1));
+        }
+
         int entryOffset = entryOffset(index);
 
         //Key
