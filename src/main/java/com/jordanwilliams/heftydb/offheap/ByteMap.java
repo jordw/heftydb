@@ -138,16 +138,6 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     public int floorIndex(Key key) {
-        int index = binarySearch(key);
-        return Math.abs(index);
-    }
-
-    public int ceilingIndex(Key key) {
-        int index = binarySearch(key);
-        return index < 0 ? Math.abs(index) + 1 : index;
-    }
-
-    private int binarySearch(Key key) {
         int low = 0;
         int high = entryCount - 1;
 
@@ -165,7 +155,28 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             }
         }
 
-        return -(low - 1);
+        return low - 1;
+    }
+
+    public int ceilingIndex(Key key) {
+        int low = 0;
+        int high = entryCount - 1;
+
+        //Binary search
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int compare = compareKeys(key, mid);
+
+            if (compare < 0) {
+                low = mid + 1;
+            } else if (compare > 0) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+
+        return low;
     }
 
     public int entryCount() {
@@ -243,23 +254,6 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return new Entry(new Key(keyBuffer), new Value(valueBuffer));
     }
 
-    private Key getKey(int index) {
-        int entryOffset = entryOffset(index);
-
-        //Key
-        int keySize = directBuffer.getInt(entryOffset);
-        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-        int keyOffset = entryOffset + Sizes.INT_SIZE;
-
-        for (int i = keyOffset; i < keyOffset + keySize; i++) {
-            keyBuffer.put(directBuffer.get(i));
-        }
-
-        keyBuffer.rewind();
-
-        return new Key(keyBuffer);
-    }
-
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
         int entryOffset = entryOffset(bufferKeyIndex);
         int keySize = directBuffer.getInt(entryOffset);
@@ -269,8 +263,9 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         int remaining = keySize;
 
         for (int i = 0; i < compareCount; i++) {
-            byte bufferKeyVal = directBuffer.get(entryOffset + i);
-            byte compareKeyVal = compareKey.data().get(i);
+            //Convert to unsigned bytes
+            int bufferKeyVal = directBuffer.get(entryOffset + i) & 0xFF;
+            int compareKeyVal = compareKey.data().get(i) & 0xFF;
             remaining--;
 
             if (bufferKeyVal == compareKeyVal) {

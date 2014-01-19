@@ -83,10 +83,7 @@ public class FileTableTest extends RecordTest {
         Iterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex);
 
         while (tableRecordIterator.hasNext()) {
-            Record record = recordIterator.next();
-            Record tableRecord = tableRecordIterator.next();
-            int x = 1;
-            //Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
+            Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
         }
     }
 
