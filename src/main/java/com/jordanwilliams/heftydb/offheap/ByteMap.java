@@ -228,7 +228,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     private Entry getEntry(int index) {
-        if (index < 0 || index >= entryCount){
+        if (index < 0 || index >= entryCount) {
             throw new IndexOutOfBoundsException("Index: " + index + " Max: " + (entryCount - 1));
         }
 
@@ -290,7 +290,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
         int remainingDifference = bufferKeyRemaining - compareKeyRemaining;
 
-        if (remainingDifference == 0){
+        if (remainingDifference == 0) {
             long bufferSnapshotId = directBuffer.getLong(entryOffset + compareCount);
             return Long.compare(bufferSnapshotId, compareKey.snapshotId());
         }

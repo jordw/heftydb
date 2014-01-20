@@ -94,8 +94,7 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(TEST_KEY_2, 1),
-                Table.IterationDirection.ASCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(TEST_KEY_2, 1), Table.IterationDirection.ASCENDING);
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
 
         while (blockRecords.hasNext()) {
@@ -105,8 +104,7 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box"), 0),
-                Table.IterationDirection.ASCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box"), 0), Table.IterationDirection.ASCENDING);
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {
@@ -116,8 +114,7 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(TEST_KEY_2, 1),
-                Table.IterationDirection.DESCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(TEST_KEY_2, 1), Table.IterationDirection.DESCENDING);
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {
@@ -127,8 +124,7 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box"), 0),
-                Table.IterationDirection.DESCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box"), 0), Table.IterationDirection.DESCENDING);
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {
