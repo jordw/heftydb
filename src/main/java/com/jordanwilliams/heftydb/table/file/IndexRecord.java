@@ -50,7 +50,7 @@ public class IndexRecord {
                 1; //Leaf flag
     }
 
-    public int contentsSizeBytes() {
+    public int contentssize() {
         return Sizes.LONG_SIZE + //Offset
                 1; //Leaf flag
     }

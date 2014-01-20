@@ -31,7 +31,7 @@ import java.util.List;
 public class FileTableWriter {
 
     private final long tableId;
-    private final int maxRecordBlockSizeBytes;
+    private final int maxRecordBlocksize;
     private final int level;
     private final List<Long> recordBlockOffsets = new ArrayList<Long>();
     private final Paths paths;
@@ -42,20 +42,20 @@ public class FileTableWriter {
 
     private RecordBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level) throws IOException {
+    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize, int maxRecordBlocksize, int level) throws IOException {
         this.tableId = tableId;
         this.paths = paths;
         this.level = level;
-        this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlockSizeBytes);
+        this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlocksize);
         this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
         this.recordBlockBuilder = new RecordBlock.Builder();
-        this.maxRecordBlockSizeBytes = maxRecordBlockSizeBytes;
+        this.maxRecordBlocksize = maxRecordBlocksize;
         this.metaWriter = MetaTableWriter.open(tableId, paths, level);
         this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
     }
 
     public void write(Record record) throws IOException {
-        if (recordBlockBuilder.sizeBytes() >= maxRecordBlockSizeBytes) {
+        if (recordBlockBuilder.size() >= maxRecordBlocksize) {
             writeRecordBlock();
         }
 
@@ -97,7 +97,7 @@ public class FileTableWriter {
         tableDataFile.appendInt(recordBlockOffsets.size());
     }
 
-    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSizeBytes, int maxRecordBlockSizeBytes, int level) throws IOException {
-        return new FileTableWriter(tableId, paths, approxRecordCount, maxIndexBlockSizeBytes, maxRecordBlockSizeBytes, level);
+    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize, int maxRecordBlocksize, int level) throws IOException {
+        return new FileTableWriter(tableId, paths, approxRecordCount, maxIndexBlocksize, maxRecordBlocksize, level);
     }
 }

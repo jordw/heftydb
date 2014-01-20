@@ -193,8 +193,8 @@ public class FileTable implements Table {
     }
 
     @Override
-    public long sizeBytes() {
-        return metaTable.sizeBytes();
+    public long size() {
+        return metaTable.size();
     }
 
     @Override

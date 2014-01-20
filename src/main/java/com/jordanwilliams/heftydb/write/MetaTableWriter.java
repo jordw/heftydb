@@ -31,7 +31,7 @@ public class MetaTableWriter {
 
     private long maxSnapshotId;
     private long recordCount;
-    private long sizeBytes;
+    private long size;
 
     private MetaTableWriter(long tableId, Paths paths, int level) throws IOException {
         this.metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
@@ -45,7 +45,7 @@ public class MetaTableWriter {
         }
 
         recordCount++;
-        sizeBytes += record.size();
+        size += record.size();
     }
 
     public void finish() throws IOException {
@@ -53,7 +53,7 @@ public class MetaTableWriter {
         metaTableFile.appendInt(level);
         metaTableFile.appendLong(maxSnapshotId);
         metaTableFile.appendLong(recordCount);
-        metaTableFile.appendLong(sizeBytes);
+        metaTableFile.appendLong(size);
         metaTableFile.close();
     }
 

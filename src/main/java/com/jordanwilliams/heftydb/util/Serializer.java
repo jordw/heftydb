@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 
 public interface Serializer<V> {
 
-    public int sizeBytes(V item);
+    public int size(V item);
 
     public void serialize(V item, ByteBuffer buffer);
 

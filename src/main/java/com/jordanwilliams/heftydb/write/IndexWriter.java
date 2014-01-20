@@ -34,12 +34,12 @@ public class IndexWriter {
     private static final int MAX_INDEX_BLOCK_SIZE_BYTES = 65536;
 
     private final DataFile indexFile;
-    private final int maxIndexBlockSizeBytes;
+    private final int maxIndexBlocksize;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
 
-    private IndexWriter(long tableId, Paths paths, int maxIndexBlockSizeBytes) throws IOException {
+    private IndexWriter(long tableId, Paths paths, int maxIndexBlocksize) throws IOException {
         this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
-        this.maxIndexBlockSizeBytes = maxIndexBlockSizeBytes;
+        this.maxIndexBlocksize = maxIndexBlocksize;
         indexBlockBuilders.add(new IndexBlock.Builder());
     }
 
@@ -54,7 +54,7 @@ public class IndexWriter {
 
             IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
 
-            if (levelBuilder.sizeBytes() >= maxIndexBlockSizeBytes) {
+            if (levelBuilder.size() >= maxIndexBlocksize) {
                 IndexRecord metaRecord = writeIndexBlock(levelBuilder.build());
 
                 IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder();
@@ -104,8 +104,8 @@ public class IndexWriter {
         return metaIndexRecord;
     }
 
-    public static IndexWriter open(long tableId, Paths paths, int maxIndexSizeBytes) throws IOException {
-        return new IndexWriter(tableId, paths, maxIndexSizeBytes);
+    public static IndexWriter open(long tableId, Paths paths, int maxIndexsize) throws IOException {
+        return new IndexWriter(tableId, paths, maxIndexsize);
     }
 
     public static IndexWriter open(long tableId, Paths paths) throws IOException {

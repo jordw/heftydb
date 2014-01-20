@@ -29,7 +29,7 @@ public class MetaTable {
     private final int level;
     private final long maxSnapshotId;
     private final long recordCount;
-    private final long sizeBytes;
+    private final long size;
 
     private MetaTable(long tableId, Paths paths) throws IOException {
         DataFile metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
@@ -47,12 +47,12 @@ public class MetaTable {
         this.recordCount = metaTableFile.readLong(filePosition);
         filePosition += Sizes.LONG_SIZE;
 
-        this.sizeBytes = metaTableFile.readLong(filePosition);
+        this.size = metaTableFile.readLong(filePosition);
         metaTableFile.close();
     }
 
-    public long sizeBytes() {
-        return sizeBytes;
+    public long size() {
+        return size;
     }
 
     public long recordCount() {

@@ -38,7 +38,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
         private final com.google.common.cache.Cache<String, RecordBlock> cache;
 
-        public Cache(long maxSizeBytes) {
+        public Cache(long maxsize) {
             cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, RecordBlock>() {
                 @Override
                 public int weigh(String key, RecordBlock value) {
@@ -49,7 +49,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
                 public void onRemoval(RemovalNotification<String, RecordBlock> objectObjectRemovalNotification) {
                     objectObjectRemovalNotification.getValue().memory().release();
                 }
-            }).maximumWeight(maxSizeBytes).build();
+            }).maximumWeight(maxsize).build();
         }
 
         public Cache() {
@@ -72,15 +72,15 @@ public class RecordBlock implements Iterable<Record>, Offheap {
     public static class Builder {
 
         private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
-        private int sizeBytes;
+        private int size;
 
         public void addRecord(Record record) {
             byteMapBuilder.add(new Key(record.key().data(), record.key().snapshotId()), record.value());
-            sizeBytes += record.size();
+            size += record.size();
         }
 
-        public int sizeBytes() {
-            return sizeBytes;
+        public int size() {
+            return size;
         }
 
         public RecordBlock build() {

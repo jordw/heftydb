@@ -32,7 +32,7 @@ public class MemoryTable implements MutableTable {
     private final long id;
     private final ConcurrentNavigableMap<Key, Record> records = new ConcurrentSkipListMap<Key, Record>();
     private final AtomicInteger recordCount = new AtomicInteger();
-    private final AtomicInteger sizeBytes = new AtomicInteger();
+    private final AtomicInteger size = new AtomicInteger();
 
     public MemoryTable(long id) {
         this.id = id;
@@ -42,7 +42,7 @@ public class MemoryTable implements MutableTable {
     public void put(Record record) {
         records.put(record.key(), record);
         recordCount.incrementAndGet();
-        sizeBytes.addAndGet(record.size());
+        size.addAndGet(record.size());
     }
 
     @Override
@@ -81,8 +81,8 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public long sizeBytes() {
-        return sizeBytes.get();
+    public long size() {
+        return size.get();
     }
 
     @Override

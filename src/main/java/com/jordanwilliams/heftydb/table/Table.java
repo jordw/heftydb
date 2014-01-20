@@ -39,7 +39,7 @@ public interface Table extends Iterable<Record> {
 
     public long recordCount();
 
-    public long sizeBytes();
+    public long size();
 
     public int level();
 

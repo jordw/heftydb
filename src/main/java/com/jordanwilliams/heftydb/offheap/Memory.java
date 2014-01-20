@@ -41,18 +41,18 @@ public class Memory {
 
     private long baseAddress;
 
-    private Memory(int sizeBytes) {
-        this.baseAddress = allocator.allocate(sizeBytes);
-        this.size = sizeBytes;
-        this.directBuffer = rawDirectBuffer(baseAddress, sizeBytes);
+    private Memory(int size) {
+        this.baseAddress = allocator.allocate(size);
+        this.size = size;
+        this.directBuffer = rawDirectBuffer(baseAddress, size);
     }
 
-    public static Memory allocate(int sizeBytes) {
-        if (sizeBytes < 0) {
+    public static Memory allocate(int size) {
+        if (size < 0) {
             throw new IllegalArgumentException();
         }
 
-        return new Memory(sizeBytes);
+        return new Memory(size);
     }
 
     public ByteBuffer directBuffer() {
@@ -92,9 +92,9 @@ public class Memory {
         }
     }
 
-    private static ByteBuffer rawDirectBuffer(long address, int sizeBytes) {
+    private static ByteBuffer rawDirectBuffer(long address, int size) {
         try {
-            return (ByteBuffer) directBufferConstructor.newInstance(address, sizeBytes);
+            return (ByteBuffer) directBufferConstructor.newInstance(address, size);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

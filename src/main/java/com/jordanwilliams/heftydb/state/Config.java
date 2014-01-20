@@ -20,7 +20,7 @@ import java.nio.file.Path;
 
 public interface Config {
 
-    public int memoryTableSizeBytes();
+    public int memoryTablesize();
 
     public int tableWriterThreads();
 

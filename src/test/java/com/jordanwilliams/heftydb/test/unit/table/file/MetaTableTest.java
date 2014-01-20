@@ -40,19 +40,19 @@ public class MetaTableTest extends RecordTest {
         MetaTableWriter metaWriter = MetaTableWriter.open(1, paths, 2);
 
         int recordCount = 0;
-        long sizeBytes = 0;
+        long size = 0;
 
         for (Record record : records) {
             metaWriter.write(record);
             recordCount++;
-            sizeBytes += record.size();
+            size += record.size();
         }
 
         metaWriter.finish();
 
         MetaTable metaTable = MetaTable.open(1, paths);
 
-        Assert.assertEquals("Size matches", sizeBytes, metaTable.sizeBytes());
+        Assert.assertEquals("Size matches", size, metaTable.size());
         Assert.assertEquals("Record count matches", recordCount, metaTable.recordCount());
         Assert.assertEquals("Level matches", 2, metaTable.level());
         Assert.assertEquals("ID matches", 1, metaTable.id());

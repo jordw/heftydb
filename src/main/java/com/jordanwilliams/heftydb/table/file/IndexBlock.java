@@ -39,7 +39,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
         private final com.google.common.cache.Cache<String, IndexBlock> cache;
 
-        public Cache(long maxSizeBytes) {
+        public Cache(long maxsize) {
             cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, IndexBlock>() {
                 @Override
                 public int weigh(String key, IndexBlock value) {
@@ -50,7 +50,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
                 public void onRemoval(RemovalNotification<String, IndexBlock> objectObjectRemovalNotification) {
                     objectObjectRemovalNotification.getValue().memory().release();
                 }
-            }).maximumWeight(maxSizeBytes).build();
+            }).maximumWeight(maxsize).build();
         }
 
         public Cache() {
@@ -74,15 +74,15 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
         private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
 
-        private int sizeBytes;
+        private int size;
 
         public void addRecord(IndexRecord indexRecord) {
             byteMapBuilder.add(indexRecord.startKey(), new Value(indexRecordValue(indexRecord)));
-            sizeBytes += indexRecord.size();
+            size += indexRecord.size();
         }
 
-        public int sizeBytes() {
-            return sizeBytes;
+        public int size() {
+            return size;
         }
 
         public IndexBlock build() {
@@ -90,7 +90,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         }
 
         private ByteBuffer indexRecordValue(IndexRecord indexRecord) {
-            ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentsSizeBytes());
+            ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentssize());
             contentsBuffer.putLong(indexRecord.offset());
             contentsBuffer.put(indexRecord.isLeaf() ? (byte) 1 : (byte) 0);
             contentsBuffer.rewind();
