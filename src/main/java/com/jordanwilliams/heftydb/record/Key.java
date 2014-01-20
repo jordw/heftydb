@@ -16,7 +16,6 @@
 
 package com.jordanwilliams.heftydb.record;
 
-import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
@@ -25,17 +24,19 @@ import java.nio.ByteBuffer;
 public class Key implements Comparable<Key> {
 
     private final ByteBuffer data;
-
-    public Key(ByteBuffer data) {
-        this.data = data;
-    }
+    private final long snapshotId;
 
     public Key(ByteBuffer data, long snapshotId) {
-        this.data = versionedKeyBuffer(data, snapshotId);
+        this.data = data;
+        this.snapshotId = snapshotId;
     }
 
     public ByteBuffer data() {
         return data;
+    }
+
+    public long snapshotId() {
+        return snapshotId;
     }
 
     public int size() {
@@ -44,30 +45,33 @@ public class Key implements Comparable<Key> {
 
     @Override
     public int compareTo(Key o) {
-        return data.compareTo(o.data);
+        int compared = data.compareTo(o.data);
+
+        if (compared != 0) {
+            return compared;
+        }
+
+        return Long.compare(snapshotId, o.snapshotId);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        Key key1 = (Key) o;
+        Key key = (Key) o;
 
-        if (data != null ? !data.equals(key1.data) : key1.data != null) {
-            return false;
-        }
+        if (snapshotId != key.snapshotId) return false;
+        if (data != null ? !data.equals(key.data) : key.data != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return data != null ? data.hashCode() : 0;
+        int result = data != null ? data.hashCode() : 0;
+        result = 31 * result + (int) (snapshotId ^ (snapshotId >>> 32));
+        return result;
     }
 
     @Override
@@ -79,14 +83,7 @@ public class Key implements Comparable<Key> {
 
         return "Key{" +
                 "data=" + new String(keyArray) +
+                ", snapshotId=" + snapshotId +
                 '}';
-    }
-
-    private static ByteBuffer versionedKeyBuffer(ByteBuffer key, long snapshotId) {
-        ByteBuffer versionedKey = ByteBuffer.allocate(key.capacity() + Sizes.LONG_SIZE);
-        versionedKey.put(key.array());
-        versionedKey.putLong(snapshotId);
-        versionedKey.rewind();
-        return versionedKey;
     }
 }

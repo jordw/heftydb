@@ -51,7 +51,7 @@ public class RecordGenerator {
         for (int i = 0; i < recordCount; i++) {
             ByteBuffer key = testDataGenerator.testKey(keySize, keyReuse);
             ByteBuffer value = testDataGenerator.testValue(valueSize);
-            records.add(new Record(new Key(key), new Value(value), snapshotId));
+            records.add(new Record(new Key(key, snapshotId), new Value(value)));
             snapshotId++;
         }
 
@@ -73,13 +73,13 @@ public class RecordGenerator {
     }
 
     public List<Record> latestRecords(List<Record> records, long snapshotId) {
-        SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
+        SortedMap<ByteBuffer, Record> latestRecordMap = new TreeMap<ByteBuffer, Record>();
 
         for (Record record : records) {
-            Record existing = latestRecordMap.get(record.key());
+            Record existing = latestRecordMap.get(record.key().data());
 
-            if (existing == null || record.snapshotId() > existing.snapshotId()) {
-                latestRecordMap.put(record.key(), record);
+            if (existing == null || record.key().snapshotId() > existing.key().snapshotId()) {
+                latestRecordMap.put(record.key().data(), record);
             }
         }
 

@@ -48,7 +48,7 @@ public class BloomFilterTest {
         Set<Key> testDataSet = new HashSet<Key>();
 
         for (int i = 0; i < 1000; i++) {
-            testDataSet.add(new Key(generator.testKey(100, 0)));
+            testDataSet.add(new Key(generator.testKey(100, 0), i));
         }
 
         return testDataSet;

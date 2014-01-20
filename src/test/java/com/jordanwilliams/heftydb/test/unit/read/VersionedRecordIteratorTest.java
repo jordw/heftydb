@@ -24,31 +24,32 @@ import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class VersionedRecordIteratorTest {
 
-    private static final Key KEY_1 = new Key(ByteBuffers.fromString("test key 1"));
-    private static final Key KEY_2 = new Key(ByteBuffers.fromString("test key 2"));
+    private static final ByteBuffer KEY_1 = ByteBuffers.fromString("test key 1");
+    private static final ByteBuffer KEY_2 = ByteBuffers.fromString("test key 2");
 
     private static final List<Record> SOURCE_RECORDS = new ArrayList<Record>();
     private static final List<Record> FILTERED_RECORDS = new ArrayList<Record>();
     private static final List<Record> SNAPSHOT_RECORDS = new ArrayList<Record>();
 
     static {
-        SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 1));
-        SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 2));
-        SOURCE_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
-        SOURCE_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 4));
-        SOURCE_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 5));
+        SOURCE_RECORDS.add(new Record(new Key(KEY_1, 1), Value.TOMBSTONE_VALUE));
+        SOURCE_RECORDS.add(new Record(new Key(KEY_1, 2), Value.TOMBSTONE_VALUE));
+        SOURCE_RECORDS.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
+        SOURCE_RECORDS.add(new Record(new Key(KEY_2, 4), Value.TOMBSTONE_VALUE));
+        SOURCE_RECORDS.add(new Record(new Key(KEY_2, 5), Value.TOMBSTONE_VALUE));
 
-        FILTERED_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
-        FILTERED_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 5));
+        FILTERED_RECORDS.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
+        FILTERED_RECORDS.add(new Record(new Key(KEY_2, 5), Value.TOMBSTONE_VALUE));
 
-        SNAPSHOT_RECORDS.add(new Record(KEY_1, Value.TOMBSTONE_VALUE, 3));
-        SNAPSHOT_RECORDS.add(new Record(KEY_2, Value.TOMBSTONE_VALUE, 4));
+        SNAPSHOT_RECORDS.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
+        SNAPSHOT_RECORDS.add(new Record(new Key(KEY_2, 4), Value.TOMBSTONE_VALUE));
     }
 
     @Test

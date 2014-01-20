@@ -54,7 +54,7 @@ public class FileTable implements Table {
                 this.blockOffsets = blockOffsets(startKey);
 
                 if (startKey != null) {
-                    long blockOffset = index.recordBlockOffset(startKey, ascending ? 0 : Long.MAX_VALUE);
+                    long blockOffset = index.recordBlockOffset(startKey);
                     this.recordBlock = readRecordBlock(blockOffset, false);
                     this.recordIterator = recordBlock.iteratorFrom(startKey, iterationDirection);
                 }
@@ -111,7 +111,8 @@ public class FileTable implements Table {
                     return false;
                 }
 
-                this.recordBlock = readRecordBlock(blockOffsets.next(), false);
+                long blockOffset = blockOffsets.next();
+                this.recordBlock = readRecordBlock(blockOffset, false);
                 this.recordIterator = recordBlock.iterator(iterationDirection);
 
                 return true;
@@ -126,7 +127,7 @@ public class FileTable implements Table {
                 return ascending ? recordBlockOffsets.iterator() : recordBlockOffsets.descendingIterator();
             }
 
-            long startingBlockOffset = index.recordBlockOffset(startKey, ascending ? 0 : Long.MAX_VALUE);
+            long startingBlockOffset = index.recordBlockOffset(startKey);
 
             return ascending ? recordBlockOffsets.tailSet(startingBlockOffset, false).iterator() : recordBlockOffsets.headSet(startingBlockOffset, false).descendingIterator();
         }
@@ -161,16 +162,16 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Record get(Key key, long snapshotId) {
+    public Record get(Key key) {
         try {
-            long blockOffset = index.recordBlockOffset(key, snapshotId);
+            long blockOffset = index.recordBlockOffset(key);
 
             if (blockOffset < 0) {
                 return null;
             }
 
             RecordBlock recordBlock = readRecordBlock(blockOffset);
-            return recordBlock.get(key, snapshotId);
+            return recordBlock.get(key);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

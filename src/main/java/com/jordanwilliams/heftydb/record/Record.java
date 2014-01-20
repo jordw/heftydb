@@ -23,12 +23,10 @@ public class Record implements Comparable<Record> {
 
     private final Key key;
     private final Value value;
-    private final long snapshotId;
 
-    public Record(Key key, Value value, long snapshotId) {
+    public Record(Key key, Value value) {
         this.key = key;
         this.value = value;
-        this.snapshotId = snapshotId;
     }
 
     public Key key() {
@@ -39,27 +37,13 @@ public class Record implements Comparable<Record> {
         return value;
     }
 
-    public long snapshotId() {
-        return snapshotId;
-    }
-
     public int size() {
         return key.size() + value().size();
     }
 
     @Override
     public int compareTo(Record o) {
-        int compared = key.compareTo(o.key);
-
-        if (compared != 0) {
-            return compared;
-        }
-
-        if (snapshotId == o.snapshotId) {
-            return 0;
-        }
-
-        return snapshotId > o.snapshotId ? 1 : -1;
+        return key.compareTo(o.key);
     }
 
     @Override
@@ -73,9 +57,6 @@ public class Record implements Comparable<Record> {
 
         Record record = (Record) o;
 
-        if (snapshotId != record.snapshotId) {
-            return false;
-        }
         if (key != null ? !key.equals(record.key) : record.key != null) {
             return false;
         }
@@ -90,7 +71,6 @@ public class Record implements Comparable<Record> {
     public int hashCode() {
         int result = key != null ? key.hashCode() : 0;
         result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (int) (snapshotId ^ (snapshotId >>> 32));
         return result;
     }
 
@@ -99,7 +79,6 @@ public class Record implements Comparable<Record> {
         return "Record{" +
                 "key=" + key +
                 ", value=" + value +
-                ", snapshotId=" + snapshotId +
                 '}';
     }
 }

@@ -42,7 +42,7 @@ public class RecordBlockPerformance {
         int iterations = 2000000;
 
         for (int i = 0; i < iterations; i++) {
-            block.get(records.get(random.nextInt(records.size())).key(), Long.MAX_VALUE);
+            block.get(records.get(random.nextInt(records.size())).key());
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

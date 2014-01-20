@@ -29,70 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MemoryTable implements MutableTable {
 
-    private static class VersionedKey implements Comparable<VersionedKey> {
-
-        private final Key key;
-        private final long snapshotId;
-
-        private VersionedKey(Key key, long snapshotId) {
-            this.key = key;
-            this.snapshotId = snapshotId;
-        }
-
-        @Override
-        public int compareTo(VersionedKey o) {
-            int compared = key.compareTo(o.key);
-
-            if (compared != 0) {
-                return compared;
-            }
-
-            if (snapshotId == o.snapshotId) {
-                return 0;
-            }
-
-            return snapshotId > o.snapshotId ? 1 : -1;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            VersionedKey that = (VersionedKey) o;
-
-            if (snapshotId != that.snapshotId) {
-                return false;
-            }
-            if (key != null ? !key.equals(that.key) : that.key != null) {
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = key != null ? key.hashCode() : 0;
-            result = 31 * result + (int) (snapshotId ^ (snapshotId >>> 32));
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "VersionedKey{" +
-                    "key=" + key +
-                    ", snapshotId=" + snapshotId +
-                    '}';
-        }
-    }
-
     private final long id;
-    private final ConcurrentNavigableMap<VersionedKey, Record> records = new ConcurrentSkipListMap<VersionedKey, Record>();
+    private final ConcurrentNavigableMap<Key, Record> records = new ConcurrentSkipListMap<Key, Record>();
     private final AtomicInteger recordCount = new AtomicInteger();
     private final AtomicInteger sizeBytes = new AtomicInteger();
 
@@ -102,7 +40,7 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public void put(Record record) {
-        records.put(new VersionedKey(record.key(), record.snapshotId()), record);
+        records.put(record.key(), record);
         recordCount.incrementAndGet();
         sizeBytes.addAndGet(record.size());
     }
@@ -114,27 +52,29 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public boolean mightContain(Key key) {
-        VersionedKey floorKey = records.floorKey(new VersionedKey(key, Long.MAX_VALUE));
-        return floorKey != null && floorKey.key.equals(key);
+        Key floorKey = records.floorKey(key);
+        return floorKey != null && floorKey.data().equals(key.data());
     }
 
     @Override
-    public Record get(Key key, long snapshotId) {
-        Map.Entry<VersionedKey, Record> closestEntry = records.floorEntry(new VersionedKey(key, snapshotId));
+    public Record get(Key key) {
+        Map.Entry<Key, Record> closestEntry = records.floorEntry(key);
         return closestEntry == null ? null : closestEntry.getValue();
     }
 
     @Override
     public Iterator<Record> iterator(IterationDirection direction, long snapshotId) {
-        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.values().iterator() : records.descendingMap().values().iterator();
-
+        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ?
+                records.values().iterator() :
+                records.descendingMap().values().iterator();
         return new VersionedRecordIterator(snapshotId, sourceIterator);
     }
 
     @Override
     public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId) {
-        VersionedKey versionedKey = new VersionedKey(key, snapshotId);
-        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.tailMap(versionedKey, true).values().iterator() : records.headMap(versionedKey).descendingMap().values().iterator();
+        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ?
+                records.tailMap(key, true).values().iterator() :
+                records.headMap(key, true).descendingMap().values().iterator();
 
         return new VersionedRecordIterator(snapshotId, sourceIterator);
     }

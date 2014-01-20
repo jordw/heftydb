@@ -84,7 +84,7 @@ public class FileTableWriter {
         tableDataFile.append(recordBlockBuffer);
 
         Record startRecord = recordBlock.startRecord();
-        indexWriter.write(new IndexRecord(startRecord.key(), startRecord.snapshotId(), recordBlockOffset));
+        indexWriter.write(new IndexRecord(startRecord.key(), recordBlockOffset));
         recordBlock.memory().release();
         recordBlockBuilder = new RecordBlock.Builder();
     }

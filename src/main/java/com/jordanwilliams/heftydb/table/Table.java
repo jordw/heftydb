@@ -31,11 +31,11 @@ public interface Table extends Iterable<Record> {
 
     public boolean mightContain(Key key);
 
-    public Record get(Key key, long snapshotId);
+    public Record get(Key key);
 
     public Iterator<Record> iterator(IterationDirection direction, long snapshotId);
 
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long sn);
+    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId);
 
     public long recordCount();
 

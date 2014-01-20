@@ -84,6 +84,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 entryOffsets[counter] = memorySize;
                 memorySize += Sizes.INT_SIZE;
                 memorySize += entry.getKey().size();
+                memorySize += Sizes.LONG_SIZE;
                 memorySize += Sizes.INT_SIZE;
                 memorySize += entry.getValue().size();
                 counter++;
@@ -110,6 +111,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 //Key
                 memoryBuffer.putInt(key.size());
                 memoryBuffer.put(key.data());
+                memoryBuffer.putLong(key.snapshotId());
 
                 //Value
                 memoryBuffer.putInt(value.size());
@@ -227,7 +229,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     private Entry getEntry(int index) {
         if (index < 0 || index >= entryCount){
-            throw new IndexOutOfBoundsException("Index: " + index + " " + (entryCount - 1));
+            throw new IndexOutOfBoundsException("Index: " + index + " Max: " + (entryCount - 1));
         }
 
         int entryOffset = entryOffset(index);
@@ -241,10 +243,12 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             keyBuffer.put(directBuffer.get(i));
         }
 
+        long snapshotId = directBuffer.getLong(keyOffset + keySize);
+
         keyBuffer.rewind();
 
         //Value
-        int valueOffset = keyOffset + keySize;
+        int valueOffset = keyOffset + keySize + Sizes.LONG_SIZE;
         int valueSize = directBuffer.getInt(valueOffset);
         ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
         valueOffset += Sizes.INT_SIZE;
@@ -255,7 +259,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
         valueBuffer.rewind();
 
-        return new Entry(new Key(keyBuffer), new Value(valueBuffer));
+        return new Entry(new Key(keyBuffer, snapshotId), new Value(valueBuffer));
     }
 
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
@@ -263,14 +267,15 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         int keySize = directBuffer.getInt(entryOffset);
         entryOffset += Sizes.INT_SIZE;
 
-        int compareCount = Math.min(keySize, compareKey.data().remaining());
-        int remaining = keySize;
+        int bufferKeyRemaining = keySize;
+        int compareKeyRemaining = compareKey.data().remaining();
+        int compareCount = Math.min(bufferKeyRemaining, compareKeyRemaining);
 
         for (int i = 0; i < compareCount; i++) {
-            //Convert to unsigned bytes
-            int bufferKeyVal = directBuffer.get(entryOffset + i) & 0xFF;
-            int compareKeyVal = compareKey.data().get(i) & 0xFF;
-            remaining--;
+            byte bufferKeyVal = directBuffer.get(entryOffset + i);
+            byte compareKeyVal = compareKey.data().get(i);
+            bufferKeyRemaining--;
+            compareKeyRemaining--;
 
             if (bufferKeyVal == compareKeyVal) {
                 continue;
@@ -283,7 +288,14 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             return 1;
         }
 
-        return remaining - compareKey.data().remaining();
+        int remainingDifference = bufferKeyRemaining - compareKeyRemaining;
+
+        if (remainingDifference == 0){
+            long bufferSnapshotId = directBuffer.getLong(entryOffset + compareCount);
+            return Long.compare(bufferSnapshotId, compareKey.snapshotId());
+        }
+
+        return remainingDifference;
     }
 
     private int entryOffset(int index) {

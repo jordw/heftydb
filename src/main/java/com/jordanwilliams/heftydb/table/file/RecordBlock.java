@@ -26,9 +26,7 @@ import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.table.Table;
-import com.jordanwilliams.heftydb.util.Sizes;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +75,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         private int sizeBytes;
 
         public void addRecord(Record record) {
-            byteMapBuilder.add(new Key(record.key().data(), record.snapshotId()), record.value());
+            byteMapBuilder.add(new Key(record.key().data(), record.key().snapshotId()), record.value());
             sizeBytes += record.size();
         }
 
@@ -128,15 +126,15 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         this.byteMap = byteMap;
     }
 
-    public Record get(Key key, long maxSnapshotId) {
-        int closestIndex = byteMap.floorIndex(new Key(key.data(), maxSnapshotId));
+    public Record get(Key key) {
+        int closestIndex = byteMap.floorIndex(key);
 
         if (closestIndex < 0 || closestIndex >= byteMap.entryCount()) {
             return null;
         }
 
         Record closestRecord = deserializeRecord(closestIndex);
-        return closestRecord.key().equals(key) ? closestRecord : null;
+        return closestRecord.key().data().equals(key.data()) ? closestRecord : null;
     }
 
     public Record startRecord() {
@@ -177,14 +175,6 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     private Record deserializeRecord(int recordIndex) {
         ByteMap.Entry entry = byteMap.get(recordIndex);
-        ByteBuffer entryKeyBuffer = entry.key().data();
-        ByteBuffer recordKeyBuffer = ByteBuffer.allocate(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
-
-        for (int i = 0; i < recordKeyBuffer.capacity(); i++) {
-            recordKeyBuffer.put(i, entryKeyBuffer.get(i));
-        }
-
-        long snapshotId = entryKeyBuffer.getLong(entryKeyBuffer.capacity() - Sizes.LONG_SIZE);
-        return new Record(new Key(recordKeyBuffer), entry.value(), snapshotId);
+        return new Record(entry.key(), entry.value());
     }
 }

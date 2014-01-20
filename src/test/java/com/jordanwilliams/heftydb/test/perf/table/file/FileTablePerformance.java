@@ -45,7 +45,7 @@ public class FileTablePerformance {
         FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
-            fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+            fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + ""), i), value));
         }
 
         fileTableWriter.finish();
@@ -57,7 +57,7 @@ public class FileTablePerformance {
         int iterations = 50000000;
 
         for (int i = 0; i < iterations; i++) {
-            fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
+            fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

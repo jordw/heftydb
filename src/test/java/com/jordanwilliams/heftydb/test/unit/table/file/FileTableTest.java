@@ -30,16 +30,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Random;
 
 public class FileTableTest extends RecordTest {
 
     private final FileTable fileTable;
+    private final Random random = new Random(System.nanoTime());
 
     public FileTableTest(List<Record> testRecords) throws IOException {
         super(testRecords);
@@ -49,7 +48,7 @@ public class FileTableTest extends RecordTest {
     @Test
     public void readWriteTest() throws IOException {
         for (Record record : records) {
-            Record read = fileTable.get(record.key(), record.snapshotId());
+            Record read = fileTable.get(record.key());
             Assert.assertEquals("Records match", record, read);
         }
     }
@@ -67,7 +66,7 @@ public class FileTableTest extends RecordTest {
     @Test
     public void ascendingIteratorTest() throws IOException {
         Iterator<Record> tableRecordIterator = fileTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
-        Iterator<Record> recordIterator = latestRecords(records).iterator();
+        Iterator<Record> recordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -76,8 +75,8 @@ public class FileTableTest extends RecordTest {
 
     @Test
     public void ascendingRangeIteratorTest() throws IOException {
-        List<Record> latestRecords = latestRecords(records);
-        int medianKeyIndex = latestRecords.size() / 2;
+        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
+        int medianKeyIndex = random.nextInt(latestRecords.size());
         Key medianKey = latestRecords.get(medianKeyIndex).key();
         Iterator<Record> tableRecordIterator = fileTable.iteratorFrom(medianKey, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
         Iterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex);
@@ -90,7 +89,7 @@ public class FileTableTest extends RecordTest {
     @Test
     public void descendingIteratorTest() throws IOException {
         Iterator<Record> tableRecordIterator = fileTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
-        List<Record> latestRecords = latestRecords(records);
+        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
         ListIterator<Record> recordIterator = latestRecords.listIterator(latestRecords.size());
 
         while (tableRecordIterator.hasNext()) {
@@ -100,9 +99,10 @@ public class FileTableTest extends RecordTest {
 
     @Test
     public void descendingRangeIteratorTest() throws IOException {
-        List<Record> latestRecords = latestRecords(records);
-        int medianKeyIndex = latestRecords.size() / 2;
+        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
+        int medianKeyIndex = random.nextInt(latestRecords.size());
         Key medianKey = latestRecords.get(medianKeyIndex).key();
+
         Iterator<Record> tableRecordIterator = fileTable.iteratorFrom(medianKey, Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
         ListIterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex + 1);
 
@@ -121,25 +121,5 @@ public class FileTableTest extends RecordTest {
 
         tableWriter.finish();
         return FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
-    }
-
-    private List<Record> latestRecords(List<Record> records) {
-        SortedMap<Key, Record> latestRecordMap = new TreeMap<Key, Record>();
-
-        for (Record record : records) {
-            Record known = latestRecordMap.get(record.key());
-
-            if (known == null || known.snapshotId() < record.snapshotId()) {
-                latestRecordMap.put(record.key(), record);
-            }
-        }
-
-        List<Record> latestRecords = new ArrayList<Record>();
-
-        for (Record record : latestRecordMap.values()) {
-            latestRecords.add(record);
-        }
-
-        return latestRecords;
     }
 }

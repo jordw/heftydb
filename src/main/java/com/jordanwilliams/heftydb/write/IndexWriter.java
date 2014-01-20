@@ -99,7 +99,7 @@ public class IndexWriter {
         indexBlockBuffer.rewind();
         indexFile.append(indexBlockBuffer);
         IndexRecord startRecord = indexBlock.startRecord();
-        IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), startRecord.snapshotId(), indexBlockOffset, false);
+        IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), indexBlockOffset, false);
         indexBlock.memory().release();
         return metaIndexRecord;
     }

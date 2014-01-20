@@ -40,7 +40,7 @@ public class MemoryTablePerformance {
         MemoryTable memTable = new MemoryTable(1);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
-            memTable.put(new Record(new Key(ByteBuffers.fromString(i + "")), value, i));
+            memTable.put(new Record(new Key(ByteBuffers.fromString(i + ""), i), value));
         }
 
         System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());
@@ -51,7 +51,7 @@ public class MemoryTablePerformance {
         int iterations = 10000000;
 
         for (int i = 0; i < iterations; i++) {
-            memTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + "")), Long.MAX_VALUE);
+            memTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
         }
 
         System.out.println("Reads " + iterations / watch.elapsedSeconds());

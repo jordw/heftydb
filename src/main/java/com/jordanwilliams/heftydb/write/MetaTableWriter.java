@@ -40,8 +40,8 @@ public class MetaTableWriter {
     }
 
     public void write(Record record) throws IOException {
-        if (record.snapshotId() > maxSnapshotId) {
-            maxSnapshotId = record.snapshotId();
+        if (record.key().snapshotId() > maxSnapshotId) {
+            maxSnapshotId = record.key().snapshotId();
         }
 
         recordCount++;

@@ -42,15 +42,15 @@ public class Index {
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
     }
 
-    public long recordBlockOffset(Key key, long maxSnapshotId) throws IOException {
-        IndexRecord currentIndexRecord = rootIndexBlock.get(key, maxSnapshotId);
+    public long recordBlockOffset(Key key) throws IOException {
+        IndexRecord currentIndexRecord = rootIndexBlock.get(key);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
             IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
-            currentIndexRecord = currentIndexBlock.get(key, maxSnapshotId);
+            currentIndexRecord = currentIndexBlock.get(key);
         }
 
-        return currentIndexRecord == null ? -1 : currentIndexRecord.offset();
+        return currentIndexRecord.offset();
     }
 
     public void close() throws IOException {
