@@ -245,11 +245,13 @@ public class FileTable implements Table {
         NavigableSet<Long> recordBlockOffsets = new TreeSet<Long>();
         long fileOffset = tableFile.size() - Sizes.INT_SIZE;
         int offsetCount = tableFile.readInt(fileOffset);
-        fileOffset -= Sizes.LONG_SIZE;
 
-        for (int i = 0; i < offsetCount; i++) {
-            recordBlockOffsets.add(tableFile.readLong(fileOffset));
-            fileOffset -= Sizes.LONG_SIZE;
+        ByteBuffer offsetBuffer = ByteBuffer.allocate(offsetCount * Sizes.LONG_SIZE);
+        tableFile.read(offsetBuffer, fileOffset - offsetBuffer.capacity());
+        offsetBuffer.rewind();
+
+        for (int i = 0; i < offsetCount; i++){
+            recordBlockOffsets.add(offsetBuffer.getLong());
         }
 
         return recordBlockOffsets;

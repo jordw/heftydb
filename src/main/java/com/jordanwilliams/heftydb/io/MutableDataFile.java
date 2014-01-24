@@ -22,7 +22,6 @@ import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -35,7 +34,6 @@ public class MutableDataFile implements DataFile {
         @Override
         protected ByteBuffer initialValue() {
             ByteBuffer primitiveBuffer = ByteBuffer.allocate(Sizes.LONG_SIZE);
-            primitiveBuffer.order(ByteOrder.nativeOrder());
             return primitiveBuffer;
         }
     };
