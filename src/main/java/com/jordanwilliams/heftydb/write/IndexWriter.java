@@ -104,8 +104,8 @@ public class IndexWriter {
         return metaIndexRecord;
     }
 
-    public static IndexWriter open(long tableId, Paths paths, int maxIndexsize) throws IOException {
-        return new IndexWriter(tableId, paths, maxIndexsize);
+    public static IndexWriter open(long tableId, Paths paths, int maxIndexSize) throws IOException {
+        return new IndexWriter(tableId, paths, maxIndexSize);
     }
 
     public static IndexWriter open(long tableId, Paths paths) throws IOException {

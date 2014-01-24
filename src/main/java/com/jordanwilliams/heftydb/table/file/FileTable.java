@@ -222,13 +222,19 @@ public class FileTable implements Table {
         if (recordBlock == null) {
             int recordBlockSize = tableFile.readInt(offset);
             Memory recordBlockMemory = Memory.allocate(recordBlockSize);
-            ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
-            tableFile.read(recordBlockBuffer, offset + Sizes.INT_SIZE);
-            recordBlockBuffer.rewind();
-            recordBlock = new RecordBlock(new ByteMap(recordBlockMemory));
 
-            if (shouldCache) {
-                recordCache.put(tableId, offset, recordBlock);
+            try {
+                ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
+                tableFile.read(recordBlockBuffer, offset + Sizes.INT_SIZE);
+                recordBlockBuffer.rewind();
+                recordBlock = new RecordBlock(new ByteMap(recordBlockMemory));
+
+                if (shouldCache) {
+                    recordCache.put(tableId, offset, recordBlock);
+                }
+            } catch (IOException e){
+                recordBlockMemory.release();
+                throw e;
             }
         }
 

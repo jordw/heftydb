@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013. Jordan Williams
+ * Copyright (c) 2014. Jordan Williams
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.state;
+package com.jordanwilliams.heftydb.read;
 
-import java.nio.file.Path;
-
-public interface Config {
-
-    public int memoryTableSize();
-
-    public int fileTableBlockSize();
-
-    public int indexBlockSize();
-
-    public int tableWriterThreads();
-
-    public int tableCompactionThreads();
-
-    public Path tableDirectory();
-
-    public Path logDirectory();
+public class RecordReader {
 }

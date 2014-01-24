@@ -20,15 +20,50 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class FileTableWriter {
+
+    public static class Task implements Runnable {
+
+        private final long tableId;
+        private final int level;
+        private final Iterator<Record> records;
+        private final long recordCount;
+        private final State state;
+
+        public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount) {
+            this.tableId = tableId;
+            this.level = level;
+            this.state = state;
+            this.records = records;
+            this.recordCount = recordCount;
+        }
+
+        @Override
+        public void run() {
+            try {
+                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.files(), recordCount,
+                        state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
+
+                while (records.hasNext()){
+                    tableWriter.write(records.next());
+                }
+
+                tableWriter.finish();
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     private final long tableId;
     private final int maxRecordBlocksize;

@@ -16,7 +16,10 @@
 
 package com.jordanwilliams.heftydb.record;
 
+import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.Immutable;
+
+import java.nio.ByteBuffer;
 
 @Immutable
 public class Record implements Comparable<Record> {
@@ -80,5 +83,48 @@ public class Record implements Comparable<Record> {
                 "key=" + key +
                 ", value=" + value +
                 '}';
+    }
+
+    public static void serialize(Record record, ByteBuffer recordBuffer){
+        //Key
+        recordBuffer.putInt(record.key.size());
+        recordBuffer.put(record.key.data());
+        recordBuffer.putLong(record.key.snapshotId());
+
+        //Value
+        recordBuffer.putInt(record.value.size());
+        recordBuffer.put(record.value().data());
+        recordBuffer.rewind();
+    }
+
+    public static Record deserialize(ByteBuffer recordBuffer){
+        //Key
+        int keySize = recordBuffer.getInt();
+        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
+        recordBuffer.get(keyBuffer.array());
+        long snapshotId = recordBuffer.getLong();
+        Key key = new Key(keyBuffer, snapshotId);
+
+        //Value
+        int valueSize = recordBuffer.getInt();
+        ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
+        Value value = new Value(valueBuffer);
+
+        return new Record(key, value);
+    }
+
+    public static int serializedSize(Record record){
+        int size = 0;
+
+        //Key
+        size += Sizes.INT_SIZE;
+        size += record.key().size();
+        size += Sizes.LONG_SIZE;
+
+        //Value
+        size += Sizes.INT_SIZE;
+        size += record.value().size();
+
+        return size;
     }
 }

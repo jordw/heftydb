@@ -64,11 +64,17 @@ public class Index {
         if (indexBlock == null) {
             int indexBlockSize = indexFile.readInt(blockOffset);
             Memory indexMemory = Memory.allocate(indexBlockSize);
-            ByteBuffer indexBuffer = indexMemory.directBuffer();
-            indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
-            indexBuffer.rewind();
-            indexBlock = new IndexBlock(new ByteMap(indexMemory));
-            cache.put(tableId, blockOffset, indexBlock);
+
+            try {
+                ByteBuffer indexBuffer = indexMemory.directBuffer();
+                indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
+                indexBuffer.rewind();
+                indexBlock = new IndexBlock(new ByteMap(indexMemory));
+                cache.put(tableId, blockOffset, indexBlock);
+            }  catch (IOException e){
+                indexMemory.release();
+                throw e;
+            }
         }
 
         return indexBlock;

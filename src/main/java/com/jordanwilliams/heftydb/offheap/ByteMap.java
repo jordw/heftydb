@@ -271,6 +271,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         int compareKeyRemaining = compareKey.data().remaining();
         int compareCount = Math.min(bufferKeyRemaining, compareKeyRemaining);
 
+        //Compare key bytes
         for (int i = 0; i < compareCount; i++) {
             byte bufferKeyVal = directBuffer.get(entryOffset + i);
             byte compareKeyVal = compareKey.data().get(i);
@@ -290,6 +291,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
         int remainingDifference = bufferKeyRemaining - compareKeyRemaining;
 
+        //If key bytes are equal, compare snapshot ids
         if (remainingDifference == 0) {
             long bufferSnapshotId = directBuffer.getLong(entryOffset + compareCount);
             return Long.compare(bufferSnapshotId, compareKey.snapshotId());

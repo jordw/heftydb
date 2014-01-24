@@ -54,7 +54,7 @@ public class FileTablePerformance {
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
-        int iterations = 1000000;
+        int iterations = 10000000;
 
         for (int i = 0; i < iterations; i++) {
             fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
