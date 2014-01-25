@@ -22,37 +22,45 @@ import com.jordanwilliams.heftydb.util.Sizes;
 public class IndexRecord {
 
     private final Key startKey;
-    private final long offset;
+    private final long blockOffset;
+    private final int blockSize;
     private final boolean isLeaf;
 
-    public IndexRecord(Key startKey, long offset, boolean isLeaf) {
+    public IndexRecord(Key startKey, long blockOffset, int blockSize, boolean isLeaf) {
         this.startKey = startKey;
-        this.offset = offset;
+        this.blockOffset = blockOffset;
+        this.blockSize = blockSize;
         this.isLeaf = isLeaf;
     }
 
-    public IndexRecord(Key startKey, long offset) {
-        this(startKey, offset, true);
+    public IndexRecord(Key startKey, long blockOffset, int blockSize) {
+        this(startKey, blockOffset, blockSize, true);
     }
 
     public Key startKey() {
         return startKey;
     }
 
-    public long offset() {
-        return offset;
+    public long blockOffset() {
+        return blockOffset;
+    }
+
+    public int blockSize() {
+        return blockSize;
     }
 
     public int size() {
-        return Sizes.INT_SIZE + //Key size
-                startKey.size() + //Key
-                Sizes.LONG_SIZE + //Offset
-                1; //Leaf flag
+        return Sizes.INT_SIZE + //Key blockSize
+               startKey.size() + //Key
+               Sizes.LONG_SIZE + //Offset
+               Sizes.INT_SIZE +
+               1; //Leaf flag
     }
 
-    public int contentssize() {
+    public int contentsSize() {
         return Sizes.LONG_SIZE + //Offset
-                1; //Leaf flag
+               Sizes.INT_SIZE +
+               1; //Leaf flag
     }
 
     public boolean isLeaf() {
@@ -63,7 +71,8 @@ public class IndexRecord {
     public String toString() {
         return "IndexRecord{" +
                 "startKey=" + startKey +
-                ", offset=" + offset +
+                ", blockOffset=" + blockOffset +
+                ", blockSize=" + blockSize +
                 ", isLeaf=" + isLeaf +
                 '}';
     }

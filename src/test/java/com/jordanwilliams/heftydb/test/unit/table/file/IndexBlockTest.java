@@ -35,11 +35,11 @@ public class IndexBlockTest {
 
     static {
         IndexBlock.Builder builder = new IndexBlock.Builder();
-        builder.addRecord(new IndexRecord(new Key(TEST_KEY_1, 1), 1));
-        builder.addRecord(new IndexRecord(new Key(TEST_KEY_1, 2), 2));
-        builder.addRecord(new IndexRecord(new Key(TEST_KEY_2, 3), 3));
-        builder.addRecord(new IndexRecord(new Key(TEST_KEY_3, 4), 4));
-        builder.addRecord(new IndexRecord(new Key(TEST_KEY_3, 5), 5));
+        builder.addRecord(new IndexRecord(new Key(TEST_KEY_1, 1), 1, 1));
+        builder.addRecord(new IndexRecord(new Key(TEST_KEY_1, 2), 2, 1));
+        builder.addRecord(new IndexRecord(new Key(TEST_KEY_2, 3), 3, 1));
+        builder.addRecord(new IndexRecord(new Key(TEST_KEY_3, 4), 4, 1));
+        builder.addRecord(new IndexRecord(new Key(TEST_KEY_3, 5), 5, 1));
 
         TEST_BLOCK = builder.build();
     }
@@ -47,30 +47,30 @@ public class IndexBlockTest {
     @Test
     public void findRecordExactMatchTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(TEST_KEY_1, 1));
-        Assert.assertEquals("Offset matches", 1, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 1, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordExactMatchEndTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(TEST_KEY_3, 4));
-        Assert.assertEquals("Offset matches", 4, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 4, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Awesome"), 1));
-        Assert.assertEquals("Offset matches", 2, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 2, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordMidTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Box"), 1));
-        Assert.assertEquals("Offset matches", 3, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 3, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordEndTest() {
         IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Toast"), 1));
-        Assert.assertEquals("Offset matches", 5, indexRecord.offset());
+        Assert.assertEquals("Offset matches", 5, indexRecord.blockOffset());
     }
 }

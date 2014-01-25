@@ -39,18 +39,19 @@ public class Index {
         this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
         this.cache = cache;
         long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
-        this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset);
+        int rootIndexBlockSize = indexFile.readInt(indexFile.size() - Sizes.LONG_SIZE - Sizes.INT_SIZE);
+        this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset, rootIndexBlockSize);
     }
 
     public long recordBlockOffset(Key key) throws IOException {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
-            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.offset());
+            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.blockOffset(), currentIndexRecord.blockSize());
             currentIndexRecord = currentIndexBlock.get(key);
         }
 
-        return currentIndexRecord.offset();
+        return currentIndexRecord.blockOffset();
     }
 
     public void close() throws IOException {
@@ -58,20 +59,19 @@ public class Index {
         rootIndexBlock.memory().release();
     }
 
-    private IndexBlock readIndexBlock(long blockOffset) throws IOException {
+    private IndexBlock readIndexBlock(long blockOffset, int blockSize) throws IOException {
         IndexBlock indexBlock = cache.get(tableId, blockOffset);
 
         if (indexBlock == null) {
-            int indexBlockSize = indexFile.readInt(blockOffset);
-            Memory indexMemory = Memory.allocate(indexBlockSize);
+            Memory indexMemory = Memory.allocate(blockSize);
 
             try {
                 ByteBuffer indexBuffer = indexMemory.directBuffer();
-                indexFile.read(indexBuffer, blockOffset + Sizes.INT_SIZE);
+                indexFile.read(indexBuffer, blockOffset);
                 indexBuffer.rewind();
                 indexBlock = new IndexBlock(new ByteMap(indexMemory));
                 cache.put(tableId, blockOffset, indexBlock);
-            }  catch (IOException e){
+            } catch (IOException e) {
                 indexMemory.release();
                 throw e;
             }

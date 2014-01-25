@@ -41,7 +41,7 @@ public class IndexBlockPerformance {
 
         IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
         for (Key key : keys) {
-            blockBuilder.addRecord(new IndexRecord(key, 0));
+            blockBuilder.addRecord(new IndexRecord(key, 0, 128));
         }
 
         IndexBlock block = blockBuilder.build();

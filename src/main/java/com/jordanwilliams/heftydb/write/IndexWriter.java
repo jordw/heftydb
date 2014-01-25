@@ -34,12 +34,12 @@ public class IndexWriter {
     private static final int MAX_INDEX_BLOCK_SIZE_BYTES = 65536;
 
     private final DataFile indexFile;
-    private final int maxIndexBlocksize;
+    private final int maxIndexBlockSize;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
 
-    private IndexWriter(long tableId, Paths paths, int maxIndexBlocksize) throws IOException {
+    private IndexWriter(long tableId, Paths paths, int maxIndexBlockSize) throws IOException {
         this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
-        this.maxIndexBlocksize = maxIndexBlocksize;
+        this.maxIndexBlockSize = maxIndexBlockSize;
         indexBlockBuilders.add(new IndexBlock.Builder());
     }
 
@@ -54,7 +54,7 @@ public class IndexWriter {
 
             IndexBlock.Builder levelBuilder = indexBlockBuilders.get(i);
 
-            if (levelBuilder.size() >= maxIndexBlocksize) {
+            if (levelBuilder.size() >= maxIndexBlockSize) {
                 IndexRecord metaRecord = writeIndexBlock(levelBuilder.build());
 
                 IndexBlock.Builder newLevelBuilder = new IndexBlock.Builder();
@@ -88,18 +88,18 @@ public class IndexWriter {
             pendingIndexRecord.add(nextLevelRecord);
         }
 
-        long rootIndexBlockOffset = pendingIndexRecord.poll().offset();
-        indexFile.appendLong(rootIndexBlockOffset);
+        IndexRecord rootIndexRecord = pendingIndexRecord.poll();
+        indexFile.appendInt(rootIndexRecord.blockSize());
+        indexFile.appendLong(rootIndexRecord.blockOffset());
         indexFile.close();
     }
 
     private IndexRecord writeIndexBlock(IndexBlock indexBlock) throws IOException {
         ByteBuffer indexBlockBuffer = indexBlock.memory().directBuffer();
-        long indexBlockOffset = indexFile.appendInt(indexBlockBuffer.capacity());
         indexBlockBuffer.rewind();
-        indexFile.append(indexBlockBuffer);
+        long indexBlockOffset = indexFile.append(indexBlockBuffer);
         IndexRecord startRecord = indexBlock.startRecord();
-        IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), indexBlockOffset, false);
+        IndexRecord metaIndexRecord = new IndexRecord(startRecord.startKey(), indexBlockOffset, indexBlockBuffer.capacity(), false);
         indexBlock.memory().release();
         return metaIndexRecord;
     }

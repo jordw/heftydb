@@ -48,7 +48,7 @@ public class IndexTest extends RecordTest {
 
         for (Record record : records) {
             keys.add(record.key());
-            indexWriter.write(new IndexRecord(record.key(), count));
+            indexWriter.write(new IndexRecord(record.key(), count, 128));
             count++;
         }
 

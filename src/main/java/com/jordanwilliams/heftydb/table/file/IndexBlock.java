@@ -90,8 +90,9 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         }
 
         private ByteBuffer indexRecordValue(IndexRecord indexRecord) {
-            ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentssize());
-            contentsBuffer.putLong(indexRecord.offset());
+            ByteBuffer contentsBuffer = ByteBuffer.allocate(indexRecord.contentsSize());
+            contentsBuffer.putLong(indexRecord.blockOffset());
+            contentsBuffer.putInt(indexRecord.blockSize());
             contentsBuffer.put(indexRecord.isLeaf() ? (byte) 1 : (byte) 0);
             contentsBuffer.rewind();
             return contentsBuffer;
@@ -168,9 +169,11 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     private IndexRecord deserializeRecord(int recordIndex) {
         ByteMap.Entry entry = byteMap.get(recordIndex);
-        long offset = entry.value().data().getLong(0);
-        boolean isLeaf = entry.value().data().get(Sizes.LONG_SIZE) == (byte) 1;
+        ByteBuffer entryValueBuffer = entry.value().data();
+        long blockOffset = entryValueBuffer.getLong(0);
+        int blockSize = entryValueBuffer.getInt(Sizes.LONG_SIZE);
+        boolean isLeaf = entryValueBuffer.get(Sizes.LONG_SIZE + Sizes.INT_SIZE) == (byte) 1;
 
-        return new IndexRecord(entry.key(), offset, isLeaf);
+        return new IndexRecord(entry.key(), blockOffset, blockSize, isLeaf);
     }
 }

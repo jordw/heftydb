@@ -119,7 +119,7 @@ public class FileTableWriter {
         tableDataFile.append(recordBlockBuffer);
 
         Record startRecord = recordBlock.startRecord();
-        indexWriter.write(new IndexRecord(startRecord.key(), recordBlockOffset));
+        indexWriter.write(new IndexRecord(startRecord.key(), recordBlockOffset, recordBlockBuffer.capacity()));
         recordBlock.memory().release();
         recordBlockBuilder = new RecordBlock.Builder();
     }
