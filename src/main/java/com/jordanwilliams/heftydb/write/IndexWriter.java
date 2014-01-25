@@ -31,8 +31,6 @@ import java.util.Queue;
 
 public class IndexWriter {
 
-    private static final int MAX_INDEX_BLOCK_SIZE_BYTES = 65536;
-
     private final DataFile indexFile;
     private final int maxIndexBlockSize;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
@@ -106,9 +104,5 @@ public class IndexWriter {
 
     public static IndexWriter open(long tableId, Paths paths, int maxIndexSize) throws IOException {
         return new IndexWriter(tableId, paths, maxIndexSize);
-    }
-
-    public static IndexWriter open(long tableId, Paths paths) throws IOException {
-        return new IndexWriter(tableId, paths, MAX_INDEX_BLOCK_SIZE_BYTES);
     }
 }
