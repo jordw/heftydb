@@ -51,7 +51,7 @@ public class IndexPerformance {
         int iterations = 1000000;
 
         for (int i = 0; i < iterations; i++) {
-            index.recordBlockOffset(records.get(random.nextInt(records.size())).key());
+            index.get(records.get(random.nextInt(records.size())).key());
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

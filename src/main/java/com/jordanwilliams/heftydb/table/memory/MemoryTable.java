@@ -63,16 +63,23 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public Iterator<Record> iterator(IterationDirection direction, long snapshotId) {
-        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.values().iterator() : records.descendingMap().values().iterator();
-        return new VersionedRecordIterator(snapshotId, sourceIterator);
+    public Iterator<Record> ascendingIterator(long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, records.values().iterator());
     }
 
     @Override
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId) {
-        Iterator<Record> sourceIterator = direction.equals(IterationDirection.ASCENDING) ? records.tailMap(key, true).values().iterator() : records.headMap(key, true).descendingMap().values().iterator();
+    public Iterator<Record> descendingIterator(long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, records.descendingMap().values().iterator());
+    }
 
-        return new VersionedRecordIterator(snapshotId, sourceIterator);
+    @Override
+    public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, records.tailMap(key, true).values().iterator());
+    }
+
+    @Override
+    public Iterator<Record> descendingIterator(Key key, long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, records.headMap(key, true).descendingMap().values().iterator());
     }
 
     @Override

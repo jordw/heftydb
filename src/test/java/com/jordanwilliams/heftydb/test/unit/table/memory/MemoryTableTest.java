@@ -18,7 +18,6 @@ package com.jordanwilliams.heftydb.test.unit.table.memory;
 
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import org.junit.Assert;
@@ -60,7 +59,7 @@ public class MemoryTableTest extends RecordTest {
 
     @Test
     public void ascendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = memoryTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = memoryTable.ascendingIterator(Long.MAX_VALUE);
         Iterator<Record> recordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
@@ -73,7 +72,7 @@ public class MemoryTableTest extends RecordTest {
         List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
         int medianKeyIndex = random.nextInt(latestRecords.size());
         Key medianKey = latestRecords.get(medianKeyIndex).key();
-        Iterator<Record> tableRecordIterator = memoryTable.iteratorFrom(medianKey, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = memoryTable.ascendingIterator(medianKey, Long.MAX_VALUE);
         Iterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex);
 
         while (tableRecordIterator.hasNext()) {
@@ -83,7 +82,7 @@ public class MemoryTableTest extends RecordTest {
 
     @Test
     public void descendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = memoryTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = memoryTable.descendingIterator(Long.MAX_VALUE);
         List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
         ListIterator<Record> recordIterator = latestRecords.listIterator(latestRecords.size());
 
@@ -98,7 +97,7 @@ public class MemoryTableTest extends RecordTest {
         int medianKeyIndex = random.nextInt(latestRecords.size());
         Key medianKey = latestRecords.get(medianKeyIndex).key();
 
-        Iterator<Record> tableRecordIterator = memoryTable.iteratorFrom(medianKey, Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = memoryTable.descendingIterator(medianKey, Long.MAX_VALUE);
         ListIterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex + 1);
 
         while (tableRecordIterator.hasNext()) {

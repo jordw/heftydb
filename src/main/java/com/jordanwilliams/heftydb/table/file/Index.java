@@ -43,7 +43,7 @@ public class Index {
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset, rootIndexBlockSize);
     }
 
-    public long recordBlockOffset(Key key) throws IOException {
+    public IndexRecord get(Key key) throws IOException {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
@@ -51,7 +51,7 @@ public class Index {
             currentIndexRecord = currentIndexBlock.get(key);
         }
 
-        return currentIndexRecord.blockOffset();
+        return currentIndexRecord;
     }
 
     public void close() throws IOException {

@@ -54,8 +54,8 @@ public class FileTable implements Table {
                 this.blockOffsets = blockOffsets(startKey);
 
                 if (startKey != null) {
-                    long blockOffset = index.recordBlockOffset(startKey);
-                    this.recordBlock = readRecordBlock(blockOffset, false);
+                    IndexRecord indexRecord = index.get(startKey);
+                    this.recordBlock = readRecordBlock(indexRecord.blockOffset(), false);
                     this.recordIterator = recordBlock.iteratorFrom(startKey, iterationDirection);
                 }
             } catch (IOException e) {
@@ -127,9 +127,10 @@ public class FileTable implements Table {
                 return ascending ? recordBlockOffsets.iterator() : recordBlockOffsets.descendingIterator();
             }
 
-            long startingBlockOffset = index.recordBlockOffset(startKey);
+            IndexRecord indexRecord = index.get(startKey);
 
-            return ascending ? recordBlockOffsets.tailSet(startingBlockOffset, false).iterator() : recordBlockOffsets.headSet(startingBlockOffset, false).descendingIterator();
+            return ascending ? recordBlockOffsets.tailSet(indexRecord.blockOffset(), false).iterator() : recordBlockOffsets.headSet
+                    (indexRecord.blockOffset(), false).descendingIterator();
         }
     }
 
@@ -164,13 +165,13 @@ public class FileTable implements Table {
     @Override
     public Record get(Key key) {
         try {
-            long blockOffset = index.recordBlockOffset(key);
+            IndexRecord indexRecord = index.get(key);
 
-            if (blockOffset < 0) {
+            if (indexRecord.blockOffset() < 0) {
                 return null;
             }
 
-            RecordBlock recordBlock = readRecordBlock(blockOffset);
+            RecordBlock recordBlock = readRecordBlock(indexRecord.blockOffset());
             return recordBlock.get(key);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -178,13 +179,23 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Iterator<Record> iterator(IterationDirection direction, long maxSnapshotId) {
-        return new VersionedRecordIterator(maxSnapshotId, new TableIterator(direction));
+    public Iterator<Record> ascendingIterator(long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, new TableIterator(IterationDirection.ASCENDING));
     }
 
     @Override
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long maxSnapshotId) {
-        return new VersionedRecordIterator(maxSnapshotId, new TableIterator(key, direction));
+    public Iterator<Record> descendingIterator(long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, new TableIterator(IterationDirection.DESCENDING));
+    }
+
+    @Override
+    public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, new TableIterator(key, IterationDirection.ASCENDING));
+    }
+
+    @Override
+    public Iterator<Record> descendingIterator(Key key, long snapshotId) {
+        return new VersionedRecordIterator(snapshotId, new TableIterator(key, IterationDirection.DESCENDING));
     }
 
     @Override

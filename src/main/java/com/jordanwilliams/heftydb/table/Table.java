@@ -33,9 +33,13 @@ public interface Table extends Iterable<Record> {
 
     public Record get(Key key);
 
-    public Iterator<Record> iterator(IterationDirection direction, long snapshotId);
+    public Iterator<Record> ascendingIterator(long snapshotId);
 
-    public Iterator<Record> iteratorFrom(Key key, IterationDirection direction, long snapshotId);
+    public Iterator<Record> descendingIterator(long snapshotId);
+
+    public Iterator<Record> ascendingIterator(Key key, long snapshotId);
+
+    public Iterator<Record> descendingIterator(Key key, long snapshotId);
 
     public long recordCount();
 

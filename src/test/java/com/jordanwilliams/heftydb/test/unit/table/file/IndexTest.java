@@ -57,8 +57,8 @@ public class IndexTest extends RecordTest {
         Index index = Index.open(1, paths, new IndexBlock.Cache());
 
         for (Record record : records) {
-            long blockOffset = index.recordBlockOffset(record.key());
-            Assert.assertTrue("Index blocks are found", blockOffset >= 0);
+            IndexRecord indexRecord = index.get(record.key());
+            Assert.assertTrue("Index blocks are found", indexRecord.blockOffset() >= 0);
         }
 
         index.close();

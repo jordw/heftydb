@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
@@ -65,7 +64,7 @@ public class FileTableTest extends RecordTest {
 
     @Test
     public void ascendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = fileTable.iterator(Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = fileTable.ascendingIterator(Long.MAX_VALUE);
         Iterator<Record> recordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
@@ -78,7 +77,7 @@ public class FileTableTest extends RecordTest {
         List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
         int medianKeyIndex = random.nextInt(latestRecords.size());
         Key medianKey = latestRecords.get(medianKeyIndex).key();
-        Iterator<Record> tableRecordIterator = fileTable.iteratorFrom(medianKey, Table.IterationDirection.ASCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = fileTable.ascendingIterator(medianKey, Long.MAX_VALUE);
         Iterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex);
 
         while (tableRecordIterator.hasNext()) {
@@ -88,7 +87,7 @@ public class FileTableTest extends RecordTest {
 
     @Test
     public void descendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = fileTable.iterator(Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = fileTable.descendingIterator(Long.MAX_VALUE);
         List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
         ListIterator<Record> recordIterator = latestRecords.listIterator(latestRecords.size());
 
@@ -103,7 +102,7 @@ public class FileTableTest extends RecordTest {
         int medianKeyIndex = random.nextInt(latestRecords.size());
         Key medianKey = latestRecords.get(medianKeyIndex).key();
 
-        Iterator<Record> tableRecordIterator = fileTable.iteratorFrom(medianKey, Table.IterationDirection.DESCENDING, Long.MAX_VALUE);
+        Iterator<Record> tableRecordIterator = fileTable.descendingIterator(medianKey, Long.MAX_VALUE);
         ListIterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex + 1);
 
         while (tableRecordIterator.hasNext()) {
