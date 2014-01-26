@@ -115,10 +115,10 @@ public class FileTableWriter {
         RecordBlock recordBlock = recordBlockBuilder.build();
         ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
 
-        long recordBlockOffset = tableDataFile.appendInt(recordBlockBuffer.capacity());
+        long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
+
         recordBlockDescriptors.add(new FileTable.RecordBlockDescriptor(recordBlockOffset, recordBlockBuffer.capacity()));
         recordBlockBuffer.rewind();
-        tableDataFile.append(recordBlockBuffer);
 
         Record startRecord = recordBlock.startRecord();
         indexWriter.write(new IndexRecord(startRecord.key(), recordBlockOffset, recordBlockBuffer.capacity()));

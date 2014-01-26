@@ -87,7 +87,7 @@ public class FileTable implements Table {
 
                 if (startKey != null) {
                     IndexRecord indexRecord = index.get(startKey);
-                    this.recordBlock = readRecordBlock(indexRecord.blockOffset(), false);
+                    this.recordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize(), false);
                     this.recordIterator = ascending ? recordBlock.ascendingIterator(startKey) : recordBlock .descendingIterator(startKey);
                 }
             } catch (IOException e) {
@@ -144,7 +144,7 @@ public class FileTable implements Table {
                 }
 
                 RecordBlockDescriptor descriptor = blockDescriptors.next();
-                this.recordBlock = readRecordBlock(descriptor.offset, false);
+                this.recordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
                 this.recordIterator = ascending ? recordBlock.ascendingIterator() : recordBlock.descendingIterator();
 
                 return true;
@@ -204,7 +204,7 @@ public class FileTable implements Table {
                 return null;
             }
 
-            RecordBlock recordBlock = readRecordBlock(indexRecord.blockOffset());
+            RecordBlock recordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             return recordBlock.get(key);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -256,20 +256,19 @@ public class FileTable implements Table {
         return new TableIterator(IterationDirection.ASCENDING);
     }
 
-    private RecordBlock readRecordBlock(long offset) throws IOException {
-        return readRecordBlock(offset, true);
+    private RecordBlock readRecordBlock(long offset, int size) throws IOException {
+        return readRecordBlock(offset, size, true);
     }
 
-    private RecordBlock readRecordBlock(long offset, boolean shouldCache) throws IOException {
+    private RecordBlock readRecordBlock(long offset, int size, boolean shouldCache) throws IOException {
         RecordBlock recordBlock = recordCache.get(tableId, offset);
 
         if (recordBlock == null) {
-            int recordBlockSize = tableFile.readInt(offset);
-            Memory recordBlockMemory = Memory.allocate(recordBlockSize);
+            Memory recordBlockMemory = Memory.allocate(size);
 
             try {
                 ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
-                tableFile.read(recordBlockBuffer, offset + Sizes.INT_SIZE);
+                tableFile.read(recordBlockBuffer, offset);
                 recordBlockBuffer.rewind();
                 recordBlock = new RecordBlock(new ByteMap(recordBlockMemory));
 
@@ -291,6 +290,7 @@ public class FileTable implements Table {
         int descriptorCount = tableFile.readInt(fileOffset);
 
         ByteBuffer descriptorBuffer = ByteBuffer.allocate(descriptorCount * RecordBlockDescriptor.SIZE);
+
         tableFile.read(descriptorBuffer, fileOffset - descriptorBuffer.capacity());
         descriptorBuffer.rewind();
 

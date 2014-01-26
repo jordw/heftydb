@@ -123,6 +123,8 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 value.data().rewind();
             }
 
+            memoryBuffer.rewind();
+
             return memory;
         }
 
