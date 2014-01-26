@@ -103,6 +103,31 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         }
     }
 
+    private class RecordIterator implements Iterator<IndexRecord>{
+
+        private final Iterator<ByteMap.Entry> entryIterator;
+
+        private RecordIterator(Iterator<ByteMap.Entry> entryIterator) {
+            this.entryIterator = entryIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return entryIterator.hasNext();
+        }
+
+        @Override
+        public IndexRecord next() {
+            ByteMap.Entry nextEntry = entryIterator.next();
+            return deserializeRecord(nextEntry);
+        }
+
+        @Override
+        public void remove() {
+            entryIterator.remove();
+        }
+    }
+
     private final ByteMap byteMap;
 
     public IndexBlock(ByteMap byteMap) {
@@ -130,6 +155,22 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     @Override
     public Memory memory() {
         return byteMap.memory();
+    }
+
+    public Iterator<IndexRecord> ascendingIterator(){
+        return new RecordIterator(byteMap.ascendingIterator());
+    }
+
+    public Iterator<IndexRecord> ascendingIterator(Key key){
+        return new RecordIterator(byteMap.ascendingIterator(key));
+    }
+
+    public Iterator<IndexRecord> descendingIterator(){
+        return new RecordIterator(byteMap.descendingIterator());
+    }
+
+    public Iterator<IndexRecord> descendingIterator(Key key){
+        return new RecordIterator(byteMap.descendingIterator(key));
     }
 
     @Override
@@ -173,11 +214,14 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     private IndexRecord deserializeRecord(int recordIndex) {
         ByteMap.Entry entry = byteMap.get(recordIndex);
+        return deserializeRecord(entry);
+    }
+
+    private IndexRecord deserializeRecord(ByteMap.Entry entry){
         ByteBuffer entryValueBuffer = entry.value().data();
         long blockOffset = entryValueBuffer.getLong(0);
         int blockSize = entryValueBuffer.getInt(Sizes.LONG_SIZE);
         boolean isLeaf = entryValueBuffer.get(Sizes.LONG_SIZE + Sizes.INT_SIZE) == (byte) 1;
-
         return new IndexRecord(entry.key(), blockOffset, blockSize, isLeaf);
     }
 }
