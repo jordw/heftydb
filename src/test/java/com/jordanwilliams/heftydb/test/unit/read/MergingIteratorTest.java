@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.util;
+package com.jordanwilliams.heftydb.test.unit.read;
 
 import com.google.common.primitives.Ints;
-import com.jordanwilliams.heftydb.util.MergingIterator;
+import com.jordanwilliams.heftydb.read.MergingIterator;
 import org.junit.Assert;
 import org.junit.Test;
 

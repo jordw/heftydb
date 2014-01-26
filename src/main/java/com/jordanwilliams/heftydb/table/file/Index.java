@@ -26,6 +26,7 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 
 public class Index {
 
@@ -52,6 +53,22 @@ public class Index {
         }
 
         return currentIndexRecord;
+    }
+
+    public Iterator<IndexRecord> ascendingIterator(){
+        return null;
+    }
+
+    public Iterator<IndexRecord> ascendingIterator(Key key){
+        return null;
+    }
+
+    public Iterator<IndexRecord> descendingIterator(){
+        return null;
+    }
+
+    public Iterator<IndexRecord> descendingIterator(Key key){
+        return null;
     }
 
     public void close() throws IOException {

@@ -46,8 +46,8 @@ public class RecordBlock implements Iterable<Record>, Offheap {
                 }
             }).removalListener(new RemovalListener<String, RecordBlock>() {
                 @Override
-                public void onRemoval(RemovalNotification<String, RecordBlock> objectObjectRemovalNotification) {
-                    objectObjectRemovalNotification.getValue().memory().release();
+                public void onRemoval(RemovalNotification<String, RecordBlock> removalNotification) {
+                    removalNotification.getValue().memory().release();
                 }
             }).maximumWeight(maxsize).build();
         }
@@ -66,6 +66,10 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
         private String key(long tableId, long offset) {
             return new StringBuilder().append(tableId).append(offset).toString();
+        }
+
+        public void clear(){
+            cache.invalidateAll();
         }
     }
 

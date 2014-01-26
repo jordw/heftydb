@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.test.unit.read;
 
-import com.jordanwilliams.heftydb.read.VersionedRecordIterator;
+import com.jordanwilliams.heftydb.read.LatestRecordIterator;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class VersionedRecordIteratorTest {
+public class LatestRecordIteratorTest {
 
     private static final ByteBuffer KEY_1 = ByteBuffers.fromString("test key 1");
     private static final ByteBuffer KEY_2 = ByteBuffers.fromString("test key 2");
@@ -55,7 +55,7 @@ public class VersionedRecordIteratorTest {
     @Test
     public void filterRecordTest() {
         Iterator<Record> filteredIterator = FILTERED_RECORDS.iterator();
-        Iterator<Record> versionedIterator = new VersionedRecordIterator(6, SOURCE_RECORDS.iterator());
+        Iterator<Record> versionedIterator = new LatestRecordIterator(6, SOURCE_RECORDS.iterator());
 
         while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), filteredIterator.next());
@@ -65,7 +65,7 @@ public class VersionedRecordIteratorTest {
     @Test
     public void respectSnapshotTest() {
         Iterator<Record> snapshotIterator = SNAPSHOT_RECORDS.iterator();
-        Iterator<Record> versionedIterator = new VersionedRecordIterator(4, SOURCE_RECORDS.iterator());
+        Iterator<Record> versionedIterator = new LatestRecordIterator(4, SOURCE_RECORDS.iterator());
 
         while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), snapshotIterator.next());

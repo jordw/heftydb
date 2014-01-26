@@ -59,9 +59,7 @@ public class CounterMetric implements Metric {
     public String summary() {
         StringBuilder str = new StringBuilder();
         str.append(name + " ");
-
         str.append("value:" + value());
-
         return str.toString();
     }
 }

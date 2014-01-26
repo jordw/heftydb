@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.util;
+package com.jordanwilliams.heftydb.read;
 
 import java.util.Arrays;
 import java.util.Iterator;

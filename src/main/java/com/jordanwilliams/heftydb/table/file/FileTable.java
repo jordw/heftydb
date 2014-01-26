@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.read.VersionedRecordIterator;
+import com.jordanwilliams.heftydb.read.LatestRecordIterator;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -180,22 +180,22 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, new TableIterator(IterationDirection.ASCENDING));
+        return new LatestRecordIterator(snapshotId, new TableIterator(IterationDirection.ASCENDING));
     }
 
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, new TableIterator(IterationDirection.DESCENDING));
+        return new LatestRecordIterator(snapshotId, new TableIterator(IterationDirection.DESCENDING));
     }
 
     @Override
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, new TableIterator(key, IterationDirection.ASCENDING));
+        return new LatestRecordIterator(snapshotId, new TableIterator(key, IterationDirection.ASCENDING));
     }
 
     @Override
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, new TableIterator(key, IterationDirection.DESCENDING));
+        return new LatestRecordIterator(snapshotId, new TableIterator(key, IterationDirection.DESCENDING));
     }
 
     @Override

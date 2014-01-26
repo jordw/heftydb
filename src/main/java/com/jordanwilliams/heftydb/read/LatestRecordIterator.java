@@ -24,14 +24,14 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class VersionedRecordIterator implements Iterator<Record> {
+public class LatestRecordIterator implements Iterator<Record> {
 
     private final Iterator<Record> recordIterator;
     private final Queue<Record> nextRecord = new LinkedList<Record>();
     private final long maxSnapshotId;
     private final SortedSet<Record> currentKeyRecords = new TreeSet<Record>();
 
-    public VersionedRecordIterator(long maxSnapshotId, Iterator<Record> recordIterator) {
+    public LatestRecordIterator(long maxSnapshotId, Iterator<Record> recordIterator) {
         this.maxSnapshotId = maxSnapshotId;
         this.recordIterator = recordIterator;
     }
@@ -94,6 +94,7 @@ public class VersionedRecordIterator implements Iterator<Record> {
 
         Record newest = currentKeyRecords.last();
         currentKeyRecords.clear();
+
         return newest;
     }
 }

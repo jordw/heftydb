@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.table.memory;
 
-import com.jordanwilliams.heftydb.read.VersionedRecordIterator;
+import com.jordanwilliams.heftydb.read.LatestRecordIterator;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.table.MutableTable;
@@ -64,22 +64,22 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, records.values().iterator());
+        return new LatestRecordIterator(snapshotId, records.values().iterator());
     }
 
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, records.descendingMap().values().iterator());
+        return new LatestRecordIterator(snapshotId, records.descendingMap().values().iterator());
     }
 
     @Override
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, records.tailMap(key, true).values().iterator());
+        return new LatestRecordIterator(snapshotId, records.tailMap(key, true).values().iterator());
     }
 
     @Override
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
-        return new VersionedRecordIterator(snapshotId, records.headMap(key, true).descendingMap().values().iterator());
+        return new LatestRecordIterator(snapshotId, records.headMap(key, true).descendingMap().values().iterator());
     }
 
     @Override

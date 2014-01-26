@@ -47,8 +47,8 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
                 }
             }).removalListener(new RemovalListener<String, IndexBlock>() {
                 @Override
-                public void onRemoval(RemovalNotification<String, IndexBlock> objectObjectRemovalNotification) {
-                    objectObjectRemovalNotification.getValue().memory().release();
+                public void onRemoval(RemovalNotification<String, IndexBlock> removalNotification) {
+                    removalNotification.getValue().memory().release();
                 }
             }).maximumWeight(maxsize).build();
         }
@@ -67,6 +67,10 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
         private String key(long tableId, long offset) {
             return new StringBuilder().append(tableId).append(offset).toString();
+        }
+
+        public void clear(){
+            cache.invalidateAll();
         }
     }
 
