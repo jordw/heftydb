@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
 
@@ -68,7 +69,8 @@ public class FileTableWriter {
     private final long tableId;
     private final int maxRecordBlocksize;
     private final int level;
-    private final List<Long> recordBlockOffsets = new ArrayList<Long>();
+    private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable
+            .RecordBlockDescriptor>();
     private final Paths paths;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
@@ -114,7 +116,7 @@ public class FileTableWriter {
         ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
 
         long recordBlockOffset = tableDataFile.appendInt(recordBlockBuffer.capacity());
-        recordBlockOffsets.add(recordBlockOffset);
+        recordBlockDescriptors.add(new FileTable.RecordBlockDescriptor(recordBlockOffset, recordBlockBuffer.capacity()));
         recordBlockBuffer.rewind();
         tableDataFile.append(recordBlockBuffer);
 
@@ -125,11 +127,12 @@ public class FileTableWriter {
     }
 
     private void writeBlockOffsets() throws IOException {
-        for (long offset : recordBlockOffsets) {
-            tableDataFile.appendLong(offset);
+        for (FileTable.RecordBlockDescriptor descriptor : recordBlockDescriptors) {
+            tableDataFile.appendLong(descriptor.offset());
+            tableDataFile.appendInt(descriptor.size());
         }
 
-        tableDataFile.appendInt(recordBlockOffsets.size());
+        tableDataFile.appendInt(recordBlockDescriptors.size());
     }
 
     public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize, int maxRecordBlocksize, int level) throws IOException {

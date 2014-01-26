@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.write;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.Index;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 
@@ -35,7 +34,6 @@ public class IndexWriter {
     private final DataFile indexFile;
     private final int maxIndexBlockSize;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
-    private final List<Index.LeafBlock> leafBlocks = new ArrayList<Index.LeafBlock>();
 
     private IndexWriter(long tableId, Paths paths, int maxIndexBlockSize) throws IOException {
         this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
@@ -88,31 +86,17 @@ public class IndexWriter {
             pendingIndexRecord.add(nextLevelRecord);
         }
 
-        writeLeafBlocks();
-
         IndexRecord rootIndexRecord = pendingIndexRecord.poll();
         indexFile.appendInt(rootIndexRecord.blockSize());
         indexFile.appendLong(rootIndexRecord.blockOffset());
         indexFile.close();
     }
 
-    private void writeLeafBlocks() throws IOException {
-        for (Index.LeafBlock leafBlock : leafBlocks){
-            indexFile.appendLong(leafBlock.offset());
-            indexFile.appendInt(leafBlock.size());
-        }
-
-        indexFile.appendInt(leafBlocks.size());
-    }
-
     private IndexRecord writeIndexBlock(IndexBlock indexBlock) throws IOException {
         ByteBuffer indexBlockBuffer = indexBlock.memory().directBuffer();
         indexBlockBuffer.rewind();
-        long indexBlockOffset = indexFile.append(indexBlockBuffer);
 
-        if (indexBlock.startRecord().isLeaf()){
-            leafBlocks.add(new Index.LeafBlock(indexBlockOffset, indexBlockBuffer.capacity()));
-        }
+        long indexBlockOffset = indexFile.append(indexBlockBuffer);
 
         IndexRecord metaIndexRecord = new IndexRecord(indexBlock.startRecord().startKey(), indexBlockOffset, indexBlockBuffer.capacity(), false);
         indexBlock.memory().release();

@@ -29,9 +29,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 public class IndexTest extends RecordTest {
 
@@ -54,26 +52,6 @@ public class IndexTest extends RecordTest {
         }
 
         index.close();
-    }
-
-    @Test
-    public void ascendingIteratorTest(){
-        Iterator<IndexRecord> indexRecordIterator = index.ascendingIterator();
-        Iterator<IndexRecord> expectedIterator = indexRecords.iterator();
-
-        while (indexRecordIterator.hasNext()){
-            Assert.assertEquals("Index records match", expectedIterator.next(), indexRecordIterator.next());
-        }
-    }
-
-    @Test
-    public void descendingIteratorTest(){
-        Iterator<IndexRecord> indexRecordIterator = index.descendingIterator();
-        ListIterator<IndexRecord> expectedIterator = indexRecords.listIterator(indexRecords.size());
-
-        while (indexRecordIterator.hasNext()){
-            Assert.assertEquals("Index records match", expectedIterator.previous(), indexRecordIterator.next());
-        }
     }
 
     private Index createIndex() throws IOException {

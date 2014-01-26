@@ -37,11 +37,45 @@ import java.util.TreeSet;
 
 public class FileTable implements Table {
 
+    public static class RecordBlockDescriptor implements Comparable<RecordBlockDescriptor> {
+
+        public static int SIZE = 12;
+
+        private final long offset;
+        private final int size;
+
+        public RecordBlockDescriptor(long offset, int size) {
+            this.offset = offset;
+            this.size = size;
+        }
+
+        public long offset() {
+            return offset;
+        }
+
+        public int size() {
+            return size;
+        }
+
+        @Override
+        public int compareTo(RecordBlockDescriptor o) {
+            return Long.compare(offset, o.offset);
+        }
+
+        @Override
+        public String toString() {
+            return "RecordBlockDescriptor{" +
+                    "offset=" + offset +
+                    ", size=" + size +
+                    '}';
+        }
+    }
+
     private class TableIterator implements Iterator<Record> {
 
         private final boolean ascending;
         private final Queue<Record> nextRecord = new LinkedList<Record>();
-        private final Iterator<Long> blockOffsets;
+        private final Iterator<RecordBlockDescriptor> blockDescriptors;
 
         private Iterator<Record> recordIterator;
         private RecordBlock recordBlock;
@@ -49,7 +83,7 @@ public class FileTable implements Table {
         public TableIterator(Key startKey, IterationDirection iterationDirection) {
             try {
                 this.ascending = iterationDirection.equals(IterationDirection.ASCENDING);
-                this.blockOffsets = blockOffsets(startKey);
+                this.blockDescriptors = blockDescriptors(startKey);
 
                 if (startKey != null) {
                     IndexRecord indexRecord = index.get(startKey);
@@ -105,12 +139,12 @@ public class FileTable implements Table {
                     recordBlock.memory().release();
                 }
 
-                if (!blockOffsets.hasNext()) {
+                if (!blockDescriptors.hasNext()) {
                     return false;
                 }
 
-                long blockOffset = blockOffsets.next();
-                this.recordBlock = readRecordBlock(blockOffset, false);
+                RecordBlockDescriptor descriptor = blockDescriptors.next();
+                this.recordBlock = readRecordBlock(descriptor.offset, false);
                 this.recordIterator = ascending ? recordBlock.ascendingIterator() : recordBlock.descendingIterator();
 
                 return true;
@@ -120,20 +154,21 @@ public class FileTable implements Table {
             }
         }
 
-        private Iterator<Long> blockOffsets(Key startKey) throws IOException {
+        private Iterator<RecordBlockDescriptor> blockDescriptors(Key startKey) throws IOException {
             if (startKey == null) {
-                return ascending ? recordBlockOffsets.iterator() : recordBlockOffsets.descendingIterator();
+                return ascending ? recordBlockDescriptors.iterator() : recordBlockDescriptors.descendingIterator();
             }
 
             IndexRecord indexRecord = index.get(startKey);
+            RecordBlockDescriptor descriptor = new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
 
-            return ascending ? recordBlockOffsets.tailSet(indexRecord.blockOffset(), false).iterator() : recordBlockOffsets.headSet
-                    (indexRecord.blockOffset(), false).descendingIterator();
+            return ascending ? recordBlockDescriptors.tailSet(descriptor, false).iterator() :
+                               recordBlockDescriptors.headSet(descriptor, false).descendingIterator();
         }
     }
 
     private final long tableId;
-    private final NavigableSet<Long> recordBlockOffsets;
+    private final NavigableSet<RecordBlockDescriptor> recordBlockDescriptors;
     private final Index index;
     private final Filter filter;
     private final MetaTable metaTable;
@@ -147,7 +182,7 @@ public class FileTable implements Table {
         this.filter = Filter.open(tableId, paths);
         this.tableFile = MutableDataFile.open(paths.tablePath(tableId));
         this.metaTable = MetaTable.open(tableId, paths);
-        this.recordBlockOffsets = readRecordBlockOffsets();
+        this.recordBlockDescriptors = readRecordBlockDescriptors();
     }
 
     @Override
@@ -250,20 +285,22 @@ public class FileTable implements Table {
         return recordBlock;
     }
 
-    private NavigableSet<Long> readRecordBlockOffsets() throws IOException {
-        NavigableSet<Long> recordBlockOffsets = new TreeSet<Long>();
+    private NavigableSet<RecordBlockDescriptor> readRecordBlockDescriptors() throws IOException {
+        NavigableSet<RecordBlockDescriptor> recordBlockDescriptors = new TreeSet<RecordBlockDescriptor>();
         long fileOffset = tableFile.size() - Sizes.INT_SIZE;
-        int offsetCount = tableFile.readInt(fileOffset);
+        int descriptorCount = tableFile.readInt(fileOffset);
 
-        ByteBuffer offsetBuffer = ByteBuffer.allocate(offsetCount * Sizes.LONG_SIZE);
-        tableFile.read(offsetBuffer, fileOffset - offsetBuffer.capacity());
-        offsetBuffer.rewind();
+        ByteBuffer descriptorBuffer = ByteBuffer.allocate(descriptorCount * RecordBlockDescriptor.SIZE);
+        tableFile.read(descriptorBuffer, fileOffset - descriptorBuffer.capacity());
+        descriptorBuffer.rewind();
 
-        for (int i = 0; i < offsetCount; i++){
-            recordBlockOffsets.add(offsetBuffer.getLong());
+        for (int i = 0; i < descriptorCount; i++){
+            long offset = descriptorBuffer.getLong();
+            int size = descriptorBuffer.getInt();
+            recordBlockDescriptors.add(new RecordBlockDescriptor(offset, size));
         }
 
-        return recordBlockOffsets;
+        return recordBlockDescriptors;
     }
 
     public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
