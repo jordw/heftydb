@@ -23,21 +23,12 @@ import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
-import com.jordanwilliams.heftydb.util.Stream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 public class Index {
-
-    private class RecordStream implements Stream<IndexRecord> {
-
-        @Override
-        public IndexRecord next() {
-            return null;
-        }
-    }
 
     private final long tableId;
     private final DataFile indexFile;

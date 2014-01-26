@@ -125,6 +125,66 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         }
     }
 
+    private class AscendingIterator implements Iterator<Entry> {
+
+        private int currentEntryIndex;
+
+        public AscendingIterator(int startIndex) {
+            this.currentEntryIndex = startIndex;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentEntryIndex < entryCount;
+        }
+
+        @Override
+        public Entry next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Entry entry = getEntry(currentEntryIndex);
+            currentEntryIndex++;
+            return entry;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class DescendingIterator implements Iterator<Entry> {
+
+        private int currentEntryIndex;
+
+        public DescendingIterator(int startIndex) {
+            this.currentEntryIndex = startIndex;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentEntryIndex > -1;
+        }
+
+        @Override
+        public Entry next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Entry entry = getEntry(currentEntryIndex);
+            currentEntryIndex--;
+            return entry;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     private final Memory memory;
     private final ByteBuffer directBuffer;
     private final int entryCount;
@@ -183,6 +243,26 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     public int entryCount() {
         return entryCount;
+    }
+
+    public Iterator<Entry> ascendingIterator(){
+        return new AscendingIterator(0);
+    }
+
+    public Iterator<Entry> ascendingIterator(Key key){
+        Key versionedKey = new Key(key.data(), 0);
+        int startIndex = ceilingIndex(versionedKey);
+        return new AscendingIterator(startIndex);
+    }
+
+    public Iterator<Entry> descendingIterator(){
+        return new DescendingIterator(entryCount() - 1);
+    }
+
+    public Iterator<Entry> descendingIterator(Key key){
+        Key versionedKey = new Key(key.data(), Long.MAX_VALUE);
+        int startIndex = floorIndex(versionedKey);
+        return new DescendingIterator(startIndex);
     }
 
     @Override
