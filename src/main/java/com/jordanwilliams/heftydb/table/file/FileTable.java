@@ -40,7 +40,6 @@ public class FileTable implements Table {
     private class TableIterator implements Iterator<Record> {
 
         private final boolean ascending;
-        private final IterationDirection iterationDirection;
         private final Queue<Record> nextRecord = new LinkedList<Record>();
         private final Iterator<Long> blockOffsets;
 
@@ -49,7 +48,6 @@ public class FileTable implements Table {
 
         public TableIterator(Key startKey, IterationDirection iterationDirection) {
             try {
-                this.iterationDirection = iterationDirection;
                 this.ascending = iterationDirection.equals(IterationDirection.ASCENDING);
                 this.blockOffsets = blockOffsets(startKey);
 

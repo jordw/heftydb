@@ -94,7 +94,6 @@ public class LatestRecordIterator implements Iterator<Record> {
 
         Record newest = currentKeyRecords.last();
         currentKeyRecords.clear();
-
         return newest;
     }
 }

@@ -59,6 +59,8 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     public static class Builder {
 
+        private static final int PAGE_SIZE = 4096;
+
         private final Map<Key, Value> entries = new LinkedHashMap<Key, Value>();
 
         public void add(Key key, Value value) {
@@ -90,7 +92,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 counter++;
             }
 
-            Memory memory = Memory.allocate(memorySize);
+            Memory memory = Memory.allocate(pageAlignedSize(memorySize));
             ByteBuffer memoryBuffer = memory.directBuffer();
 
             //Pack pointers
@@ -122,6 +124,16 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             }
 
             return memory;
+        }
+
+        private static int pageAlignedSize(int memorySize){
+            int pageCount = memorySize / PAGE_SIZE;
+
+            if (memorySize % PAGE_SIZE != 0){
+                pageCount++;
+            }
+
+            return pageCount * PAGE_SIZE;
         }
     }
 

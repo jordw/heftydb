@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.read;
 
+import com.jordanwilliams.heftydb.util.PeekableIterator;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,7 +28,8 @@ import java.util.Queue;
 
 public class MergingIterator<T extends Comparable> implements Iterator<T> {
 
-    public static class ComparableIterator<T extends Comparable> implements Comparable<ComparableIterator<T>> {
+    public static class ComparableIterator<T extends Comparable> implements PeekableIterator<T>,
+            Comparable<ComparableIterator<T>> {
 
         private final Iterator<T> delegate;
         private T current;
@@ -39,11 +42,13 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
             }
         }
 
-        T currentRecord() {
+        @Override
+        public T current() {
             return current;
         }
 
-        boolean advance() {
+        @Override
+        public boolean advance() {
             if (delegate.hasNext()) {
                 current = delegate.next();
                 return true;
@@ -83,7 +88,7 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
 
         //Fetch new records
         ComparableIterator<T> nextIterator = iteratorHeap.poll();
-        T nextCandidate = nextIterator.currentRecord();
+        T nextCandidate = nextIterator.current();
 
         if (nextCandidate != null) {
             next.add(nextCandidate);

@@ -16,18 +16,19 @@
 
 package com.jordanwilliams.heftydb.util;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
 public interface Stream<T> {
 
-    public static class Iterator<T> implements java.util.Iterator<T> {
+    public static class Wrapper<T> implements Iterator<T> {
 
         private final Queue<T> next = new LinkedList<T>();
         private final Stream<T> stream;
 
-        public Iterator(Stream<T> stream) {
+        public Wrapper(Stream<T> stream) {
             this.stream = stream;
         }
 
