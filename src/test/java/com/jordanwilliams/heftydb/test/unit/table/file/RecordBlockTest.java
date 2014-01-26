@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Value;
-import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
@@ -84,7 +83,7 @@ public class RecordBlockTest {
 
     @Test
     public void descendingIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iterator(Table.IterationDirection.DESCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.descendingIterator();
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(5);
 
         while (blockRecords.hasNext()) {
@@ -94,7 +93,7 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(TEST_KEY_2, 1), Table.IterationDirection.ASCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.ascendingIterator(new Key(TEST_KEY_2, 1));
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
 
         while (blockRecords.hasNext()) {
@@ -104,7 +103,7 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box"), 0), Table.IterationDirection.ASCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {
@@ -114,7 +113,7 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(TEST_KEY_2, 1), Table.IterationDirection.DESCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.descendingIterator(new Key(TEST_KEY_2, 1));
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {
@@ -124,7 +123,7 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iteratorFrom(new Key(ByteBuffers.fromString("Box"), 0), Table.IterationDirection.DESCENDING);
+        Iterator<Record> blockRecords = TEST_BLOCK.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
         ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
 
         while (blockRecords.hasNext()) {

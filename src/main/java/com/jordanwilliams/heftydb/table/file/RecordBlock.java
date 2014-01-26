@@ -25,7 +25,6 @@ import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -92,19 +91,17 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         }
     }
 
-    private class BlockIterator implements Iterator<Record> {
+    private class AscendingBlockIterator implements Iterator<Record> {
 
-        private final boolean ascending;
         private int currentRecordIndex;
 
-        public BlockIterator(int startIndex, Table.IterationDirection iterationDirection) {
+        public AscendingBlockIterator(int startIndex) {
             this.currentRecordIndex = startIndex;
-            this.ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
         }
 
         @Override
         public boolean hasNext() {
-            return ascending ? currentRecordIndex < byteMap.entryCount() : currentRecordIndex > -1;
+            return currentRecordIndex < byteMap.entryCount();
         }
 
         @Override
@@ -114,7 +111,37 @@ public class RecordBlock implements Iterable<Record>, Offheap {
             }
 
             Record record = deserializeRecord(currentRecordIndex);
-            currentRecordIndex += ascending ? 1 : -1;
+            currentRecordIndex++;
+            return record;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class DescendingBlockIterator implements Iterator<Record> {
+
+        private int currentRecordIndex;
+
+        public DescendingBlockIterator(int startIndex) {
+            this.currentRecordIndex = startIndex;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return currentRecordIndex > -1;
+        }
+
+        @Override
+        public Record next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Record record = deserializeRecord(currentRecordIndex);
+            currentRecordIndex--;
             return record;
         }
 
@@ -145,21 +172,29 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         return deserializeRecord(0);
     }
 
-    public Iterator<Record> iterator(Table.IterationDirection iterationDirection) {
-        int startIndex = iterationDirection.equals(Table.IterationDirection.ASCENDING) ? 0 : byteMap.entryCount() - 1;
-        return new BlockIterator(startIndex, iterationDirection);
+    public Iterator<Record> ascendingIterator(){
+        return new AscendingBlockIterator(0);
     }
 
-    public Iterator<Record> iteratorFrom(Key key, Table.IterationDirection iterationDirection) {
-        boolean ascending = iterationDirection.equals(Table.IterationDirection.ASCENDING);
-        Key versionedKey = new Key(key.data(), ascending ? 0 : Long.MAX_VALUE);
-        int startIndex = ascending ? byteMap.ceilingIndex(versionedKey) : byteMap.floorIndex(versionedKey);
-        return new BlockIterator(startIndex, iterationDirection);
+    public Iterator<Record> ascendingIterator(Key key){
+        Key versionedKey = new Key(key.data(), 0);
+        int startIndex = byteMap.ceilingIndex(versionedKey);
+        return new AscendingBlockIterator(startIndex);
+    }
+
+    public Iterator<Record> descendingIterator(){
+        return new DescendingBlockIterator(byteMap.entryCount() - 1);
+    }
+
+    public Iterator<Record> descendingIterator(Key key){
+        Key versionedKey = new Key(key.data(), Long.MAX_VALUE);
+        int startIndex = byteMap.floorIndex(versionedKey);
+        return new DescendingBlockIterator(startIndex);
     }
 
     @Override
     public Iterator<Record> iterator() {
-        return new BlockIterator(0, Table.IterationDirection.ASCENDING);
+        return new AscendingBlockIterator(0);
     }
 
     @Override

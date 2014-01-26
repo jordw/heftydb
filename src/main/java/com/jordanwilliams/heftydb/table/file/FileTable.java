@@ -56,7 +56,7 @@ public class FileTable implements Table {
                 if (startKey != null) {
                     IndexRecord indexRecord = index.get(startKey);
                     this.recordBlock = readRecordBlock(indexRecord.blockOffset(), false);
-                    this.recordIterator = recordBlock.iteratorFrom(startKey, iterationDirection);
+                    this.recordIterator = ascending ? recordBlock.ascendingIterator(startKey) : recordBlock .descendingIterator(startKey);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -113,7 +113,7 @@ public class FileTable implements Table {
 
                 long blockOffset = blockOffsets.next();
                 this.recordBlock = readRecordBlock(blockOffset, false);
-                this.recordIterator = recordBlock.iterator(iterationDirection);
+                this.recordIterator = ascending ? recordBlock.ascendingIterator() : recordBlock.descendingIterator();
 
                 return true;
             } catch (IOException e) {
