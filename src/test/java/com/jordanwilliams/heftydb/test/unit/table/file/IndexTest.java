@@ -16,7 +16,6 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
-import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.Index;
@@ -30,37 +29,68 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class IndexTest extends RecordTest {
 
-    public IndexTest(List<Record> testRecords) {
+    private final Index index;
+    private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
+
+    public IndexTest(List<Record> testRecords) throws Exception {
         super(testRecords);
+        this.index = createIndex();
     }
 
     @Test
     public void readWriteTest() throws IOException {
-        Paths paths = ConfigGenerator.testPaths();
-        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
-
-        List<Key> keys = new ArrayList<Key>();
         int count = 0;
 
         for (Record record : records) {
-            keys.add(record.key());
-            indexWriter.write(new IndexRecord(record.key(), count, 128));
+            IndexRecord indexRecord = index.get(record.key());
+            Assert.assertEquals("Index blocks are found", count, indexRecord.blockOffset());
+            count++;
+        }
+
+        index.close();
+    }
+
+    @Test
+    public void ascendingIteratorTest(){
+        Iterator<IndexRecord> indexRecordIterator = index.ascendingIterator();
+        Iterator<IndexRecord> expectedIterator = indexRecords.iterator();
+
+        while (indexRecordIterator.hasNext()){
+            Assert.assertEquals("Index records match", expectedIterator.next(), indexRecordIterator.next());
+        }
+    }
+
+    @Test
+    public void descendingIteratorTest(){
+        Iterator<IndexRecord> indexRecordIterator = index.descendingIterator();
+        ListIterator<IndexRecord> expectedIterator = indexRecords.listIterator(indexRecords.size());
+
+        while (indexRecordIterator.hasNext()){
+            Assert.assertEquals("Index records match", expectedIterator.previous(), indexRecordIterator.next());
+        }
+    }
+
+    private Index createIndex() throws IOException {
+        Paths paths = ConfigGenerator.testPaths();
+        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
+
+        int count = 0;
+
+        for (Record record : records) {
+            IndexRecord indexRecord = new IndexRecord(record.key(), count, 128);
+            indexRecords.add(indexRecord);
+            indexWriter.write(indexRecord);
             count++;
         }
 
         indexWriter.finish();
 
-        Index index = Index.open(1, paths, new IndexBlock.Cache());
-
-        for (Record record : records) {
-            IndexRecord indexRecord = index.get(record.key());
-            Assert.assertTrue("Index blocks are found", indexRecord.blockOffset() >= 0);
-        }
-
-        index.close();
+        return Index.open(1, paths, new IndexBlock.Cache());
     }
 }
