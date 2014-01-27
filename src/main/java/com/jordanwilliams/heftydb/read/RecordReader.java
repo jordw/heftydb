@@ -16,5 +16,13 @@
 
 package com.jordanwilliams.heftydb.read;
 
+import com.jordanwilliams.heftydb.state.State;
+
 public class RecordReader {
+
+    private final State state;
+
+    public RecordReader(State state) {
+        this.state = state;
+    }
 }

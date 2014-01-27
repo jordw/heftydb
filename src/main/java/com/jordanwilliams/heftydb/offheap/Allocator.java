@@ -22,5 +22,5 @@ public interface Allocator {
 
     public void release(long address);
 
-    public static Allocator allocator = new UnsafeAllocator();
+    public static Allocator allocator = new JEMallocAllocator();
 }

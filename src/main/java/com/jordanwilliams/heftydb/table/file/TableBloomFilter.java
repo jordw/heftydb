@@ -27,11 +27,11 @@ import com.jordanwilliams.heftydb.state.Paths;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class Filter implements Offheap {
+public class TableBloomFilter implements Offheap {
 
     private final BloomFilter bloomFilter;
 
-    private Filter(BloomFilter bloomFilter) throws IOException {
+    private TableBloomFilter(BloomFilter bloomFilter) throws IOException {
         this.bloomFilter = bloomFilter;
     }
 
@@ -48,12 +48,12 @@ public class Filter implements Offheap {
         return bloomFilter.memory();
     }
 
-    public static Filter open(long tableId, Paths paths) throws IOException {
+    public static TableBloomFilter open(long tableId, Paths paths) throws IOException {
         DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
         Memory filterMemory = Memory.allocate((int) filterFile.size());
         ByteBuffer filterBuffer = filterMemory.directBuffer();
         filterFile.read(filterBuffer, filterFile.size());
         filterFile.close();
-        return new Filter(new BloomFilter(filterMemory));
+        return new TableBloomFilter(new BloomFilter(filterMemory));
     }
 }

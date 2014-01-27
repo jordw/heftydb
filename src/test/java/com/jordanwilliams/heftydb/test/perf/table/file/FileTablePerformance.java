@@ -54,7 +54,8 @@ public class FileTablePerformance {
 
         System.out.println("Reading file table");
 
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(128000), new IndexBlock.Cache(8192000));
+        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(32768000),
+                new IndexBlock.Cache(16384000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();

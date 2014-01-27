@@ -198,16 +198,16 @@ public class FileTable implements Table {
     private final long tableId;
     private final NavigableSet<RecordBlockDescriptor> recordBlockDescriptors;
     private final Index index;
-    private final Filter filter;
+    private final TableBloomFilter tableBloomFilter;
     private final MetaTable metaTable;
     private final RecordBlock.Cache recordCache;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, Index index, Filter filter, DataFile tableFile, MetaTable metaTable, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
+    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile, MetaTable metaTable, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;
-        this.filter = filter;
+        this.tableBloomFilter = tableBloomFilter;
         this.tableFile = tableFile;
         this.metaTable = metaTable;
         this.recordBlockDescriptors = readRecordBlockDescriptors();
@@ -220,7 +220,7 @@ public class FileTable implements Table {
 
     @Override
     public boolean mightContain(Key key) {
-        return filter.mightContain(key);
+        return tableBloomFilter.mightContain(key);
     }
 
     @Override
@@ -351,9 +351,9 @@ public class FileTable implements Table {
 
     public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
         Index index = Index.open(tableId, paths, indexCache);
-        Filter filter = Filter.open(tableId, paths);
+        TableBloomFilter tableBloomFilter = TableBloomFilter.open(tableId, paths);
         DataFile tableFile = MutableDataFile.open(paths.tablePath(tableId));
         MetaTable metaTable = MetaTable.open(tableId, paths);
-        return new FileTable(tableId, index, filter, tableFile, metaTable, recordCache, indexCache);
+        return new FileTable(tableId, index, tableBloomFilter, tableFile, metaTable, recordCache, indexCache);
     }
 }

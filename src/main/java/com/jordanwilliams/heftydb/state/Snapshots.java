@@ -30,7 +30,7 @@ public class Snapshots {
         return currentSnapshotId.incrementAndGet();
     }
 
-    private long currentId() {
+    public long currentId() {
         return currentSnapshotId.get();
     }
 }

@@ -35,11 +35,33 @@ public class FileTableWriter {
 
     public static class Task implements Runnable {
 
+        public interface Callback {
+
+            public static Callback NO_OP = new Callback() {
+                @Override
+                public void finish() {
+
+                }
+            };
+
+            public void finish();
+        }
+
         private final long tableId;
         private final int level;
         private final Iterator<Record> records;
         private final long recordCount;
         private final State state;
+        private final Callback callback;
+
+        public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount, Callback callback) {
+            this.tableId = tableId;
+            this.level = level;
+            this.state = state;
+            this.records = records;
+            this.recordCount = recordCount;
+            this.callback = callback;
+        }
 
         public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount) {
             this.tableId = tableId;
@@ -47,6 +69,7 @@ public class FileTableWriter {
             this.state = state;
             this.records = records;
             this.recordCount = recordCount;
+            this.callback =  Callback.NO_OP;
         }
 
         @Override
@@ -59,6 +82,8 @@ public class FileTableWriter {
                 }
 
                 tableWriter.finish();
+
+                callback.finish();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
