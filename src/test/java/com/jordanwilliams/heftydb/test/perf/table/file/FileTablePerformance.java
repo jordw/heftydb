@@ -34,7 +34,7 @@ import java.util.Random;
 
 public class FileTablePerformance {
 
-    private static final int RECORD_COUNT = 25000000;
+    private static final int RECORD_COUNT = 20*1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
@@ -54,11 +54,11 @@ public class FileTablePerformance {
 
         System.out.println("Reading file table");
 
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(32768000), new IndexBlock.Cache(4096000));
+        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(128000), new IndexBlock.Cache(8192000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
-        int iterations = 1000000;
+        int iterations = 1*1000000;
 
         for (int i = 0; i < iterations; i++) {
             fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));

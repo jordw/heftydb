@@ -30,6 +30,8 @@ import java.util.NoSuchElementException;
 
 public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
+    private static final int PAGE_SIZE = 4096;
+
     public static class Entry {
 
         private final Key key;
@@ -90,7 +92,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 counter++;
             }
 
-            Memory memory = Memory.allocate(memorySize);
+            Memory memory = Memory.allocate(memorySize, PAGE_SIZE);
             ByteBuffer memoryBuffer = memory.directBuffer();
 
             //Pack pointers
@@ -346,6 +348,11 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
         int entryOffset = entryOffset(bufferKeyIndex);
+
+        if (entryOffset > directBuffer.capacity() || entryOffset < 0){
+            int x = 1;
+        }
+
         int keySize = directBuffer.getInt(entryOffset);
         entryOffset += Sizes.INT_SIZE;
 
