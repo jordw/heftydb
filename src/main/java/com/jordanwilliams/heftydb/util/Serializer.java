@@ -25,6 +25,6 @@ public interface Serializer<V> {
 
     public void serialize(V item, ByteBuffer buffer);
 
-    public void deserialize(ByteBuffer buffer);
+    public V deserialize(ByteBuffer buffer);
 
 }

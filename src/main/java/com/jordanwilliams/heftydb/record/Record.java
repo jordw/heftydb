@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.record;
 
+import com.jordanwilliams.heftydb.util.Serializer;
 import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.Immutable;
 
@@ -23,6 +24,58 @@ import java.nio.ByteBuffer;
 
 @Immutable
 public class Record implements Comparable<Record> {
+
+    public static Serializer<Record> SERIALIZER = new Serializer<Record>() {
+        @Override
+        public int size(Record record) {
+            int size = 0;
+
+            //Key
+            size += Sizes.INT_SIZE;
+            size += record.key().size();
+            size += Sizes.LONG_SIZE;
+
+            //Value
+            size += Sizes.INT_SIZE;
+            size += record.value().size();
+
+            return size;
+        }
+
+        @Override
+        public void serialize(Record record, ByteBuffer recordBuffer) {
+            //Key
+            recordBuffer.putInt(record.key.size());
+            recordBuffer.put(record.key.data());
+            recordBuffer.putLong(record.key.snapshotId());
+            record.key().data().rewind();
+
+            //Value
+            recordBuffer.putInt(record.value.size());
+            recordBuffer.put(record.value().data());
+            record.value().data().rewind();
+
+            recordBuffer.rewind();
+        }
+
+        @Override
+        public Record deserialize(ByteBuffer recordBuffer) {
+            //Key
+            int keySize = recordBuffer.getInt();
+            ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
+            recordBuffer.get(keyBuffer.array());
+            long snapshotId = recordBuffer.getLong();
+            Key key = new Key(keyBuffer, snapshotId);
+
+            //Value
+            int valueSize = recordBuffer.getInt();
+            ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
+            recordBuffer.get(valueBuffer.array());
+            Value value = new Value(valueBuffer);
+
+            return new Record(key, value);
+        }
+    };
 
     private final Key key;
     private final Value value;
@@ -51,21 +104,13 @@ public class Record implements Comparable<Record> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         Record record = (Record) o;
 
-        if (key != null ? !key.equals(record.key) : record.key != null) {
-            return false;
-        }
-        if (value != null ? !value.equals(record.value) : record.value != null) {
-            return false;
-        }
+        if (key != null ? !key.equals(record.key) : record.key != null) return false;
+        if (value != null ? !value.equals(record.value) : record.value != null) return false;
 
         return true;
     }
@@ -83,48 +128,5 @@ public class Record implements Comparable<Record> {
                 "key=" + key +
                 ", value=" + value +
                 '}';
-    }
-
-    public static void serialize(Record record, ByteBuffer recordBuffer) {
-        //Key
-        recordBuffer.putInt(record.key.size());
-        recordBuffer.put(record.key.data());
-        recordBuffer.putLong(record.key.snapshotId());
-
-        //Value
-        recordBuffer.putInt(record.value.size());
-        recordBuffer.put(record.value().data());
-        recordBuffer.rewind();
-    }
-
-    public static Record deserialize(ByteBuffer recordBuffer) {
-        //Key
-        int keySize = recordBuffer.getInt();
-        ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
-        recordBuffer.get(keyBuffer.array());
-        long snapshotId = recordBuffer.getLong();
-        Key key = new Key(keyBuffer, snapshotId);
-
-        //Value
-        int valueSize = recordBuffer.getInt();
-        ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
-        Value value = new Value(valueBuffer);
-
-        return new Record(key, value);
-    }
-
-    public static int serializedSize(Record record) {
-        int size = 0;
-
-        //Key
-        size += Sizes.INT_SIZE;
-        size += record.key().size();
-        size += Sizes.LONG_SIZE;
-
-        //Value
-        size += Sizes.INT_SIZE;
-        size += record.value().size();
-
-        return size;
     }
 }

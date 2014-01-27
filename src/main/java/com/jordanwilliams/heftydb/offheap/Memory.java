@@ -35,7 +35,6 @@ public class Memory {
         }
     }
 
-
     private final AtomicInteger retainCount = new AtomicInteger(1);
     private final int size;
     private final ByteBuffer directBuffer;
