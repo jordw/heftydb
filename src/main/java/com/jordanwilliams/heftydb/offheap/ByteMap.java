@@ -249,21 +249,21 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         return entryCount;
     }
 
-    public Iterator<Entry> ascendingIterator(){
+    public Iterator<Entry> ascendingIterator() {
         return new AscendingIterator(0);
     }
 
-    public Iterator<Entry> ascendingIterator(Key key){
+    public Iterator<Entry> ascendingIterator(Key key) {
         Key versionedKey = new Key(key.data(), 0);
         int startIndex = ceilingIndex(versionedKey);
         return new AscendingIterator(startIndex);
     }
 
-    public Iterator<Entry> descendingIterator(){
+    public Iterator<Entry> descendingIterator() {
         return new DescendingIterator(entryCount() - 1);
     }
 
-    public Iterator<Entry> descendingIterator(Key key){
+    public Iterator<Entry> descendingIterator(Key key) {
         Key versionedKey = new Key(key.data(), Long.MAX_VALUE);
         int startIndex = floorIndex(versionedKey);
         return new DescendingIterator(startIndex);
@@ -349,7 +349,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
         int entryOffset = entryOffset(bufferKeyIndex);
 
-        if (entryOffset > directBuffer.capacity() || entryOffset < 0){
+        if (entryOffset > directBuffer.capacity() || entryOffset < 0) {
             int x = 1;
         }
 

@@ -34,13 +34,13 @@ public interface Stream<T> {
 
         @Override
         public boolean hasNext() {
-            if (!next.isEmpty()){
+            if (!next.isEmpty()) {
                 return true;
             }
 
             T nextItem = stream.next();
 
-            if (nextItem == null){
+            if (nextItem == null) {
                 return false;
             }
 
@@ -51,8 +51,8 @@ public interface Stream<T> {
 
         @Override
         public T next() {
-            if (next.isEmpty()){
-                if (!hasNext()){
+            if (next.isEmpty()) {
+                if (!hasNext()) {
                     throw new NoSuchElementException();
                 }
             }

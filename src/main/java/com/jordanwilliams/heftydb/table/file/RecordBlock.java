@@ -66,7 +66,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
             return new StringBuilder().append(tableId).append(offset).toString();
         }
 
-        public void clear(){
+        public void clear() {
             cache.invalidateAll();
         }
     }
@@ -90,7 +90,7 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         }
     }
 
-    private class RecordIterator implements Iterator<Record>{
+    private class RecordIterator implements Iterator<Record> {
 
         private final Iterator<ByteMap.Entry> entryIterator;
 
@@ -136,19 +136,19 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         return deserializeRecord(0);
     }
 
-    public Iterator<Record> ascendingIterator(){
+    public Iterator<Record> ascendingIterator() {
         return new RecordIterator(byteMap.ascendingIterator());
     }
 
-    public Iterator<Record> ascendingIterator(Key key){
+    public Iterator<Record> ascendingIterator(Key key) {
         return new RecordIterator(byteMap.ascendingIterator(key));
     }
 
-    public Iterator<Record> descendingIterator(){
+    public Iterator<Record> descendingIterator() {
         return new RecordIterator(byteMap.descendingIterator());
     }
 
-    public Iterator<Record> descendingIterator(Key key){
+    public Iterator<Record> descendingIterator(Key key) {
         return new RecordIterator(byteMap.descendingIterator(key));
     }
 

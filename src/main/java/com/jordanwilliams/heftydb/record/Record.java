@@ -85,7 +85,7 @@ public class Record implements Comparable<Record> {
                 '}';
     }
 
-    public static void serialize(Record record, ByteBuffer recordBuffer){
+    public static void serialize(Record record, ByteBuffer recordBuffer) {
         //Key
         recordBuffer.putInt(record.key.size());
         recordBuffer.put(record.key.data());
@@ -97,7 +97,7 @@ public class Record implements Comparable<Record> {
         recordBuffer.rewind();
     }
 
-    public static Record deserialize(ByteBuffer recordBuffer){
+    public static Record deserialize(ByteBuffer recordBuffer) {
         //Key
         int keySize = recordBuffer.getInt();
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
@@ -113,7 +113,7 @@ public class Record implements Comparable<Record> {
         return new Record(key, value);
     }
 
-    public static int serializedSize(Record record){
+    public static int serializedSize(Record record) {
         int size = 0;
 
         //Key

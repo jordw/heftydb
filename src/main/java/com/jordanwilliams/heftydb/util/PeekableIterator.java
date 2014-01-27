@@ -36,7 +36,7 @@ public interface PeekableIterator<T> {
 
         @Override
         public boolean advance() {
-            if (!delegate.hasNext()){
+            if (!delegate.hasNext()) {
                 return false;
             }
 

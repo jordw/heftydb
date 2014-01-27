@@ -52,15 +52,14 @@ public class FileTableWriter {
         @Override
         public void run() {
             try {
-                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.files(), recordCount,
-                        state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
+                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.files(), recordCount, state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
 
-                while (records.hasNext()){
+                while (records.hasNext()) {
                     tableWriter.write(records.next());
                 }
 
                 tableWriter.finish();
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -69,8 +68,7 @@ public class FileTableWriter {
     private final long tableId;
     private final int maxRecordBlocksize;
     private final int level;
-    private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable
-            .RecordBlockDescriptor>();
+    private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable.RecordBlockDescriptor>();
     private final Paths paths;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;

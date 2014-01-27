@@ -69,7 +69,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
             return new StringBuilder().append(tableId).append(offset).toString();
         }
 
-        public void clear(){
+        public void clear() {
             cache.invalidateAll();
         }
     }
@@ -103,7 +103,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         }
     }
 
-    private class RecordIterator implements Iterator<IndexRecord>{
+    private class RecordIterator implements Iterator<IndexRecord> {
 
         private final Iterator<ByteMap.Entry> entryIterator;
 
@@ -157,19 +157,19 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         return byteMap.memory();
     }
 
-    public Iterator<IndexRecord> ascendingIterator(){
+    public Iterator<IndexRecord> ascendingIterator() {
         return new RecordIterator(byteMap.ascendingIterator());
     }
 
-    public Iterator<IndexRecord> ascendingIterator(Key key){
+    public Iterator<IndexRecord> ascendingIterator(Key key) {
         return new RecordIterator(byteMap.ascendingIterator(key));
     }
 
-    public Iterator<IndexRecord> descendingIterator(){
+    public Iterator<IndexRecord> descendingIterator() {
         return new RecordIterator(byteMap.descendingIterator());
     }
 
-    public Iterator<IndexRecord> descendingIterator(Key key){
+    public Iterator<IndexRecord> descendingIterator(Key key) {
         return new RecordIterator(byteMap.descendingIterator(key));
     }
 
@@ -217,7 +217,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         return deserializeRecord(entry);
     }
 
-    private IndexRecord deserializeRecord(ByteMap.Entry entry){
+    private IndexRecord deserializeRecord(ByteMap.Entry entry) {
         ByteBuffer entryValueBuffer = entry.value().data();
         long blockOffset = entryValueBuffer.getLong(0);
         int blockSize = entryValueBuffer.getInt(Sizes.LONG_SIZE);

@@ -51,16 +51,16 @@ public class IndexRecord {
 
     public int size() {
         return Sizes.INT_SIZE + //Key blockSize
-               startKey.size() + //Key
-               Sizes.LONG_SIZE + //Offset
-               Sizes.INT_SIZE +
-               1; //Leaf flag
+                startKey.size() + //Key
+                Sizes.LONG_SIZE + //Offset
+                Sizes.INT_SIZE +
+                1; //Leaf flag
     }
 
     public int contentsSize() {
         return Sizes.LONG_SIZE + //Offset
-               Sizes.INT_SIZE +
-               1; //Leaf flag
+                Sizes.INT_SIZE +
+                1; //Leaf flag
     }
 
     public boolean isLeaf() {

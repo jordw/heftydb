@@ -34,7 +34,7 @@ import java.util.Random;
 
 public class FileTablePerformance {
 
-    private static final int RECORD_COUNT = 20*1000000;
+    private static final int RECORD_COUNT = 20 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
@@ -58,7 +58,7 @@ public class FileTablePerformance {
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
-        int iterations = 1*1000000;
+        int iterations = 1 * 1000000;
 
         for (int i = 0; i < iterations; i++) {
             fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));

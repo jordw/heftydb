@@ -39,7 +39,7 @@ public class RecordWriter {
 
     }
 
-    private synchronized void rotateMemoryTable(){
+    private synchronized void rotateMemoryTable() {
 
     }
 }
