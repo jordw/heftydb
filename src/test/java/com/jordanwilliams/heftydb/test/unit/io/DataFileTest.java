@@ -32,16 +32,17 @@ import java.nio.file.StandardOpenOption;
 
 public class DataFileTest extends FileTest {
 
-    private static final Path TEST_FILE = TestFileUtils.TEMP_PATH.resolve("testfile");
     private static final ByteBuffer TEST_BYTES = ByteBuffer.wrap("I am some very impressive test data".getBytes());
     private static final ByteBuffer MORE_TEST_BYTES = ByteBuffer.wrap("Test data is very interesting".getBytes());
+
+    private final Path testFile = TestFileUtils.TEMP_PATH.resolve("testfile");
 
     @Test
     public void mutableDataFileTest() throws IOException {
         TEST_BYTES.rewind();
         MORE_TEST_BYTES.rewind();
 
-        MutableDataFile file = MutableDataFile.open(TEST_FILE);
+        MutableDataFile file = MutableDataFile.open(testFile);
 
         file.append(TEST_BYTES);
         file.append(MORE_TEST_BYTES);
@@ -61,7 +62,7 @@ public class DataFileTest extends FileTest {
 
     @Test
     public void mutableDataFilePrimitiveTest() throws IOException {
-        MutableDataFile file = MutableDataFile.open(TEST_FILE);
+        MutableDataFile file = MutableDataFile.open(testFile);
 
         file.appendInt(4);
         file.appendLong(8);
@@ -79,13 +80,13 @@ public class DataFileTest extends FileTest {
         TEST_BYTES.rewind();
         MORE_TEST_BYTES.rewind();
 
-        FileChannel channel = FileChannel.open(TEST_FILE, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        FileChannel channel = FileChannel.open(testFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
         channel.write(TEST_BYTES);
         channel.write(MORE_TEST_BYTES);
         channel.close();
 
-        MappedDataFile file = MappedDataFile.open(TEST_FILE);
+        MappedDataFile file = MappedDataFile.open(testFile);
 
         ByteBuffer readBuffer = ByteBuffer.allocate(TEST_BYTES.capacity());
         file.read(readBuffer, 0);

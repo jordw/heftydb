@@ -27,26 +27,26 @@ import java.util.List;
 
 public class ByteMapTest {
 
-    private static final ByteMap BYTE_MAP;
-    private static final List<Record> TEST_RECORDS;
+    private final ByteMap byteMap;
+    private final List<Record> records;
 
-    static {
+    public ByteMapTest(){
         ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
         RecordGenerator recordGenerator = new RecordGenerator();
-        TEST_RECORDS = recordGenerator.testRecords(100, 0);
+        records = recordGenerator.testRecords(100, 0);
 
-        for (Record record : TEST_RECORDS) {
+        for (Record record : records) {
             byteMapBuilder.add(record.key(), record.value());
         }
 
-        BYTE_MAP = byteMapBuilder.build();
+        byteMap = byteMapBuilder.build();
     }
 
     @Test
     public void getTest() {
-        for (int i = 0; i < TEST_RECORDS.size(); i++) {
-            ByteMap.Entry entry = BYTE_MAP.get(i);
-            Record record = TEST_RECORDS.get(i);
+        for (int i = 0; i < records.size(); i++) {
+            ByteMap.Entry entry = byteMap.get(i);
+            Record record = records.get(i);
             Assert.assertEquals("Keys match", record.key(), entry.key());
             Assert.assertEquals("Values match", record.value(), entry.value());
         }
@@ -54,10 +54,10 @@ public class ByteMapTest {
 
     @Test
     public void floorIndexMatchTest() {
-        for (int i = 0; i < TEST_RECORDS.size(); i++) {
-            Record record = TEST_RECORDS.get(i);
-            int floorIndex = BYTE_MAP.floorIndex(record.key());
-            ByteMap.Entry entry = BYTE_MAP.get(floorIndex);
+        for (int i = 0; i < records.size(); i++) {
+            Record record = records.get(i);
+            int floorIndex = byteMap.floorIndex(record.key());
+            ByteMap.Entry entry = byteMap.get(floorIndex);
             Assert.assertEquals("Keys match", record.key(), entry.key());
             Assert.assertEquals("Values match", record.value(), entry.value());
         }
@@ -65,9 +65,9 @@ public class ByteMapTest {
 
     @Test
     public void iteratorTest() {
-        Iterator<Record> testRecords = TEST_RECORDS.iterator();
+        Iterator<Record> testRecords = records.iterator();
 
-        for (ByteMap.Entry entry : BYTE_MAP) {
+        for (ByteMap.Entry entry : byteMap) {
             Record record = testRecords.next();
             Assert.assertEquals("Keys match", record.key(), entry.key());
             Assert.assertEquals("Values match", record.value(), entry.value());

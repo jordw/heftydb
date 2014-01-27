@@ -34,28 +34,28 @@ public class LatestRecordIteratorTest {
     private static final ByteBuffer KEY_1 = ByteBuffers.fromString("test key 1");
     private static final ByteBuffer KEY_2 = ByteBuffers.fromString("test key 2");
 
-    private static final List<Record> SOURCE_RECORDS = new ArrayList<Record>();
-    private static final List<Record> FILTERED_RECORDS = new ArrayList<Record>();
-    private static final List<Record> SNAPSHOT_RECORDS = new ArrayList<Record>();
+    private final List<Record> sourceRecords = new ArrayList<Record>();
+    private final List<Record> filteredRecords = new ArrayList<Record>();
+    private final List<Record> snapshotRecords = new ArrayList<Record>();
 
-    static {
-        SOURCE_RECORDS.add(new Record(new Key(KEY_1, 1), Value.TOMBSTONE_VALUE));
-        SOURCE_RECORDS.add(new Record(new Key(KEY_1, 2), Value.TOMBSTONE_VALUE));
-        SOURCE_RECORDS.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
-        SOURCE_RECORDS.add(new Record(new Key(KEY_2, 4), Value.TOMBSTONE_VALUE));
-        SOURCE_RECORDS.add(new Record(new Key(KEY_2, 5), Value.TOMBSTONE_VALUE));
+    public LatestRecordIteratorTest(){
+        sourceRecords.add(new Record(new Key(KEY_1, 1), Value.TOMBSTONE_VALUE));
+        sourceRecords.add(new Record(new Key(KEY_1, 2), Value.TOMBSTONE_VALUE));
+        sourceRecords.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
+        sourceRecords.add(new Record(new Key(KEY_2, 4), Value.TOMBSTONE_VALUE));
+        sourceRecords.add(new Record(new Key(KEY_2, 5), Value.TOMBSTONE_VALUE));
 
-        FILTERED_RECORDS.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
-        FILTERED_RECORDS.add(new Record(new Key(KEY_2, 5), Value.TOMBSTONE_VALUE));
+        filteredRecords.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
+        filteredRecords.add(new Record(new Key(KEY_2, 5), Value.TOMBSTONE_VALUE));
 
-        SNAPSHOT_RECORDS.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
-        SNAPSHOT_RECORDS.add(new Record(new Key(KEY_2, 4), Value.TOMBSTONE_VALUE));
+        snapshotRecords.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));
+        snapshotRecords.add(new Record(new Key(KEY_2, 4), Value.TOMBSTONE_VALUE));
     }
 
     @Test
     public void filterRecordTest() {
-        Iterator<Record> filteredIterator = FILTERED_RECORDS.iterator();
-        Iterator<Record> versionedIterator = new LatestRecordIterator(6, SOURCE_RECORDS.iterator());
+        Iterator<Record> filteredIterator = filteredRecords.iterator();
+        Iterator<Record> versionedIterator = new LatestRecordIterator(6, sourceRecords.iterator());
 
         while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), filteredIterator.next());
@@ -64,8 +64,8 @@ public class LatestRecordIteratorTest {
 
     @Test
     public void respectSnapshotTest() {
-        Iterator<Record> snapshotIterator = SNAPSHOT_RECORDS.iterator();
-        Iterator<Record> versionedIterator = new LatestRecordIterator(4, SOURCE_RECORDS.iterator());
+        Iterator<Record> snapshotIterator = snapshotRecords.iterator();
+        Iterator<Record> versionedIterator = new LatestRecordIterator(4, sourceRecords.iterator());
 
         while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), snapshotIterator.next());

@@ -35,46 +35,47 @@ public class RecordBlockTest {
     private static final ByteBuffer TEST_KEY_1 = ByteBuffers.fromString("An awesome test key");
     private static final ByteBuffer TEST_KEY_2 = ByteBuffers.fromString("Bad as I want to be");
     private static final ByteBuffer TEST_KEY_3 = ByteBuffers.fromString("Dog I am a test key");
-    private static final RecordBlock TEST_BLOCK;
-    private static final List<Record> TEST_RECORDS = new ArrayList<Record>();
 
-    static {
-        TEST_RECORDS.add(new Record(new Key(TEST_KEY_1, 1), Value.TOMBSTONE_VALUE));
-        TEST_RECORDS.add(new Record(new Key(TEST_KEY_1, 2), Value.TOMBSTONE_VALUE));
-        TEST_RECORDS.add(new Record(new Key(TEST_KEY_2, 3), Value.TOMBSTONE_VALUE));
-        TEST_RECORDS.add(new Record(new Key(TEST_KEY_3, 4), Value.TOMBSTONE_VALUE));
-        TEST_RECORDS.add(new Record(new Key(TEST_KEY_3, 5), Value.TOMBSTONE_VALUE));
+    private final RecordBlock recordBlock;
+    private final List<Record> records = new ArrayList<Record>();
+
+    public RecordBlockTest() {
+        records.add(new Record(new Key(TEST_KEY_1, 1), Value.TOMBSTONE_VALUE));
+        records.add(new Record(new Key(TEST_KEY_1, 2), Value.TOMBSTONE_VALUE));
+        records.add(new Record(new Key(TEST_KEY_2, 3), Value.TOMBSTONE_VALUE));
+        records.add(new Record(new Key(TEST_KEY_3, 4), Value.TOMBSTONE_VALUE));
+        records.add(new Record(new Key(TEST_KEY_3, 5), Value.TOMBSTONE_VALUE));
 
         RecordBlock.Builder builder = new RecordBlock.Builder();
-        for (Record record : TEST_RECORDS) {
+        for (Record record : records) {
             builder.addRecord(record);
         }
 
-        TEST_BLOCK = builder.build();
+        recordBlock = builder.build();
     }
 
     @Test
     public void findRecordExistsTest() {
-        Record record = TEST_BLOCK.get(new Key(TEST_KEY_1, Long.MAX_VALUE));
+        Record record = recordBlock.get(new Key(TEST_KEY_1, Long.MAX_VALUE));
         Assert.assertEquals("Record matches", 2, record.key().snapshotId());
     }
 
     @Test
     public void findRecordExistsEndTest() {
-        Record record = TEST_BLOCK.get(new Key(TEST_KEY_3, Long.MAX_VALUE));
+        Record record = recordBlock.get(new Key(TEST_KEY_3, Long.MAX_VALUE));
         Assert.assertEquals("Record matches", 5, record.key().snapshotId());
     }
 
     @Test
     public void findRecordMissingTest() {
-        Record record = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Doesn't exist"), 0));
+        Record record = recordBlock.get(new Key(ByteBuffers.fromString("Doesn't exist"), 0));
         Assert.assertNull("Record is null", record);
     }
 
     @Test
     public void recordIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.iterator();
-        Iterator<Record> expectedRecords = TEST_RECORDS.iterator();
+        Iterator<Record> blockRecords = recordBlock.iterator();
+        Iterator<Record> expectedRecords = records.iterator();
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -83,8 +84,8 @@ public class RecordBlockTest {
 
     @Test
     public void descendingIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.descendingIterator();
-        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(5);
+        Iterator<Record> blockRecords = recordBlock.descendingIterator();
+        ListIterator<Record> expectedRecords = records.listIterator(5);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
@@ -93,8 +94,8 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.ascendingIterator(new Key(TEST_KEY_2, 1));
-        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(2);
+        Iterator<Record> blockRecords = recordBlock.ascendingIterator(new Key(TEST_KEY_2, 1));
+        ListIterator<Record> expectedRecords = records.listIterator(2);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -103,8 +104,8 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
-        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+        Iterator<Record> blockRecords = recordBlock.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        ListIterator<Record> expectedRecords = records.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -113,8 +114,8 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.descendingIterator(new Key(TEST_KEY_2, 1));
-        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+        Iterator<Record> blockRecords = recordBlock.descendingIterator(new Key(TEST_KEY_2, 1));
+        ListIterator<Record> expectedRecords = records.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
@@ -123,8 +124,8 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = TEST_BLOCK.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
-        ListIterator<Record> expectedRecords = TEST_RECORDS.listIterator(3);
+        Iterator<Record> blockRecords = recordBlock.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        ListIterator<Record> expectedRecords = records.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());

@@ -35,58 +35,59 @@ public class IndexBlockTest {
     private static final ByteBuffer TEST_KEY_1 = ByteBuffers.fromString("An awesome test key");
     private static final ByteBuffer TEST_KEY_2 = ByteBuffers.fromString("Bad as I want to be");
     private static final ByteBuffer TEST_KEY_3 = ByteBuffers.fromString("Dog I am a test key");
-    private static final IndexBlock TEST_BLOCK;
-    private static final List<IndexRecord> TEST_RECORDS = new ArrayList<IndexRecord>();
 
-    static {
-        TEST_RECORDS.add(new IndexRecord(new Key(TEST_KEY_1, 1), 1, 1));
-        TEST_RECORDS.add(new IndexRecord(new Key(TEST_KEY_1, 2), 2, 1));
-        TEST_RECORDS.add(new IndexRecord(new Key(TEST_KEY_2, 3), 3, 1));
-        TEST_RECORDS.add(new IndexRecord(new Key(TEST_KEY_3, 4), 4, 1));
-        TEST_RECORDS.add(new IndexRecord(new Key(TEST_KEY_3, 5), 5, 1));
+    private final IndexBlock indexBlock;
+    private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
+
+    public IndexBlockTest(){
+        indexRecords.add(new IndexRecord(new Key(TEST_KEY_1, 1), 1, 1));
+        indexRecords.add(new IndexRecord(new Key(TEST_KEY_1, 2), 2, 1));
+        indexRecords.add(new IndexRecord(new Key(TEST_KEY_2, 3), 3, 1));
+        indexRecords.add(new IndexRecord(new Key(TEST_KEY_3, 4), 4, 1));
+        indexRecords.add(new IndexRecord(new Key(TEST_KEY_3, 5), 5, 1));
 
         IndexBlock.Builder builder = new IndexBlock.Builder();
-        for (IndexRecord record : TEST_RECORDS) {
+        for (IndexRecord record : indexRecords) {
             builder.addRecord(record);
         }
 
-        TEST_BLOCK = builder.build();
+        indexBlock = builder.build();
     }
 
     @Test
     public void findRecordExactMatchTest() {
-        IndexRecord indexRecord = TEST_BLOCK.get(new Key(TEST_KEY_1, 1));
+        IndexRecord indexRecord = indexBlock.get(new Key(TEST_KEY_1, 1));
         Assert.assertEquals("Offset matches", 1, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordExactMatchEndTest() {
-        IndexRecord indexRecord = TEST_BLOCK.get(new Key(TEST_KEY_3, 4));
+        IndexRecord indexRecord = indexBlock.get(new Key(TEST_KEY_3, 4));
         Assert.assertEquals("Offset matches", 4, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordTest() {
-        IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Awesome"), 1));
+        IndexRecord indexRecord = indexBlock.get(new Key(ByteBuffers.fromString("Awesome"), 1));
         Assert.assertEquals("Offset matches", 2, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordMidTest() {
-        IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Box"), 1));
+        IndexRecord indexRecord = indexBlock.get(new Key(ByteBuffers.fromString("Box"), 1));
         Assert.assertEquals("Offset matches", 3, indexRecord.blockOffset());
     }
 
     @Test
     public void findRecordEndTest() {
-        IndexRecord indexRecord = TEST_BLOCK.get(new Key(ByteBuffers.fromString("Toast"), 1));
+        IndexRecord indexRecord = indexBlock.get(new Key(ByteBuffers.fromString("Toast"), 1));
         Assert.assertEquals("Offset matches", 5, indexRecord.blockOffset());
     }
 
     @Test
     public void descendingIteratorTest() {
-        Iterator<IndexRecord> blockRecords = TEST_BLOCK.descendingIterator();
-        ListIterator<IndexRecord> expectedRecords = TEST_RECORDS.listIterator(5);
+        Iterator<IndexRecord> blockRecords = indexBlock.descendingIterator();
+        ListIterator<IndexRecord> expectedRecords = indexRecords.listIterator(5);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
@@ -95,8 +96,8 @@ public class IndexBlockTest {
 
     @Test
     public void rangeIteratorTest() {
-        Iterator<IndexRecord> blockRecords = TEST_BLOCK.ascendingIterator(new Key(TEST_KEY_2, 1));
-        ListIterator<IndexRecord> expectedRecords = TEST_RECORDS.listIterator(2);
+        Iterator<IndexRecord> blockRecords = indexBlock.ascendingIterator(new Key(TEST_KEY_2, 1));
+        ListIterator<IndexRecord> expectedRecords = indexRecords.listIterator(2);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -105,8 +106,8 @@ public class IndexBlockTest {
 
     @Test
     public void rangeIteratorInexactTest() {
-        Iterator<IndexRecord> blockRecords = TEST_BLOCK.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
-        ListIterator<IndexRecord> expectedRecords = TEST_RECORDS.listIterator(3);
+        Iterator<IndexRecord> blockRecords = indexBlock.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        ListIterator<IndexRecord> expectedRecords = indexRecords.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -115,8 +116,8 @@ public class IndexBlockTest {
 
     @Test
     public void descendingRangeIteratorTest() {
-        Iterator<IndexRecord> blockRecords = TEST_BLOCK.descendingIterator(new Key(TEST_KEY_2, 1));
-        ListIterator<IndexRecord> expectedRecords = TEST_RECORDS.listIterator(3);
+        Iterator<IndexRecord> blockRecords = indexBlock.descendingIterator(new Key(TEST_KEY_2, 1));
+        ListIterator<IndexRecord> expectedRecords = indexRecords.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
@@ -125,8 +126,8 @@ public class IndexBlockTest {
 
     @Test
     public void descendingRangeIteratorInexactTest() {
-        Iterator<IndexRecord> blockRecords = TEST_BLOCK.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
-        ListIterator<IndexRecord> expectedRecords = TEST_RECORDS.listIterator(3);
+        Iterator<IndexRecord> blockRecords = indexBlock.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        ListIterator<IndexRecord> expectedRecords = indexRecords.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
