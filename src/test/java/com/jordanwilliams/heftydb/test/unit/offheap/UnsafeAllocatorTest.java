@@ -28,6 +28,6 @@ public class UnsafeAllocatorTest {
         UnsafeAllocator unsafeAllocator = new UnsafeAllocator();
         long address = unsafeAllocator.allocate(128);
         Assert.assertTrue("Address is non-zero", address != 0);
-        unsafeAllocator.free(address);
+        unsafeAllocator.release(address);
     }
 }

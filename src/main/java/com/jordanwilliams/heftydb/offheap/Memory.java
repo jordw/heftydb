@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
-    private static final int PAGE_SIZE = 2048;
+    private static final int PAGE_SIZE = 1024;
 
     private static final Allocator allocator = Allocator.allocator;
     private static final Constructor directBufferConstructor;
@@ -67,7 +67,7 @@ public class Memory {
     }
 
     public void free() {
-        allocator.free(baseAddress);
+        allocator.release(baseAddress);
         baseAddress = 0;
     }
 

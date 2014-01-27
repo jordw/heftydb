@@ -20,7 +20,7 @@ public interface Allocator {
 
     public long allocate(long bytes);
 
-    public void free(long address);
+    public void release(long address);
 
-    public static Allocator allocator = new UnsafeAllocator();
+    public static Allocator allocator = new JEMallocAllocator();
 }
