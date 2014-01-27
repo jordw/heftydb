@@ -47,7 +47,8 @@ public class Index {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
-            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.blockOffset(), currentIndexRecord.blockSize());
+            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.blockOffset(),
+                    currentIndexRecord.blockSize());
             currentIndexRecord = currentIndexBlock.get(key);
         }
 

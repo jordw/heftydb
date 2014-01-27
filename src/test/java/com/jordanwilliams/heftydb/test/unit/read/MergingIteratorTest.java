@@ -31,7 +31,8 @@ public class MergingIteratorTest {
 
     @Test
     public void mergeTest() {
-        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(Ints.asList(ARRAY1).iterator(), Ints.asList(ARRAY2).iterator());
+        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(Ints.asList(ARRAY1).iterator(),
+                Ints.asList(ARRAY2).iterator());
 
         Iterator<Integer> mergedIterator = Ints.asList(MERGED_ARRAY).iterator();
 

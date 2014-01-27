@@ -38,7 +38,7 @@ public class LatestRecordIteratorTest {
     private final List<Record> filteredRecords = new ArrayList<Record>();
     private final List<Record> snapshotRecords = new ArrayList<Record>();
 
-    public LatestRecordIteratorTest(){
+    public LatestRecordIteratorTest() {
         sourceRecords.add(new Record(new Key(KEY_1, 1), Value.TOMBSTONE_VALUE));
         sourceRecords.add(new Record(new Key(KEY_1, 2), Value.TOMBSTONE_VALUE));
         sourceRecords.add(new Record(new Key(KEY_1, 3), Value.TOMBSTONE_VALUE));

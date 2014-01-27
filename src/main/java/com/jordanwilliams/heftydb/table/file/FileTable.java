@@ -106,7 +106,8 @@ public class FileTable implements Table {
         protected Iterator<Record> recordIterator;
         protected RecordBlock recordBlock;
 
-        private AscendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator, RecordBlock startRecordBlock) {
+        private AscendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator,
+                                  RecordBlock startRecordBlock) {
             this.recordBlockIterator = recordBlockIterator;
             this.recordIterator = startIterator;
             this.recordBlock = startRecordBlock;
@@ -169,7 +170,8 @@ public class FileTable implements Table {
 
     private class DescendingIterator extends AscendingIterator {
 
-        private DescendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator, RecordBlock startRecordBlock) {
+        private DescendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator,
+                                   RecordBlock startRecordBlock) {
             super(recordBlockIterator, startIterator, startRecordBlock);
         }
 
@@ -202,7 +204,9 @@ public class FileTable implements Table {
     private final RecordBlock.Cache recordCache;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile, MetaTable metaTable, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
+    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
+                      MetaTable metaTable, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws
+            IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;
@@ -240,22 +244,26 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator(recordBlockDescriptors.iterator())));
+        return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator
+                (recordBlockDescriptors.iterator())));
     }
 
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator(recordBlockDescriptors.descendingIterator())));
+        return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator
+                (recordBlockDescriptors.descendingIterator())));
     }
 
     @Override
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
         try {
             RecordBlockDescriptor descriptor = getDescriptor(key);
-            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.tailSet(descriptor, false).iterator();
+            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.tailSet(descriptor,
+                    false).iterator();
             RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
             Iterator<Record> startRecordIterator = startRecordBlock.ascendingIterator(key);
-            return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator(descriptorIterator), startRecordIterator, startRecordBlock));
+            return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator
+                    (descriptorIterator), startRecordIterator, startRecordBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -265,10 +273,12 @@ public class FileTable implements Table {
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
         try {
             RecordBlockDescriptor descriptor = getDescriptor(key);
-            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.headSet(descriptor, false).descendingIterator();
+            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.headSet(descriptor,
+                    false).descendingIterator();
             RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
             Iterator<Record> startRecordIterator = startRecordBlock.descendingIterator(key);
-            return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator(descriptorIterator), startRecordIterator, startRecordBlock));
+            return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator
+                    (descriptorIterator), startRecordIterator, startRecordBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

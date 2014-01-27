@@ -30,7 +30,7 @@ public class ByteMapTest {
     private final ByteMap byteMap;
     private final List<Record> records;
 
-    public ByteMapTest(){
+    public ByteMapTest() {
         ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
         RecordGenerator recordGenerator = new RecordGenerator();
         records = recordGenerator.testRecords(100, 0);

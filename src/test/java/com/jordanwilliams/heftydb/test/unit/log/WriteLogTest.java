@@ -46,7 +46,7 @@ public class WriteLogTest extends RecordTest {
         Iterator<Record> logIterator = log.iterator();
         Iterator<Record> recordIterator = records.iterator();
 
-        while (logIterator.hasNext()){
+        while (logIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), logIterator.next());
         }
     }

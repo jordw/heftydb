@@ -98,7 +98,8 @@ public class IndexWriter {
 
         long indexBlockOffset = indexFile.append(indexBlockBuffer);
 
-        IndexRecord metaIndexRecord = new IndexRecord(indexBlock.startRecord().startKey(), indexBlockOffset, indexBlockBuffer.capacity(), false);
+        IndexRecord metaIndexRecord = new IndexRecord(indexBlock.startRecord().startKey(), indexBlockOffset,
+                indexBlockBuffer.capacity(), false);
         indexBlock.memory().release();
         return metaIndexRecord;
     }

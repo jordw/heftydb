@@ -75,7 +75,8 @@ public class LatestRecordIterator implements Iterator<Record> {
                 continue;
             }
 
-            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().data().equals(currentKeyRecords.last().key().data());
+            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().data().equals(currentKeyRecords
+                    .last().key().data());
 
             if (nextKeyEqualCurrent) {
                 currentKeyRecords.add(next);

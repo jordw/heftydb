@@ -71,7 +71,8 @@ public class MetaTable {
         long id = metaTableBuffer.getLong();
         int level = metaTableBuffer.getInt();
         long maxSnapshotId = metaTableBuffer.getLong();
-        long recordCount = metaTableBuffer.getLong();;
+        long recordCount = metaTableBuffer.getLong();
+        ;
         long size = metaTableBuffer.getLong();
 
         return new MetaTable(id, level, maxSnapshotId, recordCount, size);

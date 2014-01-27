@@ -39,13 +39,13 @@ public class WriteLog implements Iterable<Record> {
 
         @Override
         public boolean hasNext() {
-            if (!nextRecord.isEmpty()){
+            if (!nextRecord.isEmpty()) {
                 return true;
             }
 
             Record next = nextRecord();
 
-            if (next == null){
+            if (next == null) {
                 return false;
             }
 
@@ -56,8 +56,8 @@ public class WriteLog implements Iterable<Record> {
 
         @Override
         public Record next() {
-            if (nextRecord.isEmpty()){
-                if (!hasNext()){
+            if (nextRecord.isEmpty()) {
+                if (!hasNext()) {
                     throw new NoSuchElementException();
                 }
             }
@@ -72,7 +72,7 @@ public class WriteLog implements Iterable<Record> {
 
         private Record nextRecord() {
             try {
-                if (fileOffset >= logFile.size()){
+                if (fileOffset >= logFile.size()) {
                     return null;
                 }
 
@@ -85,7 +85,7 @@ public class WriteLog implements Iterable<Record> {
                 recordBuffer.rewind();
 
                 return Record.SERIALIZER.deserialize(recordBuffer);
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -111,7 +111,7 @@ public class WriteLog implements Iterable<Record> {
         }
     }
 
-    public long tableId(){
+    public long tableId() {
         return tableId;
     }
 

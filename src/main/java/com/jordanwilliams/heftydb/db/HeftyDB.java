@@ -36,27 +36,27 @@ public class HeftyDB {
         this.recordReader = new RecordReader(state);
     }
 
-    public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException  {
+    public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
         return recordWriter.write(key, value);
     }
 
-    public Record get(ByteBuffer key) throws IOException  {
+    public Record get(ByteBuffer key) throws IOException {
         return null;
     }
 
-    public Record get(ByteBuffer key, Snapshot snapshot) throws IOException  {
+    public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
         return null;
     }
 
-    public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException  {
+    public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
         return null;
     }
 
-    public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException  {
+    public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
         return null;
     }
 
-    public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException  {
+    public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
         return null;
     }
 

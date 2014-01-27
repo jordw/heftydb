@@ -63,12 +63,14 @@ public class RecordWriter {
         if (memoryTable != null) {
             final long currentTableId = memoryTable.id();
 
-            tableExecutor.submit(new FileTableWriter.Task(memoryTable.id(), 1, state, memoryTable.ascendingIterator(state.snapshots().currentId()), memoryTable.recordCount(), new FileTableWriter.Task.Callback() {
+            tableExecutor.submit(new FileTableWriter.Task(memoryTable.id(), 1, state,
+                    memoryTable.ascendingIterator(state.snapshots().currentId()), memoryTable.recordCount(),
+                    new FileTableWriter.Task.Callback() {
                 @Override
                 public void finish() {
                     try {
                         Files.deleteIfExists(state.files().logPath(currentTableId));
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }

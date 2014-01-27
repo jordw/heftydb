@@ -54,7 +54,8 @@ public class FileTableWriter {
         private final State state;
         private final Callback callback;
 
-        public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount, Callback callback) {
+        public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount,
+                    Callback callback) {
             this.tableId = tableId;
             this.level = level;
             this.state = state;
@@ -69,13 +70,14 @@ public class FileTableWriter {
             this.state = state;
             this.records = records;
             this.recordCount = recordCount;
-            this.callback =  Callback.NO_OP;
+            this.callback = Callback.NO_OP;
         }
 
         @Override
         public void run() {
             try {
-                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.files(), recordCount, state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
+                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.files(), recordCount,
+                        state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
 
                 while (records.hasNext()) {
                     tableWriter.write(records.next());
@@ -93,7 +95,8 @@ public class FileTableWriter {
     private final long tableId;
     private final int maxRecordBlocksize;
     private final int level;
-    private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable.RecordBlockDescriptor>();
+    private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable
+            .RecordBlockDescriptor>();
     private final Paths paths;
     private final IndexWriter indexWriter;
     private final FilterWriter filterWriter;
@@ -102,7 +105,8 @@ public class FileTableWriter {
 
     private RecordBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize, int maxRecordBlocksize, int level) throws IOException {
+    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize,
+                            int maxRecordBlocksize, int level) throws IOException {
         this.tableId = tableId;
         this.paths = paths;
         this.level = level;
@@ -140,7 +144,8 @@ public class FileTableWriter {
 
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
 
-        recordBlockDescriptors.add(new FileTable.RecordBlockDescriptor(recordBlockOffset, recordBlockBuffer.capacity()));
+        recordBlockDescriptors.add(new FileTable.RecordBlockDescriptor(recordBlockOffset,
+                recordBlockBuffer.capacity()));
         recordBlockBuffer.rewind();
 
         Record startRecord = recordBlock.startRecord();

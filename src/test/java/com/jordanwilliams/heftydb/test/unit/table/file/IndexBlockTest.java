@@ -39,7 +39,7 @@ public class IndexBlockTest {
     private final IndexBlock indexBlock;
     private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
 
-    public IndexBlockTest(){
+    public IndexBlockTest() {
         indexRecords.add(new IndexRecord(new Key(TEST_KEY_1, 1), 1, 1));
         indexRecords.add(new IndexRecord(new Key(TEST_KEY_1, 2), 2, 1));
         indexRecords.add(new IndexRecord(new Key(TEST_KEY_2, 3), 3, 1));
