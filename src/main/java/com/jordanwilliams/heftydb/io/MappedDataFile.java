@@ -35,11 +35,10 @@ public class MappedDataFile implements DataFile {
     private final MappedByteBuffer mappedBuffer;
     private final FileChannel channel;
 
-    private MappedDataFile(Path path) throws IOException {
-        FileChannel channel = FileChannel.open(path, StandardOpenOption.READ);
-        this.channel = channel;
+    private MappedDataFile(Path path, FileChannel fileChannel, MappedByteBuffer mappedBuffer) {
+        this.channel = fileChannel;
         this.path = path;
-        this.mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        this.mappedBuffer = mappedBuffer;
     }
 
     @Override
@@ -123,7 +122,9 @@ public class MappedDataFile implements DataFile {
     }
 
     public static MappedDataFile open(Path path) throws IOException {
-        return new MappedDataFile(path);
+        FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ);
+        MappedByteBuffer mappedByteBuffer = dataFileChannel.map(FileChannel.MapMode.READ_ONLY, 0, dataFileChannel.size());
+        return new MappedDataFile(path, dataFileChannel, mappedByteBuffer);
     }
 
     public static DataFileEvents events() {

@@ -44,9 +44,9 @@ public class MutableDataFile implements DataFile {
     private final FileChannel channel;
     private final AtomicLong appendPosition = new AtomicLong();
 
-    private MutableDataFile(Path path) throws IOException {
+    private MutableDataFile(Path path, FileChannel fileChannel) {
         this.path = path;
-        this.channel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        this.channel = fileChannel;
     }
 
     @Override
@@ -165,7 +165,8 @@ public class MutableDataFile implements DataFile {
     }
 
     public static MutableDataFile open(Path path) throws IOException {
-        return new MutableDataFile(path);
+        FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        return new MutableDataFile(path, dataFileChannel);
     }
 
     public static DataFileEvents events() {
