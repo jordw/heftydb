@@ -41,6 +41,8 @@ public class FileTablePerformance {
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
+        System.out.println("Writing file table");
+
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
         for (int i = 0; i < RECORD_COUNT; i++) {
@@ -50,11 +52,13 @@ public class FileTablePerformance {
 
         fileTableWriter.finish();
 
+        System.out.println("Reading file table");
+
         FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(32768000), new IndexBlock.Cache(4096000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
-        int iterations = 10000000;
+        int iterations = 1000000;
 
         for (int i = 0; i < iterations; i++) {
             fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
