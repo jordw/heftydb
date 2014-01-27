@@ -30,9 +30,8 @@ import com.jordanwilliams.heftydb.util.Sizes;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.NavigableSet;
-import java.util.Queue;
+import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
 public class FileTable implements Table {
@@ -71,61 +70,81 @@ public class FileTable implements Table {
         }
     }
 
-    private class TableIterator implements Iterator<Record> {
+    private class RecordBlockIterator implements Iterator<RecordBlock> {
 
-        private final boolean ascending;
-        private final Queue<Record> nextRecord = new LinkedList<Record>();
-        private final Iterator<RecordBlockDescriptor> blockDescriptors;
+        private final Iterator<RecordBlockDescriptor> descriptorIterator;
 
-        private Iterator<Record> recordIterator;
-        private RecordBlock recordBlock;
+        private RecordBlockIterator(Iterator<RecordBlockDescriptor> descriptorIterator) {
+            this.descriptorIterator = descriptorIterator;
+        }
 
-        public TableIterator(Key startKey, IterationDirection iterationDirection) {
+        @Override
+        public boolean hasNext() {
+            return descriptorIterator.hasNext();
+        }
+
+        @Override
+        public RecordBlock next() {
             try {
-                this.ascending = iterationDirection.equals(IterationDirection.ASCENDING);
-                this.blockDescriptors = blockDescriptors(startKey);
-
-                if (startKey != null) {
-                    IndexRecord indexRecord = index.get(startKey);
-                    this.recordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize(), false);
-                    this.recordIterator = ascending ? recordBlock.ascendingIterator(startKey) : recordBlock .descendingIterator(startKey);
-                }
+                RecordBlockDescriptor descriptor = descriptorIterator.next();
+                RecordBlock recordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
+                return recordBlock;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public TableIterator(IterationDirection iterationDirection) {
-            this(null, iterationDirection);
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class AscendingIterator implements Iterator<Record> {
+
+        protected final Iterator<RecordBlock> recordBlockIterator;
+        protected Iterator<Record> recordIterator;
+        protected RecordBlock recordBlock;
+
+        private AscendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator, RecordBlock startRecordBlock) {
+            this.recordBlockIterator = recordBlockIterator;
+            this.recordIterator = startIterator;
+            this.recordBlock = startRecordBlock;
+        }
+
+        private AscendingIterator(Iterator<RecordBlock> recordBlockIterator) {
+            this.recordBlockIterator = recordBlockIterator;
         }
 
         @Override
         public boolean hasNext() {
-            if (!nextRecord.isEmpty()) {
-                return true;
-            }
+            try {
+                if (recordIterator == null || !recordIterator.hasNext()) {
+                    if (!nextRecordBlock()) {
+                        return false;
+                    }
+                }
 
-            if (recordIterator == null || !recordIterator.hasNext()) {
-                if (!nextRecordBlock()) {
+                //If we still don't have an iterator, we are done
+                if (recordIterator == null || !recordIterator.hasNext()) {
                     return false;
                 }
-            }
 
-            if (!recordIterator.hasNext()) {
-                return false;
+                return true;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            nextRecord.add(recordIterator.next());
-            return true;
         }
 
         @Override
         public Record next() {
-            if (nextRecord.isEmpty()) {
-                hasNext();
+            if (recordIterator == null || !recordIterator.hasNext()) {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
             }
 
-            return nextRecord.poll();
+            return recordIterator.next();
         }
 
         @Override
@@ -133,37 +152,46 @@ public class FileTable implements Table {
             throw new UnsupportedOperationException();
         }
 
-        private boolean nextRecordBlock() {
-            try {
-                if (recordBlock != null) {
-                    recordBlock.memory().release();
-                }
-
-                if (!blockDescriptors.hasNext()) {
-                    return false;
-                }
-
-                RecordBlockDescriptor descriptor = blockDescriptors.next();
-                this.recordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
-                this.recordIterator = ascending ? recordBlock.ascendingIterator() : recordBlock.descendingIterator();
-
-                return true;
-            } catch (IOException e) {
+        protected boolean nextRecordBlock() throws IOException {
+            if (recordBlock != null) {
                 recordBlock.memory().release();
-                throw new RuntimeException(e);
             }
+
+            if (!recordBlockIterator.hasNext()) {
+                return false;
+            }
+
+            recordBlock = recordBlockIterator.next();
+            recordIterator = recordBlock.ascendingIterator();
+
+            return true;
+        }
+    }
+
+    private class DescendingIterator extends AscendingIterator {
+
+        private DescendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator, RecordBlock startRecordBlock) {
+            super(recordBlockIterator, startIterator, startRecordBlock);
         }
 
-        private Iterator<RecordBlockDescriptor> blockDescriptors(Key startKey) throws IOException {
-            if (startKey == null) {
-                return ascending ? recordBlockDescriptors.iterator() : recordBlockDescriptors.descendingIterator();
+        private DescendingIterator(Iterator<RecordBlock> recordBlockIterator) {
+            super(recordBlockIterator);
+        }
+
+        @Override
+        protected boolean nextRecordBlock() throws IOException {
+            if (recordBlock != null) {
+                recordBlock.memory().release();
             }
 
-            IndexRecord indexRecord = index.get(startKey);
-            RecordBlockDescriptor descriptor = new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
+            if (!recordBlockIterator.hasNext()) {
+                return false;
+            }
 
-            return ascending ? recordBlockDescriptors.tailSet(descriptor, false).iterator() :
-                               recordBlockDescriptors.headSet(descriptor, false).descendingIterator();
+            recordBlock = recordBlockIterator.next();
+            recordIterator = recordBlock.descendingIterator();
+
+            return true;
         }
     }
 
@@ -213,22 +241,40 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new TableIterator(IterationDirection.ASCENDING));
+        return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator(recordBlockDescriptors.iterator())));
     }
 
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new TableIterator(IterationDirection.DESCENDING));
+        return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator(recordBlockDescriptors.descendingIterator())));
     }
 
     @Override
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new TableIterator(key, IterationDirection.ASCENDING));
+        try {
+            IndexRecord indexRecord = index.get(key);
+            RecordBlockDescriptor descriptor = new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
+            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.tailSet(descriptor, false).iterator();
+            RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
+            Iterator<Record> startRecordIterator = startRecordBlock.ascendingIterator(key);
+            return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator(descriptorIterator), startRecordIterator, startRecordBlock));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new TableIterator(key, IterationDirection.DESCENDING));
+        try {
+            IndexRecord indexRecord = index.get(key);
+            RecordBlockDescriptor descriptor = new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
+            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.headSet(descriptor, false).descendingIterator();
+            RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
+            Iterator<Record> startRecordIterator = startRecordBlock.descendingIterator(key);
+            return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator(descriptorIterator), startRecordIterator, startRecordBlock));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -253,7 +299,7 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> iterator() {
-        return new TableIterator(IterationDirection.ASCENDING);
+        return new AscendingIterator(new RecordBlockIterator(recordBlockDescriptors.iterator()));
     }
 
     private RecordBlock readRecordBlock(long offset, int size) throws IOException {
@@ -275,7 +321,7 @@ public class FileTable implements Table {
                 if (shouldCache) {
                     recordCache.put(tableId, offset, recordBlock);
                 }
-            } catch (IOException e){
+            } catch (IOException e) {
                 recordBlockMemory.release();
                 throw e;
             }
@@ -294,7 +340,7 @@ public class FileTable implements Table {
         tableFile.read(descriptorBuffer, fileOffset - descriptorBuffer.capacity());
         descriptorBuffer.rewind();
 
-        for (int i = 0; i < descriptorCount; i++){
+        for (int i = 0; i < descriptorCount; i++) {
             long offset = descriptorBuffer.getLong();
             int size = descriptorBuffer.getInt();
             recordBlockDescriptors.add(new RecordBlockDescriptor(offset, size));
