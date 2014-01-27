@@ -31,13 +31,8 @@ public class Filter implements Offheap {
 
     private final BloomFilter bloomFilter;
 
-    private Filter(long tableId, Paths paths) throws IOException {
-        DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
-        Memory filterMemory = Memory.allocate((int) filterFile.size());
-        ByteBuffer filterBuffer = filterMemory.directBuffer();
-        filterFile.read(filterBuffer, filterFile.size());
-        filterFile.close();
-        this.bloomFilter = new BloomFilter(filterMemory);
+    private Filter(BloomFilter bloomFilter) throws IOException {
+        this.bloomFilter = bloomFilter;
     }
 
     public boolean mightContain(Key key) {
@@ -54,6 +49,11 @@ public class Filter implements Offheap {
     }
 
     public static Filter open(long tableId, Paths paths) throws IOException {
-        return new Filter(tableId, paths);
+        DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
+        Memory filterMemory = Memory.allocate((int) filterFile.size());
+        ByteBuffer filterBuffer = filterMemory.directBuffer();
+        filterFile.read(filterBuffer, filterFile.size());
+        filterFile.close();
+        return new Filter(new BloomFilter(filterMemory));
     }
 }

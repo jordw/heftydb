@@ -203,13 +203,13 @@ public class FileTable implements Table {
     private final RecordBlock.Cache recordCache;
     private final DataFile tableFile;
 
-    private FileTable(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
+    private FileTable(long tableId, Index index, Filter filter, DataFile tableFile, MetaTable metaTable, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
-        this.index = Index.open(tableId, paths, indexCache);
-        this.filter = Filter.open(tableId, paths);
-        this.tableFile = MutableDataFile.open(paths.tablePath(tableId));
-        this.metaTable = MetaTable.open(tableId, paths);
+        this.index = index;
+        this.filter = filter;
+        this.tableFile = tableFile;
+        this.metaTable = metaTable;
         this.recordBlockDescriptors = readRecordBlockDescriptors();
     }
 
@@ -350,6 +350,10 @@ public class FileTable implements Table {
     }
 
     public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
-        return new FileTable(tableId, paths, recordCache, indexCache);
+        Index index = Index.open(tableId, paths, indexCache);
+        Filter filter = Filter.open(tableId, paths);
+        DataFile tableFile = MutableDataFile.open(paths.tablePath(tableId));
+        MetaTable metaTable = MetaTable.open(tableId, paths);
+        return new FileTable(tableId, index, filter, tableFile, metaTable, recordCache, indexCache);
     }
 }

@@ -34,9 +34,9 @@ public class Index {
     private final IndexBlock rootIndexBlock;
     private final IndexBlock.Cache cache;
 
-    private Index(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
+    private Index(long tableId, DataFile indexFile, IndexBlock.Cache cache) throws IOException {
         this.tableId = tableId;
-        this.indexFile = MutableDataFile.open(paths.indexPath(tableId));
+        this.indexFile = indexFile;
         this.cache = cache;
         long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
         int rootIndexBlockSize = indexFile.readInt(indexFile.size() - Sizes.LONG_SIZE - Sizes.INT_SIZE);
@@ -82,6 +82,7 @@ public class Index {
     }
 
     public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
-        return new Index(tableId, paths, cache);
+        DataFile indexFile = MutableDataFile.open(paths.indexPath(tableId));
+        return new Index(tableId, indexFile, cache);
     }
 }

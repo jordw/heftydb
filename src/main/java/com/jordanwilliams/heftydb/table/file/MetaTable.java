@@ -19,11 +19,13 @@ package com.jordanwilliams.heftydb.table.file;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class MetaTable {
+
+    private static final int SIZE = 36;
 
     private final long id;
     private final int level;
@@ -31,24 +33,12 @@ public class MetaTable {
     private final long recordCount;
     private final long size;
 
-    private MetaTable(long tableId, Paths paths) throws IOException {
-        DataFile metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
-        int filePosition = 0;
-
-        this.id = metaTableFile.readLong(filePosition);
-        filePosition += Sizes.LONG_SIZE;
-
-        this.level = metaTableFile.readInt(filePosition);
-        filePosition += Sizes.INT_SIZE;
-
-        this.maxSnapshotId = metaTableFile.readLong(filePosition);
-        filePosition += Sizes.LONG_SIZE;
-
-        this.recordCount = metaTableFile.readLong(filePosition);
-        filePosition += Sizes.LONG_SIZE;
-
-        this.size = metaTableFile.readLong(filePosition);
-        metaTableFile.close();
+    public MetaTable(long id, int level, long maxSnapshotId, long recordCount, long size) {
+        this.id = id;
+        this.level = level;
+        this.maxSnapshotId = maxSnapshotId;
+        this.recordCount = recordCount;
+        this.size = size;
     }
 
     public long size() {
@@ -72,6 +62,18 @@ public class MetaTable {
     }
 
     public static MetaTable open(long tableId, Paths paths) throws IOException {
-        return new MetaTable(tableId, paths);
+        DataFile metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
+        ByteBuffer metaTableBuffer = ByteBuffer.allocate(MetaTable.SIZE);
+        metaTableFile.read(metaTableBuffer, 0);
+        metaTableFile.close();
+        metaTableBuffer.rewind();
+
+        long id = metaTableBuffer.getLong();
+        int level = metaTableBuffer.getInt();
+        long maxSnapshotId = metaTableBuffer.getLong();
+        long recordCount = metaTableBuffer.getLong();;
+        long size = metaTableBuffer.getLong();
+
+        return new MetaTable(id, level, maxSnapshotId, recordCount, size);
     }
 }
