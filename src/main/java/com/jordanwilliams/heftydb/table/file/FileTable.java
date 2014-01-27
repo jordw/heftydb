@@ -125,7 +125,6 @@ public class FileTable implements Table {
                     }
                 }
 
-                //If we still don't have an iterator, we are done
                 if (recordIterator == null || !recordIterator.hasNext()) {
                     return false;
                 }
@@ -252,8 +251,7 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
         try {
-            IndexRecord indexRecord = index.get(key);
-            RecordBlockDescriptor descriptor = new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
+            RecordBlockDescriptor descriptor = getDescriptor(key);
             Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.tailSet(descriptor, false).iterator();
             RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
             Iterator<Record> startRecordIterator = startRecordBlock.ascendingIterator(key);
@@ -266,8 +264,7 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
         try {
-            IndexRecord indexRecord = index.get(key);
-            RecordBlockDescriptor descriptor = new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
+            RecordBlockDescriptor descriptor = getDescriptor(key);
             Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.headSet(descriptor, false).descendingIterator();
             RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
             Iterator<Record> startRecordIterator = startRecordBlock.descendingIterator(key);
@@ -300,6 +297,11 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> iterator() {
         return new AscendingIterator(new RecordBlockIterator(recordBlockDescriptors.iterator()));
+    }
+
+    private RecordBlockDescriptor getDescriptor(Key key) throws IOException {
+        IndexRecord indexRecord = index.get(key);
+        return new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
     }
 
     private RecordBlock readRecordBlock(long offset, int size) throws IOException {

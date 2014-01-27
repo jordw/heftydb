@@ -17,10 +17,8 @@
 package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.read.RecordReader;
-import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Snapshot;
-import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.write.RecordWriter;
 
@@ -30,26 +28,16 @@ import java.util.Iterator;
 
 public class HeftyDB {
 
-    private final State state;
     private final RecordWriter recordWriter;
     private final RecordReader recordReader;
 
     public HeftyDB(State state) {
-        this.state = state;
         this.recordWriter = new RecordWriter(state);
         this.recordReader = new RecordReader(state);
     }
 
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException  {
-        long nextSnapshotId = state.snapshots().nextId();
-
-        Key recordKey = new Key(key, nextSnapshotId);
-        Value recordValue = new Value(value);
-        Record record = new Record(recordKey, recordValue);
-
-        recordWriter.write(record);
-
-        return new Snapshot(nextSnapshotId);
+        return recordWriter.write(key, value);
     }
 
     public Record get(ByteBuffer key) throws IOException  {
@@ -78,5 +66,9 @@ public class HeftyDB {
 
     public void close() throws IOException {
 
+    }
+
+    public static HeftyDB open() throws IOException {
+        return null;
     }
 }
