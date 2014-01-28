@@ -40,7 +40,6 @@ public class FileTableWriter {
             public static Callback NO_OP = new Callback() {
                 @Override
                 public void finish() {
-
                 }
             };
 
@@ -93,33 +92,31 @@ public class FileTableWriter {
     }
 
     private final long tableId;
-    private final int maxRecordBlocksize;
+    private final int maxRecordBlockSize;
     private final int level;
     private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable
             .RecordBlockDescriptor>();
-    private final Paths paths;
     private final IndexWriter indexWriter;
-    private final FilterWriter filterWriter;
+    private final TableBloomFilterWriter filterWriter;
     private final MetaTableWriter metaWriter;
     private final DataFile tableDataFile;
 
     private RecordBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize,
-                            int maxRecordBlocksize, int level) throws IOException {
+    private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter,
+                            MetaTableWriter metaWriter, DataFile tableDataFile, int maxRecordBlockSize, int level) throws IOException {
         this.tableId = tableId;
-        this.paths = paths;
         this.level = level;
-        this.indexWriter = IndexWriter.open(tableId, paths, maxRecordBlocksize);
-        this.filterWriter = FilterWriter.open(tableId, paths, approxRecordCount);
+        this.indexWriter = indexWriter;
+        this.filterWriter = filterWriter;
         this.recordBlockBuilder = new RecordBlock.Builder();
-        this.maxRecordBlocksize = maxRecordBlocksize;
-        this.metaWriter = MetaTableWriter.open(tableId, paths, level);
-        this.tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
+        this.maxRecordBlockSize = maxRecordBlockSize;
+        this.metaWriter = metaWriter;
+        this.tableDataFile = tableDataFile;
     }
 
     public void write(Record record) throws IOException {
-        if (recordBlockBuilder.size() >= maxRecordBlocksize) {
+        if (recordBlockBuilder.size() >= maxRecordBlockSize) {
             writeRecordBlock();
         }
 
@@ -163,7 +160,14 @@ public class FileTableWriter {
         tableDataFile.appendInt(recordBlockDescriptors.size());
     }
 
-    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlocksize, int maxRecordBlocksize, int level) throws IOException {
-        return new FileTableWriter(tableId, paths, approxRecordCount, maxIndexBlocksize, maxRecordBlocksize, level);
+    public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSize,
+                                       int maxRecordBlockSize, int level) throws IOException {
+        IndexWriter indexWriter = IndexWriter.open(tableId, paths, maxIndexBlockSize);
+        TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(tableId, paths, approxRecordCount);
+        MetaTableWriter metaWriter = MetaTableWriter.open(tableId, paths, level);
+        DataFile tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
+
+        return new FileTableWriter(tableId, indexWriter, filterWriter, metaWriter, tableDataFile, maxRecordBlockSize,
+                level);
     }
 }

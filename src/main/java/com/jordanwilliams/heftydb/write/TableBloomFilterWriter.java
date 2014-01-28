@@ -25,16 +25,16 @@ import com.jordanwilliams.heftydb.state.Paths;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class FilterWriter {
+public class TableBloomFilterWriter {
 
-    private static final double FILTER_FALSE_POSITIVE_PROBABILITY = 0.01;
+    private static final double FALSE_POSITIVE_PROBABILITY = 0.01;
 
     private final BloomFilter.Builder filterBuilder;
     private final DataFile filterFile;
 
-    private FilterWriter(long tableId, Paths paths, long approxRecordCount) throws IOException {
-        this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FILTER_FALSE_POSITIVE_PROBABILITY);
-        this.filterFile = MutableDataFile.open(paths.filterPath(tableId));
+    private TableBloomFilterWriter(DataFile filterFile, long approxRecordCount) {
+        this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FALSE_POSITIVE_PROBABILITY);
+        this.filterFile = filterFile;
     }
 
     public void write(Record record) throws IOException {
@@ -49,7 +49,8 @@ public class FilterWriter {
         filter.memory().release();
     }
 
-    public static FilterWriter open(long tableId, Paths paths, long approxRecordCount) throws IOException {
-        return new FilterWriter(tableId, paths, approxRecordCount);
+    public static TableBloomFilterWriter open(long tableId, Paths paths, long approxRecordCount) throws IOException {
+        DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
+        return new TableBloomFilterWriter(filterFile, approxRecordCount);
     }
 }

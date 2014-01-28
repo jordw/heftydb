@@ -33,8 +33,8 @@ public class MetaTableWriter {
     private long recordCount;
     private long size;
 
-    private MetaTableWriter(long tableId, Paths paths, int level) throws IOException {
-        this.metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
+    private MetaTableWriter(long tableId, DataFile metaTableFile, int level) {
+        this.metaTableFile = metaTableFile;
         this.level = level;
         this.id = tableId;
     }
@@ -58,6 +58,7 @@ public class MetaTableWriter {
     }
 
     public static MetaTableWriter open(long tableId, Paths paths, int level) throws IOException {
-        return new MetaTableWriter(tableId, paths, level);
+        DataFile metaTableFile = MutableDataFile.open(paths.metaPath(tableId));
+        return new MetaTableWriter(tableId, metaTableFile, level);
     }
 }
