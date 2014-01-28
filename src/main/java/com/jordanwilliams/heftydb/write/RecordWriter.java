@@ -69,7 +69,7 @@ public class RecordWriter {
                 @Override
                 public void finish() {
                     try {
-                        Files.deleteIfExists(state.files().logPath(currentTableId));
+                        Files.deleteIfExists(state.paths().logPath(currentTableId));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -79,6 +79,6 @@ public class RecordWriter {
 
         long nextTableId = state.tables().nextId();
         memoryTable = new MemoryTable(nextTableId);
-        writeLog = WriteLog.open(nextTableId, state.files());
+        writeLog = WriteLog.open(nextTableId, state.paths());
     }
 }

@@ -73,7 +73,7 @@ public class FileTableWriter {
         @Override
         public void run() {
             try {
-                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.files(), recordCount,
+                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.paths(), recordCount,
                         state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
 
                 while (records.hasNext()) {

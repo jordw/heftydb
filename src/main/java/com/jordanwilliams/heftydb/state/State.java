@@ -34,7 +34,7 @@ public class State {
         this.paths = paths;
     }
 
-    public Paths files() {
+    public Paths paths() {
         return paths;
     }
 
