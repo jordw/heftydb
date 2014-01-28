@@ -123,7 +123,8 @@ public class MappedDataFile implements DataFile {
 
     public static MappedDataFile open(Path path) throws IOException {
         FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ);
-        MappedByteBuffer mappedByteBuffer = dataFileChannel.map(FileChannel.MapMode.READ_ONLY, 0, dataFileChannel.size());
+        MappedByteBuffer mappedByteBuffer = dataFileChannel.map(FileChannel.MapMode.READ_ONLY, 0,
+                dataFileChannel.size());
         return new MappedDataFile(path, dataFileChannel, mappedByteBuffer);
     }
 

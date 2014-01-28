@@ -49,7 +49,7 @@ public class Memory {
         this.directBuffer = rawDirectBuffer(baseAddress, size);
 
         //Zero out memory
-        for (int i = 0; i < directBuffer.capacity() / Sizes.LONG_SIZE; i++){
+        for (int i = 0; i < directBuffer.capacity() / Sizes.LONG_SIZE; i++) {
             directBuffer.putLong(0L);
         }
 

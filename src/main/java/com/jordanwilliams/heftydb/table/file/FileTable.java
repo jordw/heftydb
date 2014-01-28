@@ -44,7 +44,7 @@ public class FileTable implements Table {
 
             try {
                 this.maxOffset = tableFile.size() - Sizes.LONG_SIZE;
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -56,7 +56,7 @@ public class FileTable implements Table {
 
         @Override
         public RecordBlock next() {
-            if (!hasNext()){
+            if (!hasNext()) {
                 throw new NoSuchElementException();
             }
 
@@ -68,7 +68,7 @@ public class FileTable implements Table {
                 fileOffset += nextBlockSize;
 
                 return readRecordBlock(nextBlockOffset, nextBlockSize, false);
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -94,7 +94,7 @@ public class FileTable implements Table {
 
         @Override
         public RecordBlock next() {
-            if (!hasNext()){
+            if (!hasNext()) {
                 throw new NoSuchElementException();
             }
 
@@ -106,7 +106,7 @@ public class FileTable implements Table {
                 fileOffset -= Sizes.INT_SIZE;
 
                 return readRecordBlock(nextBlockOffset, nextBlockSize, false);
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -266,8 +266,9 @@ public class FileTable implements Table {
     public Iterator<Record> descendingIterator(long snapshotId) {
         try {
             long startOffset = tableFile.readLong(tableFile.size() - Sizes.LONG_SIZE);
-            return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator(startOffset)));
-        } catch (IOException e){
+            return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
+                    (startOffset)));
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -352,7 +353,8 @@ public class FileTable implements Table {
         return recordBlock;
     }
 
-    public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
+    public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache,
+                                 IndexBlock.Cache indexCache) throws IOException {
         Index index = Index.open(tableId, paths, indexCache);
         TableBloomFilter tableBloomFilter = TableBloomFilter.open(tableId, paths);
         DataFile tableFile = MutableDataFile.open(paths.tablePath(tableId));

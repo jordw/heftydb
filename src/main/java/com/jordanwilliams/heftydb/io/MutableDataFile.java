@@ -165,7 +165,8 @@ public class MutableDataFile implements DataFile {
     }
 
     public static MutableDataFile open(Path path) throws IOException {
-        FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE);
         return new MutableDataFile(path, dataFileChannel);
     }
 
