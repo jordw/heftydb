@@ -21,15 +21,13 @@ import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 public class FileTableWriter {
 
@@ -94,8 +92,6 @@ public class FileTableWriter {
     private final long tableId;
     private final int maxRecordBlockSize;
     private final int level;
-    private final List<FileTable.RecordBlockDescriptor> recordBlockDescriptors = new ArrayList<FileTable
-            .RecordBlockDescriptor>();
     private final IndexWriter indexWriter;
     private final TableBloomFilterWriter filterWriter;
     private final MetaTableWriter metaWriter;
@@ -104,7 +100,8 @@ public class FileTableWriter {
     private RecordBlock.Builder recordBlockBuilder;
 
     private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter,
-                            MetaTableWriter metaWriter, DataFile tableDataFile, int maxRecordBlockSize, int level) throws IOException {
+                            MetaTableWriter metaWriter, DataFile tableDataFile, int maxRecordBlockSize,
+                            int level) throws IOException {
         this.tableId = tableId;
         this.level = level;
         this.indexWriter = indexWriter;
@@ -117,7 +114,7 @@ public class FileTableWriter {
 
     public void write(Record record) throws IOException {
         if (recordBlockBuilder.size() >= maxRecordBlockSize) {
-            writeRecordBlock();
+            writeRecordBlock(false);
         }
 
         recordBlockBuilder.addRecord(record);
@@ -126,38 +123,29 @@ public class FileTableWriter {
     }
 
     public void finish() throws IOException {
-        writeRecordBlock();
-        writeBlockOffsets();
-
+        writeRecordBlock(true);
         filterWriter.finish();
         indexWriter.finish();
         metaWriter.finish();
         tableDataFile.close();
     }
 
-    private void writeRecordBlock() throws IOException {
+    private void writeRecordBlock(boolean lastBlock) throws IOException {
         RecordBlock recordBlock = recordBlockBuilder.build();
         ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
 
+        tableDataFile.appendInt(recordBlockBuffer.capacity());
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
-
-        recordBlockDescriptors.add(new FileTable.RecordBlockDescriptor(recordBlockOffset,
-                recordBlockBuffer.capacity()));
         recordBlockBuffer.rewind();
+
+        if (lastBlock) {
+            tableDataFile.appendLong(recordBlockOffset - Sizes.INT_SIZE);
+        }
 
         Record startRecord = recordBlock.startRecord();
         indexWriter.write(new IndexRecord(startRecord.key(), recordBlockOffset, recordBlockBuffer.capacity()));
         recordBlock.memory().release();
         recordBlockBuilder = new RecordBlock.Builder();
-    }
-
-    private void writeBlockOffsets() throws IOException {
-        for (FileTable.RecordBlockDescriptor descriptor : recordBlockDescriptors) {
-            tableDataFile.appendLong(descriptor.offset());
-            tableDataFile.appendInt(descriptor.size());
-        }
-
-        tableDataFile.appendInt(recordBlockDescriptors.size());
     }
 
     public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSize,

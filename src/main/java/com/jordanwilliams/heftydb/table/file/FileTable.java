@@ -30,66 +30,95 @@ import com.jordanwilliams.heftydb.util.Sizes;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.NavigableSet;
 import java.util.NoSuchElementException;
-import java.util.TreeSet;
 
 public class FileTable implements Table {
 
-    public static class RecordBlockDescriptor implements Comparable<RecordBlockDescriptor> {
+    private class AscendingRecordBlockIterator implements Iterator<RecordBlock> {
 
-        public static int SIZE = 12;
+        private final long maxOffset;
+        private long fileOffset = 0;
 
-        private final long offset;
-        private final int size;
-
-        public RecordBlockDescriptor(long offset, int size) {
-            this.offset = offset;
-            this.size = size;
+        public AscendingRecordBlockIterator() {
+            this(0);
         }
 
-        public long offset() {
-            return offset;
-        }
+        public AscendingRecordBlockIterator(long startOffset) {
+            this.fileOffset = startOffset;
 
-        public int size() {
-            return size;
-        }
-
-        @Override
-        public int compareTo(RecordBlockDescriptor o) {
-            return Long.compare(offset, o.offset);
-        }
-
-        @Override
-        public String toString() {
-            return "RecordBlockDescriptor{" +
-                    "offset=" + offset +
-                    ", size=" + size +
-                    '}';
-        }
-    }
-
-    private class RecordBlockIterator implements Iterator<RecordBlock> {
-
-        private final Iterator<RecordBlockDescriptor> descriptorIterator;
-
-        private RecordBlockIterator(Iterator<RecordBlockDescriptor> descriptorIterator) {
-            this.descriptorIterator = descriptorIterator;
+            try {
+                this.maxOffset = tableFile.size() - Sizes.LONG_SIZE;
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
         public boolean hasNext() {
-            return descriptorIterator.hasNext();
+            return fileOffset < maxOffset;
         }
 
         @Override
         public RecordBlock next() {
+            if (!hasNext()){
+                throw new NoSuchElementException();
+            }
+
             try {
-                RecordBlockDescriptor descriptor = descriptorIterator.next();
-                RecordBlock recordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
-                return recordBlock;
-            } catch (IOException e) {
+                int nextBlockSize = tableFile.readInt(fileOffset);
+                long nextBlockOffset = fileOffset + Sizes.INT_SIZE;
+
+                fileOffset += Sizes.INT_SIZE;
+                fileOffset += nextBlockSize;
+
+                return readRecordBlock(nextBlockOffset, nextBlockSize, false);
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class DescendingRecordBlockIterator implements Iterator<RecordBlock> {
+
+        private long fileOffset;
+
+        public DescendingRecordBlockIterator(long startOffset) {
+            this.fileOffset = startOffset;
+        }
+
+        public DescendingRecordBlockIterator(){
+            try {
+                this.fileOffset = tableFile.readLong(tableFile.size() - Sizes.LONG_SIZE);
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return fileOffset >= 0;
+        }
+
+        @Override
+        public RecordBlock next() {
+            if (!hasNext()){
+                throw new NoSuchElementException();
+            }
+
+            try {
+                int nextBlockSize = tableFile.readInt(fileOffset);
+                long nextBlockOffset = fileOffset + Sizes.INT_SIZE;
+
+                fileOffset -= nextBlockSize;
+                fileOffset -= Sizes.INT_SIZE;
+
+                return readRecordBlock(nextBlockOffset, nextBlockSize, false);
+            } catch (IOException e){
                 throw new RuntimeException(e);
             }
         }
@@ -197,7 +226,6 @@ public class FileTable implements Table {
     }
 
     private final long tableId;
-    private final NavigableSet<RecordBlockDescriptor> recordBlockDescriptors;
     private final Index index;
     private final TableBloomFilter tableBloomFilter;
     private final MetaTable metaTable;
@@ -213,7 +241,6 @@ public class FileTable implements Table {
         this.tableBloomFilter = tableBloomFilter;
         this.tableFile = tableFile;
         this.metaTable = metaTable;
-        this.recordBlockDescriptors = readRecordBlockDescriptors();
     }
 
     @Override
@@ -244,26 +271,22 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator
-                (recordBlockDescriptors.iterator())));
+        return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator()));
     }
 
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator
-                (recordBlockDescriptors.descendingIterator())));
+        return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator()));
     }
 
     @Override
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
         try {
-            RecordBlockDescriptor descriptor = getDescriptor(key);
-            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.tailSet(descriptor,
-                    false).iterator();
-            RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
+            IndexRecord indexRecord = index.get(key);
+            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize(), false);
             Iterator<Record> startRecordIterator = startRecordBlock.ascendingIterator(key);
-            return new LatestRecordIterator(snapshotId, new AscendingIterator(new RecordBlockIterator
-                    (descriptorIterator), startRecordIterator, startRecordBlock));
+            return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator
+                    (indexRecord.blockOffset() + indexRecord.blockSize()), startRecordIterator, startRecordBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -272,13 +295,12 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
         try {
-            RecordBlockDescriptor descriptor = getDescriptor(key);
-            Iterator<RecordBlockDescriptor> descriptorIterator = recordBlockDescriptors.headSet(descriptor,
-                    false).descendingIterator();
-            RecordBlock startRecordBlock = readRecordBlock(descriptor.offset, descriptor.size, false);
+            IndexRecord indexRecord = index.get(key);
+            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize(), false);
             Iterator<Record> startRecordIterator = startRecordBlock.descendingIterator(key);
-            return new LatestRecordIterator(snapshotId, new DescendingIterator(new RecordBlockIterator
-                    (descriptorIterator), startRecordIterator, startRecordBlock));
+            return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
+                    (indexRecord.blockOffset() - indexRecord.blockSize() - Sizes.LONG_SIZE), startRecordIterator,
+                    startRecordBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -306,12 +328,7 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> iterator() {
-        return new AscendingIterator(new RecordBlockIterator(recordBlockDescriptors.iterator()));
-    }
-
-    private RecordBlockDescriptor getDescriptor(Key key) throws IOException {
-        IndexRecord indexRecord = index.get(key);
-        return new RecordBlockDescriptor(indexRecord.blockOffset(), indexRecord.blockSize());
+        return new AscendingIterator(new AscendingRecordBlockIterator());
     }
 
     private RecordBlock readRecordBlock(long offset, int size) throws IOException {
@@ -340,25 +357,6 @@ public class FileTable implements Table {
         }
 
         return recordBlock;
-    }
-
-    private NavigableSet<RecordBlockDescriptor> readRecordBlockDescriptors() throws IOException {
-        NavigableSet<RecordBlockDescriptor> recordBlockDescriptors = new TreeSet<RecordBlockDescriptor>();
-        long fileOffset = tableFile.size() - Sizes.INT_SIZE;
-        int descriptorCount = tableFile.readInt(fileOffset);
-
-        ByteBuffer descriptorBuffer = ByteBuffer.allocate(descriptorCount * RecordBlockDescriptor.SIZE);
-
-        tableFile.read(descriptorBuffer, fileOffset - descriptorBuffer.capacity());
-        descriptorBuffer.rewind();
-
-        for (int i = 0; i < descriptorCount; i++) {
-            long offset = descriptorBuffer.getLong();
-            int size = descriptorBuffer.getInt();
-            recordBlockDescriptors.add(new RecordBlockDescriptor(offset, size));
-        }
-
-        return recordBlockDescriptors;
     }
 
     public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws IOException {
