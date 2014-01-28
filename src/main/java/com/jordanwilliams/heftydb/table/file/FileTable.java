@@ -39,10 +39,6 @@ public class FileTable implements Table {
         private final long maxOffset;
         private long fileOffset = 0;
 
-        public AscendingRecordBlockIterator() {
-            this(0);
-        }
-
         public AscendingRecordBlockIterator(long startOffset) {
             this.fileOffset = startOffset;
 
@@ -89,14 +85,6 @@ public class FileTable implements Table {
 
         public DescendingRecordBlockIterator(long startOffset) {
             this.fileOffset = startOffset;
-        }
-
-        public DescendingRecordBlockIterator(){
-            try {
-                this.fileOffset = tableFile.readLong(tableFile.size() - Sizes.LONG_SIZE);
-            } catch (IOException e){
-                throw new RuntimeException(e);
-            }
         }
 
         @Override
@@ -271,12 +259,17 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator()));
+        return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator(0)));
     }
 
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator()));
+        try {
+            long startOffset = tableFile.readLong(tableFile.size() - Sizes.LONG_SIZE);
+            return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator(startOffset)));
+        } catch (IOException e){
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -328,7 +321,7 @@ public class FileTable implements Table {
 
     @Override
     public Iterator<Record> iterator() {
-        return new AscendingIterator(new AscendingRecordBlockIterator());
+        return new AscendingIterator(new AscendingRecordBlockIterator(0));
     }
 
     private RecordBlock readRecordBlock(long offset, int size) throws IOException {
