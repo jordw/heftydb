@@ -21,6 +21,7 @@ import com.sun.jna.Native;
 public class JEMallocAllocator implements Allocator {
 
     private static native long malloc(long size);
+
     private static native void free(long address);
 
     static {

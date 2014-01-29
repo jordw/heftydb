@@ -41,12 +41,7 @@ public class FileTable implements Table {
 
         public AscendingRecordBlockIterator(long startOffset) {
             this.fileOffset = startOffset;
-
-            try {
-                this.maxOffset = tableFile.size() - Sizes.LONG_SIZE;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            this.maxOffset = fileSize - Sizes.LONG_SIZE;
         }
 
         @Override
@@ -214,6 +209,7 @@ public class FileTable implements Table {
     }
 
     private final long tableId;
+    private final long fileSize;
     private final Index index;
     private final TableBloomFilter tableBloomFilter;
     private final MetaTable metaTable;
@@ -229,6 +225,7 @@ public class FileTable implements Table {
         this.tableBloomFilter = tableBloomFilter;
         this.tableFile = tableFile;
         this.metaTable = metaTable;
+        this.fileSize = tableFile.size() - Sizes.LONG_SIZE;
     }
 
     @Override
