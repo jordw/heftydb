@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class RecordWriter {
 
@@ -57,6 +58,16 @@ public class RecordWriter {
         memoryTable.put(record);
 
         return new Snapshot(nextSnapshotId);
+    }
+
+    public void close() throws IOException {
+        try {
+            writeLog.close();
+            tableExecutor.shutdown();
+            tableExecutor.awaitTermination(30, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private synchronized void rotateMemoryTable() throws IOException {

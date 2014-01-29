@@ -34,7 +34,7 @@ public class Tables {
 
     public Tables(Collection<Table> initialTables) {
         this.tables.addAll(initialTables);
-        this.currentTableId.set(tables.last().id());
+        this.currentTableId.set(tables.isEmpty() ? 1 : tables.last().id());
     }
 
     public long nextId() {

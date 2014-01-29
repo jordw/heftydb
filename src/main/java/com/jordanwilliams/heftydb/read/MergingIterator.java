@@ -28,7 +28,7 @@ import java.util.Queue;
 
 public class MergingIterator<T extends Comparable> implements Iterator<T> {
 
-    public static class ComparableIterator<T extends Comparable> implements PeekableIterator<T>,
+    private static class ComparableIterator<T extends Comparable> implements PeekableIterator<T>,
             Comparable<ComparableIterator<T>> {
 
         private final Iterator<T> delegate;

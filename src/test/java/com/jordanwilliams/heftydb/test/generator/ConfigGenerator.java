@@ -16,12 +16,60 @@
 
 package com.jordanwilliams.heftydb.test.generator;
 
+import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+
+import java.nio.file.Path;
+import java.util.Collections;
 
 public class ConfigGenerator {
 
     public static Paths testPaths() {
         return new Paths(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
+    }
+
+    public static Config testConfig() {
+        return new Config() {
+            @Override
+            public int memoryTableSize() {
+                return 1024000;
+            }
+
+            @Override
+            public int fileTableBlockSize() {
+                return 32768;
+            }
+
+            @Override
+            public int indexBlockSize() {
+                return 32768;
+            }
+
+            @Override
+            public int tableWriterThreads() {
+                return 8;
+            }
+
+            @Override
+            public int tableCompactionThreads() {
+                return 2;
+            }
+
+            @Override
+            public Path tableDirectory() {
+                return TestFileUtils.TEMP_PATH;
+            }
+
+            @Override
+            public Path logDirectory() {
+                return TestFileUtils.TEMP_PATH;
+            }
+        };
+    }
+
+    public static State testState(){
+        return new State(Collections.EMPTY_LIST, testConfig(), testPaths(), 1);
     }
 }
