@@ -26,12 +26,14 @@ public class State {
     private final Snapshots snapshots;
     private final Config config;
     private final Paths paths;
+    private final Caches caches;
 
-    public State(Collection<Table> tables, Config config, Paths paths, long currentSnapshotId) {
+    public State(Collection<Table> tables, Config config, Paths paths, Caches caches, long currentSnapshotId) {
         this.snapshots = new Snapshots(currentSnapshotId);
         this.tables = new Tables(tables);
         this.config = config;
         this.paths = paths;
+        this.caches = caches;
     }
 
     public Paths paths() {
@@ -44,6 +46,10 @@ public class State {
 
     public Snapshots snapshots() {
         return snapshots;
+    }
+
+    public Caches caches(){
+        return caches;
     }
 
     public Config config() {

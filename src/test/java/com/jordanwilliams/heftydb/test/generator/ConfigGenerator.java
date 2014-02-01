@@ -16,9 +16,12 @@
 
 package com.jordanwilliams.heftydb.test.generator;
 
+import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.RecordBlock;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 
 import java.nio.file.Path;
@@ -28,6 +31,10 @@ public class ConfigGenerator {
 
     public static Paths testPaths() {
         return new Paths(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
+    }
+
+    public static Caches testCaches() {
+        return new Caches(new RecordBlock.Cache(32768000), new IndexBlock.Cache(16384000));
     }
 
     public static Config testConfig() {
@@ -58,6 +65,16 @@ public class ConfigGenerator {
             }
 
             @Override
+            public long tableCacheSize() {
+                return 32768000;
+            }
+
+            @Override
+            public long indexCacheSize() {
+                return 16384000;
+            }
+
+            @Override
             public Path tableDirectory() {
                 return TestFileUtils.TEMP_PATH;
             }
@@ -70,6 +87,6 @@ public class ConfigGenerator {
     }
 
     public static State testState(){
-        return new State(Collections.EMPTY_LIST, testConfig(), testPaths(), 1);
+        return new State(Collections.EMPTY_LIST, testConfig(), testPaths(), testCaches(), 1);
     }
 }

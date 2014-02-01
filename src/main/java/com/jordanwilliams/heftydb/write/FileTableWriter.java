@@ -19,10 +19,11 @@ package com.jordanwilliams.heftydb.write;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.table.file.TableTrailer;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
@@ -34,13 +35,6 @@ public class FileTableWriter {
     public static class Task implements Runnable {
 
         public interface Callback {
-
-            public static Callback NO_OP = new Callback() {
-                @Override
-                public void finish() {
-                }
-            };
-
             public void finish();
         }
 
@@ -48,33 +42,36 @@ public class FileTableWriter {
         private final int level;
         private final Iterator<Record> records;
         private final long recordCount;
-        private final State state;
+        private final Paths paths;
+        private final Config config;
         private final Callback callback;
 
-        public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount,
+        public Task(long tableId, int level, Paths paths, Config config, Iterator<Record> records, long recordCount,
                     Callback callback) {
             this.tableId = tableId;
             this.level = level;
-            this.state = state;
+            this.paths = paths;
+            this.config = config;
             this.records = records;
             this.recordCount = recordCount;
             this.callback = callback;
         }
 
-        public Task(long tableId, int level, State state, Iterator<Record> records, long recordCount) {
+        public Task(long tableId, int level, Paths paths, Config config, Iterator<Record> records, long recordCount) {
             this.tableId = tableId;
             this.level = level;
-            this.state = state;
+            this.paths = paths;
+            this.config = config;
             this.records = records;
             this.recordCount = recordCount;
-            this.callback = Callback.NO_OP;
+            this.callback = null;
         }
 
         @Override
         public void run() {
             try {
-                FileTableWriter tableWriter = FileTableWriter.open(tableId, state.paths(), recordCount,
-                        state.config().indexBlockSize(), state.config().fileTableBlockSize(), level);
+                FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, recordCount,
+                        config.indexBlockSize(), config.fileTableBlockSize(), level);
 
                 while (records.hasNext()) {
                     tableWriter.write(records.next());
@@ -82,33 +79,31 @@ public class FileTableWriter {
 
                 tableWriter.finish();
 
-                callback.finish();
+                if (callback != null){
+                    callback.finish();
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private final long tableId;
     private final int maxRecordBlockSize;
-    private final int level;
     private final IndexWriter indexWriter;
     private final TableBloomFilterWriter filterWriter;
-    private final MetaTableWriter metaWriter;
+    private final TableTrailer.Builder trailerBuilder;
     private final DataFile tableDataFile;
 
     private RecordBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter,
-                            MetaTableWriter metaWriter, DataFile tableDataFile, int maxRecordBlockSize,
+    private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter, DataFile
+            tableDataFile, int maxRecordBlockSize,
                             int level) throws IOException {
-        this.tableId = tableId;
-        this.level = level;
         this.indexWriter = indexWriter;
         this.filterWriter = filterWriter;
         this.recordBlockBuilder = new RecordBlock.Builder();
         this.maxRecordBlockSize = maxRecordBlockSize;
-        this.metaWriter = metaWriter;
+        this.trailerBuilder = new TableTrailer.Builder(tableId, level);
         this.tableDataFile = tableDataFile;
     }
 
@@ -119,14 +114,14 @@ public class FileTableWriter {
 
         recordBlockBuilder.addRecord(record);
         filterWriter.write(record);
-        metaWriter.write(record);
+        trailerBuilder.put(record);
     }
 
     public void finish() throws IOException {
         writeRecordBlock(true);
+        writeTrailer();
         filterWriter.finish();
         indexWriter.finish();
-        metaWriter.finish();
         tableDataFile.close();
     }
 
@@ -148,14 +143,18 @@ public class FileTableWriter {
         recordBlockBuilder = new RecordBlock.Builder();
     }
 
+    private void writeTrailer() throws IOException {
+        ByteBuffer trailerBuffer = trailerBuilder.build().buffer();
+        tableDataFile.append(trailerBuffer);
+    }
+
     public static FileTableWriter open(long tableId, Paths paths, long approxRecordCount, int maxIndexBlockSize,
                                        int maxRecordBlockSize, int level) throws IOException {
         IndexWriter indexWriter = IndexWriter.open(tableId, paths, maxIndexBlockSize);
         TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(tableId, paths, approxRecordCount);
-        MetaTableWriter metaWriter = MetaTableWriter.open(tableId, paths, level);
         DataFile tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
 
-        return new FileTableWriter(tableId, indexWriter, filterWriter, metaWriter, tableDataFile, maxRecordBlockSize,
+        return new FileTableWriter(tableId, indexWriter, filterWriter, tableDataFile, maxRecordBlockSize,
                 level);
     }
 }

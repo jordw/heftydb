@@ -28,7 +28,6 @@ public class Paths {
     private static final String LOG_EXT = ".log";
     private static final String INDEX_EXT = ".index";
     private static final String FILTER_EXT = ".filter";
-    private static final String META_EXT = ".meta";
 
     private final Path logDirectory;
     private final Path tableDirectory;
@@ -50,20 +49,12 @@ public class Paths {
         return tableDirectory.resolve(tableId + FILTER_EXT);
     }
 
-    public Path metaPath(long tableId) {
-        return tableDirectory.resolve(tableId + META_EXT);
-    }
-
     public Path logPath(long tableId) {
         return tableDirectory.resolve(tableId + LOG_EXT);
     }
 
     public SortedSet<Path> tableFilePaths() throws IOException {
         return filePathsForExtension(tableDirectory, TABLE_EXT);
-    }
-
-    public SortedSet<Path> metaFilePaths() throws IOException {
-        return filePathsForExtension(tableDirectory, META_EXT);
     }
 
     public SortedSet<Path> logFilePaths() throws IOException {

@@ -30,6 +30,10 @@ public interface Config {
 
     public int tableCompactionThreads();
 
+    public long tableCacheSize();
+
+    public long indexCacheSize();
+
     public Path tableDirectory();
 
     public Path logDirectory();

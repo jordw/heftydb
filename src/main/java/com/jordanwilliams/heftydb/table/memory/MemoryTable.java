@@ -20,17 +20,20 @@ import com.jordanwilliams.heftydb.read.LatestRecordIterator;
 import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.table.MutableTable;
+import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MemoryTable implements MutableTable {
 
     private final long id;
     private final ConcurrentNavigableMap<Key, Record> records = new ConcurrentSkipListMap<Key, Record>();
+    private final AtomicLong maxSnapshotId = new AtomicLong();
     private final AtomicInteger recordCount = new AtomicInteger();
     private final AtomicInteger size = new AtomicInteger();
 
@@ -98,6 +101,11 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
+    public long maxSnapshotId() {
+        return maxSnapshotId.get();
+    }
+
+    @Override
     public boolean isPersistent() {
         return false;
     }
@@ -105,5 +113,24 @@ public class MemoryTable implements MutableTable {
     @Override
     public Iterator<Record> iterator() {
         return records.values().iterator();
+    }
+
+    @Override
+    public int compareTo(Table o) {
+        return Long.compare(id, o.id());
+    }
+
+    private void advanceMaxSnapshotId(long newSnapshotId){
+        while (true){
+            long currentMaxSnapshotId = maxSnapshotId.get();
+
+            if (newSnapshotId < currentMaxSnapshotId){
+                break;
+            }
+
+            if (maxSnapshotId.compareAndSet(currentMaxSnapshotId, newSnapshotId)){
+                break;
+            }
+        }
     }
 }

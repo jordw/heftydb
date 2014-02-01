@@ -22,6 +22,8 @@ import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Snapshot;
 import com.jordanwilliams.heftydb.record.Value;
 import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 
 import java.io.IOException;
@@ -72,15 +74,17 @@ public class RecordWriter {
 
     private synchronized void rotateMemoryTable() throws IOException {
         if (memoryTable != null) {
-            final long currentTableId = memoryTable.id();
+            final Table currentTable = memoryTable;
 
-            tableExecutor.submit(new FileTableWriter.Task(memoryTable.id(), 1, state,
+            tableExecutor.submit(new FileTableWriter.Task(memoryTable.id(), 1, state.paths(), state.config(),
                     memoryTable.ascendingIterator(state.snapshots().currentId()), memoryTable.recordCount(),
                     new FileTableWriter.Task.Callback() {
                 @Override
                 public void finish() {
                     try {
-                        Files.deleteIfExists(state.paths().logPath(currentTableId));
+                        state.tables().swap(FileTable.open(currentTable.id(), state.paths(),
+                                state.caches().recordBlockCache(), state.caches().indexBlockCache()), currentTable);
+                        Files.deleteIfExists(state.paths().logPath(currentTable.id()));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -91,5 +95,6 @@ public class RecordWriter {
         long nextTableId = state.tables().nextId();
         memoryTable = new MemoryTable(nextTableId);
         writeLog = WriteLog.open(nextTableId, state.paths());
+        state.tables().add(memoryTable);
     }
 }

@@ -93,8 +93,8 @@ public class Tables {
     public void swap(Table toAdd, Table toRemove) {
         try {
             tableLock.writeLock().lock();
-            tables.add(toAdd);
             tables.remove(toRemove);
+            tables.add(toAdd);
         } finally {
             tableLock.writeLock().unlock();
         }

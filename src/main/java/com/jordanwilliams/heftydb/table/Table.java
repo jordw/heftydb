@@ -21,11 +21,7 @@ import com.jordanwilliams.heftydb.record.Record;
 
 import java.util.Iterator;
 
-public interface Table extends Iterable<Record> {
-
-    public enum IterationDirection {
-        ASCENDING, DESCENDING
-    }
+public interface Table extends Iterable<Record>, Comparable<Table> {
 
     public long id();
 
@@ -46,6 +42,8 @@ public interface Table extends Iterable<Record> {
     public long size();
 
     public int level();
+
+    public long maxSnapshotId();
 
     public boolean isPersistent();
 }

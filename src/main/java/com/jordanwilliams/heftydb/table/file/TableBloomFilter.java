@@ -48,7 +48,7 @@ public class TableBloomFilter implements Offheap {
         return bloomFilter.memory();
     }
 
-    public static TableBloomFilter open(long tableId, Paths paths) throws IOException {
+    public static TableBloomFilter read(long tableId, Paths paths) throws IOException {
         DataFile filterFile = MutableDataFile.open(paths.filterPath(tableId));
         Memory filterMemory = Memory.allocate((int) filterFile.size());
         ByteBuffer filterBuffer = filterMemory.directBuffer();

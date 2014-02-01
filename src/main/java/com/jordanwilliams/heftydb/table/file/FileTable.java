@@ -41,7 +41,7 @@ public class FileTable implements Table {
 
         public AscendingRecordBlockIterator(long startOffset) {
             this.fileOffset = startOffset;
-            this.maxOffset = fileSize - Sizes.LONG_SIZE;
+            this.maxOffset = fileSize - TableTrailer.SIZE - Sizes.LONG_SIZE;
         }
 
         @Override
@@ -212,25 +212,20 @@ public class FileTable implements Table {
     private final long fileSize;
     private final Index index;
     private final TableBloomFilter tableBloomFilter;
-    private final MetaTable metaTable;
+    private final TableTrailer trailer;
     private final RecordBlock.Cache recordCache;
     private final DataFile tableFile;
 
     private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
-                      MetaTable metaTable, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws
+                      TableTrailer trailer, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws
             IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;
         this.tableBloomFilter = tableBloomFilter;
         this.tableFile = tableFile;
-        this.metaTable = metaTable;
-        this.fileSize = tableFile.size() - Sizes.LONG_SIZE;
-    }
-
-    @Override
-    public long id() {
-        return tableId;
+        this.trailer = trailer;
+        this.fileSize = tableFile.size();
     }
 
     @Override
@@ -262,7 +257,7 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> descendingIterator(long snapshotId) {
         try {
-            long startOffset = tableFile.readLong(tableFile.size() - Sizes.LONG_SIZE);
+            long startOffset = tableFile.readLong(tableFile.size() - TableTrailer.SIZE - Sizes.LONG_SIZE);
             return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
                     (startOffset)));
         } catch (IOException e) {
@@ -298,18 +293,28 @@ public class FileTable implements Table {
     }
 
     @Override
+    public long id() {
+        return tableId;
+    }
+
+    @Override
     public long recordCount() {
-        return metaTable.recordCount();
+        return trailer.recordCount();
     }
 
     @Override
     public long size() {
-        return metaTable.size();
+        return fileSize;
     }
 
     @Override
     public int level() {
-        return metaTable.level();
+        return trailer.level();
+    }
+
+    @Override
+    public long maxSnapshotId() {
+        return trailer.maxSnapshotId();
     }
 
     @Override
@@ -320,6 +325,28 @@ public class FileTable implements Table {
     @Override
     public Iterator<Record> iterator() {
         return new AscendingIterator(new AscendingRecordBlockIterator(0));
+    }
+
+    @Override
+    public int compareTo(Table o) {
+        return Long.compare(tableId, o.id());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FileTable fileTable = (FileTable) o;
+
+        if (tableId != fileTable.tableId) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (tableId ^ (tableId >>> 32));
     }
 
     private RecordBlock readRecordBlock(long offset, int size) throws IOException {
@@ -353,9 +380,9 @@ public class FileTable implements Table {
     public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache,
                                  IndexBlock.Cache indexCache) throws IOException {
         Index index = Index.open(tableId, paths, indexCache);
-        TableBloomFilter tableBloomFilter = TableBloomFilter.open(tableId, paths);
+        TableBloomFilter tableBloomFilter = TableBloomFilter.read(tableId, paths);
         DataFile tableFile = MutableDataFile.open(paths.tablePath(tableId));
-        MetaTable metaTable = MetaTable.open(tableId, paths);
-        return new FileTable(tableId, index, tableBloomFilter, tableFile, metaTable, recordCache, indexCache);
+        TableTrailer trailer = TableTrailer.read(tableFile);
+        return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache, indexCache);
     }
 }
