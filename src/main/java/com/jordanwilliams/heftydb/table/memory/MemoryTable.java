@@ -106,6 +106,9 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
+    public void close() {}
+
+    @Override
     public boolean isPersistent() {
         return false;
     }

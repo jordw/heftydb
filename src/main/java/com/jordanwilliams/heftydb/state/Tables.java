@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.state;
 import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class Tables {
+public class Tables implements Iterable<Table> {
 
     private final AtomicLong currentTableId = new AtomicLong();
     private final NavigableSet<Table> tables = new TreeSet<Table>();
@@ -98,5 +99,11 @@ public class Tables {
         } finally {
             tableLock.writeLock().unlock();
         }
+    }
+
+    @Override
+    public Iterator<Table> iterator() {
+        SortedSet<Table> tables = all();
+        return tables.iterator();
     }
 }

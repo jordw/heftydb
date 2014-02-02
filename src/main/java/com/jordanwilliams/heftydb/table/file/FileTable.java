@@ -318,6 +318,17 @@ public class FileTable implements Table {
     }
 
     @Override
+    public void close() {
+        try {
+            index.close();
+            tableFile.close();
+            tableBloomFilter.close();
+        } catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public boolean isPersistent() {
         return true;
     }

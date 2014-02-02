@@ -17,9 +17,12 @@
 package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.read.RecordReader;
+import com.jordanwilliams.heftydb.record.Key;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Snapshot;
+import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.state.StateInitializer;
 import com.jordanwilliams.heftydb.write.RecordWriter;
 
 import java.io.IOException;
@@ -41,34 +44,36 @@ public class HeftyDB {
     }
 
     public Record get(ByteBuffer key) throws IOException {
-        return null;
+        return recordReader.get(new Key(key, Long.MAX_VALUE));
     }
 
     public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return null;
+        return recordReader.get(new Key(key, snapshot.id()));
     }
 
     public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
-        return null;
+        return recordReader.ascendingIterator(snapshot.id());
     }
 
     public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return null;
+        return recordReader.ascendingIterator(new Key(key, snapshot.id()), snapshot.id());
     }
 
     public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
-        return null;
+        return recordReader.descendingIterator(snapshot.id());
     }
 
     public Iterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return null;
+        return recordReader.descendingIterator(new Key(key, snapshot.id()), snapshot.id());
     }
 
     public void close() throws IOException {
-
+        recordWriter.close();
+        recordReader.close();
     }
 
-    public static HeftyDB open() throws IOException {
-        return null;
+    public static HeftyDB open(Config config) throws IOException {
+        State state = new StateInitializer(config).initialize();
+        return new HeftyDB(state);
     }
 }

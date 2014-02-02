@@ -45,5 +45,7 @@ public interface Table extends Iterable<Record>, Comparable<Table> {
 
     public long maxSnapshotId();
 
+    public void close();
+
     public boolean isPersistent();
 }
