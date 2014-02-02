@@ -16,12 +16,15 @@
 
 package com.jordanwilliams.heftydb.test.unit.state;
 
+import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Config;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.StateInitializer;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
+import com.jordanwilliams.heftydb.write.FileTableWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,19 +32,47 @@ import java.util.List;
 
 public class StateInitializerTest extends RecordTest {
 
-    public StateInitializerTest(List<Record> testRecords) {
-        super(testRecords);
-    }
-
     @Test
     public void defaultStateTest() throws Exception {
         Config config = ConfigGenerator.testConfig();
         State state = new StateInitializer(config).initialize();
         Assert.assertTrue("No tables", state.tables().all().isEmpty());
+        Assert.assertEquals("No Max Snapshot Id", 0, state.snapshots().currentId());
     }
 
     @Test
-    public void existingStateTest(){
+    public void existingStateTest() throws Exception {
+        Paths paths = ConfigGenerator.testPaths();
+        FileTableWriter tableWriter = FileTableWriter.open(1, paths, records.size(), 1024, 1024, 1);
+        for (Record record : records){
+            tableWriter.write(record);
+        }
+        tableWriter.finish();
 
+        Config config = ConfigGenerator.testConfig();
+        State state = new StateInitializer(config).initialize();
+        Assert.assertEquals("Should be 1 table", 1, state.tables().all().size());
+        Assert.assertEquals("Should be 100 as the max snapshot id", 100, state.snapshots().currentId());
+    }
+
+    @Test
+    public void existingStateLogTest() throws Exception {
+        Paths paths = ConfigGenerator.testPaths();
+        FileTableWriter tableWriter = FileTableWriter.open(1, paths, records.size(), 1024, 1024, 1);
+        for (Record record : records){
+            tableWriter.write(record);
+        }
+        tableWriter.finish();
+
+        WriteLog log = WriteLog.open(2, paths);
+        List<Record> moreTestRecords = generateMoreTestRecords(101);
+        for (Record record : moreTestRecords){
+            log.append(record);
+        }
+
+        Config config = ConfigGenerator.testConfig();
+        State state = new StateInitializer(config).initialize();
+        Assert.assertEquals("Should be 2 tables", 2, state.tables().all().size());
+        Assert.assertEquals("Should be 100 as the max snapshot id", 200, state.snapshots().currentId());
     }
 }

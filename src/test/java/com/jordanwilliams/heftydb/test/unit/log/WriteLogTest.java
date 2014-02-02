@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.log;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.test.base.RecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-public class WriteLogTest extends RecordTest {
+public class WriteLogTest extends ParameterizedRecordTest {
 
     public WriteLogTest(List<Record> testRecords) throws Exception {
         super(testRecords);

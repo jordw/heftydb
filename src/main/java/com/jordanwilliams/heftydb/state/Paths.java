@@ -18,6 +18,7 @@ package com.jordanwilliams.heftydb.state;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -63,7 +64,7 @@ public class Paths {
 
     private SortedSet<Path> filePathsForExtension(Path directory, String extension) throws IOException {
         SortedSet<Path> sortedFilePaths = new TreeSet<Path>();
-        DirectoryStream<Path> filePaths = java.nio.file.Files.newDirectoryStream(directory, extension);
+        DirectoryStream<Path> filePaths = Files.newDirectoryStream(directory, "*" + extension);
 
         for (Path filePath : filePaths) {
             sortedFilePaths.add(filePath);

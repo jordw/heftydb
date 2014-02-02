@@ -95,7 +95,7 @@ public class StateInitializer {
 
     private static long tableId(Path path){
         String fileName = path.getFileName().toString();
-        String id = fileName.split(".")[0];
+        String id = fileName.split("\\.")[0];
         return Long.parseLong(id);
     }
 }

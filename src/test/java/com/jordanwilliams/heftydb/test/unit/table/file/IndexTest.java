@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.Index;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
-import com.jordanwilliams.heftydb.test.base.RecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.write.IndexWriter;
 import org.junit.Assert;
@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IndexTest extends RecordTest {
+public class IndexTest extends ParameterizedRecordTest {
 
     private final Index index;
     private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
