@@ -62,7 +62,7 @@ public class FileTable implements Table {
                 fileOffset += Sizes.INT_SIZE;
                 fileOffset += nextBlockSize;
 
-                return readRecordBlock(nextBlockOffset, nextBlockSize, false);
+                return readRecordBlock(nextBlockOffset, nextBlockSize);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -100,7 +100,7 @@ public class FileTable implements Table {
                 fileOffset -= nextBlockSize;
                 fileOffset -= Sizes.INT_SIZE;
 
-                return readRecordBlock(nextBlockOffset, nextBlockSize, false);
+                return readRecordBlock(nextBlockOffset, nextBlockSize);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -217,8 +217,7 @@ public class FileTable implements Table {
     private final DataFile tableFile;
 
     private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
-                      TableTrailer trailer, RecordBlock.Cache recordCache, IndexBlock.Cache indexCache) throws
-            IOException {
+                      TableTrailer trailer, RecordBlock.Cache recordCache) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;
@@ -238,11 +237,11 @@ public class FileTable implements Table {
         try {
             IndexRecord indexRecord = index.get(key);
 
-            if (indexRecord.blockOffset() < 0) {
+            if (indexRecord == null) {
                 return null;
             }
 
-            RecordBlock recordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
+            RecordBlock recordBlock = getRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             return recordBlock.get(key);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -269,7 +268,7 @@ public class FileTable implements Table {
     public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
-            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize(), false);
+            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             Iterator<Record> startRecordIterator = startRecordBlock.ascendingIterator(key);
             return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator
                     (indexRecord.blockOffset() + indexRecord.blockSize()), startRecordIterator, startRecordBlock));
@@ -282,7 +281,7 @@ public class FileTable implements Table {
     public Iterator<Record> descendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
-            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize(), false);
+            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             Iterator<Record> startRecordIterator = startRecordBlock.descendingIterator(key);
             return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
                     (indexRecord.blockOffset() - indexRecord.blockSize() - Sizes.LONG_SIZE), startRecordIterator,
@@ -323,7 +322,7 @@ public class FileTable implements Table {
             index.close();
             tableFile.close();
             tableBloomFilter.close();
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -360,32 +359,29 @@ public class FileTable implements Table {
         return (int) (tableId ^ (tableId >>> 32));
     }
 
-    private RecordBlock readRecordBlock(long offset, int size) throws IOException {
-        return readRecordBlock(offset, size, true);
-    }
-
-    private RecordBlock readRecordBlock(long offset, int size, boolean shouldCache) throws IOException {
+    private RecordBlock getRecordBlock(long offset, int size) throws IOException {
         RecordBlock recordBlock = recordCache.get(tableId, offset);
 
         if (recordBlock == null) {
-            Memory recordBlockMemory = Memory.allocate(size);
-
-            try {
-                ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
-                tableFile.read(recordBlockBuffer, offset);
-                recordBlockBuffer.rewind();
-                recordBlock = new RecordBlock(new ByteMap(recordBlockMemory));
-
-                if (shouldCache) {
-                    recordCache.put(tableId, offset, recordBlock);
-                }
-            } catch (IOException e) {
-                recordBlockMemory.release();
-                throw e;
-            }
+            recordBlock = readRecordBlock(offset, size);
+            recordCache.put(tableId, offset, recordBlock);
         }
 
         return recordBlock;
+    }
+
+    private RecordBlock readRecordBlock(long offset, int size) throws IOException {
+        Memory recordBlockMemory = Memory.allocate(size);
+
+        try {
+            ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
+            tableFile.read(recordBlockBuffer, offset);
+            recordBlockBuffer.rewind();
+            return new RecordBlock(new ByteMap(recordBlockMemory));
+        } catch (IOException e) {
+            recordBlockMemory.release();
+            throw e;
+        }
     }
 
     public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache,
@@ -394,6 +390,6 @@ public class FileTable implements Table {
         TableBloomFilter tableBloomFilter = TableBloomFilter.read(tableId, paths);
         DataFile tableFile = MutableDataFile.open(paths.tablePath(tableId));
         TableTrailer trailer = TableTrailer.read(tableFile);
-        return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache, indexCache);
+        return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache);
     }
 }
