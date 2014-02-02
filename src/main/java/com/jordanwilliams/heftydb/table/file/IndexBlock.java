@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
@@ -175,30 +174,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     @Override
     public Iterator<IndexRecord> iterator() {
-
-        return new Iterator<IndexRecord>() {
-
-            int currentRecordIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return currentRecordIndex < byteMap.entryCount();
-            }
-
-            @Override
-            public IndexRecord next() {
-                if (currentRecordIndex >= byteMap.entryCount()) {
-                    throw new NoSuchElementException();
-                }
-
-                return deserializeRecord(currentRecordIndex++);
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new RecordIterator(byteMap.ascendingIterator());
     }
 
     @Override

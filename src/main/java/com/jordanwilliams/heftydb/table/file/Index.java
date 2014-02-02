@@ -47,7 +47,7 @@ public class Index {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
-            IndexBlock currentIndexBlock = readIndexBlock(currentIndexRecord.blockOffset(),
+            IndexBlock currentIndexBlock = getIndexBlock(currentIndexRecord.blockOffset(),
                     currentIndexRecord.blockSize());
             currentIndexRecord = currentIndexBlock.get(key);
         }
@@ -61,25 +61,30 @@ public class Index {
         rootIndexBlock.memory().release();
     }
 
-    private IndexBlock readIndexBlock(long blockOffset, int blockSize) throws IOException {
+    private IndexBlock getIndexBlock(long blockOffset, int blockSize) throws IOException {
         IndexBlock indexBlock = cache.get(tableId, blockOffset);
 
         if (indexBlock == null) {
-            Memory indexMemory = Memory.allocate(blockSize);
-
-            try {
-                ByteBuffer indexBuffer = indexMemory.directBuffer();
-                indexFile.read(indexBuffer, blockOffset);
-                indexBuffer.rewind();
-                indexBlock = new IndexBlock(new ByteMap(indexMemory));
-                cache.put(tableId, blockOffset, indexBlock);
-            } catch (IOException e) {
-                indexMemory.release();
-                throw e;
-            }
+            indexBlock = readIndexBlock(blockOffset, blockSize);
+            cache.put(tableId, blockOffset, indexBlock);
         }
 
         return indexBlock;
+    }
+
+    private IndexBlock readIndexBlock(long blockOffset, int blockSize) throws IOException {
+        Memory indexMemory = Memory.allocate(blockSize);
+
+        try {
+            ByteBuffer indexBuffer = indexMemory.directBuffer();
+            indexFile.read(indexBuffer, blockOffset);
+            indexBuffer.rewind();
+            return new IndexBlock(new ByteMap(indexMemory));
+        } catch (IOException e) {
+            indexMemory.release();
+            throw e;
+        }
+
     }
 
     public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {

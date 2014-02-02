@@ -18,28 +18,27 @@ package com.jordanwilliams.heftydb.test.unit.offheap;
 
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class ByteMapTest {
+public class ByteMapTest extends ParameterizedRecordTest {
 
     private final ByteMap byteMap;
-    private final List<Record> records;
 
-    public ByteMapTest() {
+    public ByteMapTest(List<Record> testRecords) {
+        super(testRecords);
+
         ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
-        RecordGenerator recordGenerator = new RecordGenerator();
-        records = recordGenerator.testRecords(100, 0);
 
-        for (Record record : records) {
+        for (Record record : records){
             byteMapBuilder.add(record.key(), record.value());
         }
 
-        byteMap = byteMapBuilder.build();
+        this.byteMap = byteMapBuilder.build();
     }
 
     @Test
@@ -63,14 +62,17 @@ public class ByteMapTest {
         }
     }
 
-    @Test
-    public void iteratorTest() {
-        Iterator<Record> testRecords = records.iterator();
 
-        for (ByteMap.Entry entry : byteMap) {
-            Record record = testRecords.next();
-            Assert.assertEquals("Keys match", record.key(), entry.key());
-            Assert.assertEquals("Values match", record.value(), entry.value());
+    @Test
+    public void iteratorTest(){
+        Iterator<Record> recordIterator = records.iterator();
+        Iterator<ByteMap.Entry> byteMapIterator = byteMap.iterator();
+
+        while (recordIterator.hasNext()){
+            Record recordNext = recordIterator.next();
+            ByteMap.Entry byteMapNext = byteMapIterator.next();
+
+            Assert.assertEquals("Records match", recordNext, new Record(byteMapNext.key(), byteMapNext.value()));
         }
     }
 }

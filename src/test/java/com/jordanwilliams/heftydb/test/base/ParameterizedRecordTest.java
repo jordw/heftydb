@@ -66,7 +66,8 @@ public abstract class ParameterizedRecordTest {
         for (int i = 0; i < 100; i++) {
             Object[] params = new Object[1];
 
-            List<Record> testRecords = recordGenerator.testRecords(1, 100, i, random.nextInt(100) + 1, 100);
+            List<Record> testRecords = recordGenerator.testRecords(1, 1000, i, random.nextInt(255) + 1,
+                    random.nextInt(255));
             params[0] = testRecords;
 
             testParams.add(params);

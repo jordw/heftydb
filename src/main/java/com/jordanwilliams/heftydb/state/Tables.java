@@ -35,7 +35,7 @@ public class Tables implements Iterable<Table> {
 
     public Tables(Collection<Table> initialTables) {
         this.tables.addAll(initialTables);
-        this.currentTableId.set(tables.isEmpty() ? 1 : tables.last().id());
+        this.currentTableId.set(tables.isEmpty() ? 0 : tables.last().id());
     }
 
     public long nextId() {

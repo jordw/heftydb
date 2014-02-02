@@ -41,17 +41,17 @@ public class ConfigGenerator {
         return new Config() {
             @Override
             public int memoryTableSize() {
-                return 1024000;
+                return 16384;
             }
 
             @Override
             public int fileTableBlockSize() {
-                return 32768;
+                return 4096;
             }
 
             @Override
             public int indexBlockSize() {
-                return 32768;
+                return 4096;
             }
 
             @Override
@@ -66,12 +66,12 @@ public class ConfigGenerator {
 
             @Override
             public long tableCacheSize() {
-                return 32768000;
+                return 1024000;
             }
 
             @Override
             public long indexCacheSize() {
-                return 16384000;
+                return 1024000;
             }
 
             @Override

@@ -320,6 +320,11 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
         //Key
         int keySize = directBuffer.getInt(entryOffset);
+
+        if (keySize < 0 || keySize > 255){
+            int x = 1;
+        }
+
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
         int keyOffset = entryOffset + Sizes.INT_SIZE;
 

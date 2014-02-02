@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Random;
 
 @RunWith(Parameterized.class)
-public class ParameterizedIntegrationTest {
+public abstract class ParameterizedIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -69,11 +69,9 @@ public class ParameterizedIntegrationTest {
             Object[] params = new Object[2];
 
             Config config = ConfigGenerator.testConfig();
-            HeftyDB db = HeftyDB.open(config);
-            List<Record> records = recordGenerator.testRecords(1, 1000, i, random.nextInt(100) + 1,
-                    random.nextInt(100));
-            params[0] = db;
-            params[1] = records;
+            List<Record> records = recordGenerator.testRecords(1, 1000, i, 16, 16);
+            params[0] = records;
+            params[1] = config;
 
             testParams.add(params);
         }
@@ -81,11 +79,13 @@ public class ParameterizedIntegrationTest {
         return testParams;
     }
 
-    private final HeftyDB db;
-    private final List<Record> records;
+    protected HeftyDB db;
+    protected final List<Record> records;
+    protected final Config config;
 
-    public ParameterizedIntegrationTest(HeftyDB db, List<Record> records) {
-        this.db = db;
+    public ParameterizedIntegrationTest(List<Record> records, Config config) throws IOException {
+        this.db = HeftyDB.open(config);
         this.records = records;
+        this.config = config;
     }
 }

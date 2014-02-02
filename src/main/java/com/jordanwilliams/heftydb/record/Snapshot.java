@@ -18,6 +18,8 @@ package com.jordanwilliams.heftydb.record;
 
 public class Snapshot {
 
+    public static final Snapshot MAX = new Snapshot(Long.MAX_VALUE);
+
     private final long id;
 
     public Snapshot(long id) {

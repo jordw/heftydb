@@ -18,19 +18,34 @@ package com.jordanwilliams.heftydb.test.integration;
 
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.record.Snapshot;
+import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 public class ReadWriteTest extends ParameterizedIntegrationTest {
 
-    public ReadWriteTest(HeftyDB db, List<Record> records) {
-        super(db, records);
+    public ReadWriteTest(List<Record> records, Config config) throws IOException {
+        super(records, config);
     }
 
     @Test
     public void readWriteTest() throws Exception {
+        for (Record record : records){
+            db.put(record.key().data(), record.value().data());
+        }
 
+        db.close();
+        db = HeftyDB.open(config);
+
+        Iterator<Record> dbIterator = db.ascendingIterator(Snapshot.MAX);
+
+        while (dbIterator.hasNext()){
+            System.out.println(dbIterator.next().key());
+        }
     }
 }

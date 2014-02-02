@@ -52,6 +52,10 @@ public class RecordWriter {
         }
 
         long nextSnapshotId = state.snapshots().nextId();
+
+        key.rewind();
+        value.rewind();
+
         Key recordKey = new Key(key, nextSnapshotId);
         Value recordValue = new Value(value);
         Record record = new Record(recordKey, recordValue);
@@ -64,7 +68,7 @@ public class RecordWriter {
 
     public void close() throws IOException {
         try {
-            writeLog.close();
+            writeMemoryTable(memoryTable);
             tableExecutor.shutdown();
             tableExecutor.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -74,27 +78,29 @@ public class RecordWriter {
 
     private synchronized void rotateMemoryTable() throws IOException {
         if (memoryTable != null) {
-            final Table currentTable = memoryTable;
-
-            tableExecutor.submit(new FileTableWriter.Task(memoryTable.id(), 1, state.paths(), state.config(),
-                    memoryTable.ascendingIterator(state.snapshots().currentId()), memoryTable.recordCount(),
-                    new FileTableWriter.Task.Callback() {
-                @Override
-                public void finish() {
-                    try {
-                        state.tables().swap(FileTable.open(currentTable.id(), state.paths(),
-                                state.caches().recordBlockCache(), state.caches().indexBlockCache()), currentTable);
-                        Files.deleteIfExists(state.paths().logPath(currentTable.id()));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }));
+            writeMemoryTable(memoryTable);
         }
 
         long nextTableId = state.tables().nextId();
         memoryTable = new MemoryTable(nextTableId);
         writeLog = WriteLog.open(nextTableId, state.paths());
         state.tables().add(memoryTable);
+    }
+
+    private void writeMemoryTable(final Table memoryTable){
+        tableExecutor.submit(new FileTableWriter.Task(this.memoryTable.id(), 1, state.paths(), state.config(),
+                this.memoryTable.ascendingIterator(Long.MAX_VALUE), this.memoryTable.recordCount(),
+                new FileTableWriter.Task.Callback() {
+                    @Override
+                    public void finish() {
+                        try {
+                            state.tables().swap(FileTable.open(memoryTable.id(), state.paths(), state.caches()
+                                    .recordBlockCache(), state.caches().indexBlockCache()), memoryTable);
+                            Files.deleteIfExists(state.paths().logPath(memoryTable.id()));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }));
     }
 }

@@ -17,58 +17,47 @@
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.Index;
 import com.jordanwilliams.heftydb.table.file.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.IndexRecord;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
-import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.write.IndexWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-public class IndexTest extends ParameterizedRecordTest {
+public class IndexBlockRandomTest extends ParameterizedRecordTest {
 
-    private final Index index;
+    private final IndexBlock indexBlock;
     private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
 
-    public IndexTest(List<Record> testRecords) throws Exception {
+    public IndexBlockRandomTest(List<Record> testRecords) {
         super(testRecords);
-        this.index = createIndex();
-    }
-
-    @Test
-    public void getTest() throws IOException {
-        int count = 0;
-
-        for (Record record : records) {
-            IndexRecord indexRecord = index.get(record.key());
-            Assert.assertEquals("Index blocks are found", count, indexRecord.blockOffset());
-            count++;
-        }
-
-        index.close();
-    }
-
-    private Index createIndex() throws IOException {
-        Paths paths = ConfigGenerator.testPaths();
-        IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
 
         int count = 0;
+
+        IndexBlock.Builder indexBlockBuilder = new IndexBlock.Builder();
 
         for (Record record : records) {
             IndexRecord indexRecord = new IndexRecord(record.key(), count, 128);
             indexRecords.add(indexRecord);
-            indexWriter.write(indexRecord);
+            indexBlockBuilder.addRecord(indexRecord);
             count++;
         }
 
-        indexWriter.finish();
+        this.indexBlock = indexBlockBuilder.build();
+    }
 
-        return Index.open(1, paths, new IndexBlock.Cache());
+    @Test
+    public void iteratorTest(){
+        Iterator<IndexRecord> indexRecordIterator = indexRecords.iterator();
+        Iterator<IndexRecord> indexBlockIterator = indexBlock.ascendingIterator();
+
+        while (indexRecordIterator.hasNext()){
+            IndexRecord recordNext = indexRecordIterator.next();
+            IndexRecord blockNext = indexBlockIterator.next();
+            Assert.assertEquals("Records match", recordNext, blockNext);
+        }
     }
 }
