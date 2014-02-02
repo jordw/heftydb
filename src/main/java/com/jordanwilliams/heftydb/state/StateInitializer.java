@@ -60,7 +60,7 @@ public class StateInitializer {
             long tableId = tableId(path);
             Table table = FileTable.open(tableId, paths, caches.recordBlockCache(), caches.indexBlockCache());
             maxSnapshotId = Math.max(table.maxSnapshotId(), maxSnapshotId);
-            tables.add(FileTable.open(tableId(path), paths, caches.recordBlockCache(), caches.indexBlockCache()));
+            tables.add(table);
         }
 
         return tables;
@@ -71,8 +71,10 @@ public class StateInitializer {
 
         for (Path path : logPaths){
             long tableId = tableId(path);
+
             WriteLog log = WriteLog.open(tableId, paths);
             Table memoryTable = logTable(log);
+            log.close();
 
             FileTableWriter.Task tableWriterTask = new FileTableWriter.Task(tableId, 1, paths, config,
                     memoryTable.ascendingIterator(Long.MAX_VALUE), memoryTable.recordCount());

@@ -25,6 +25,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 @ThreadSafe
@@ -38,6 +40,7 @@ public class MutableDataFile implements DataFile {
         }
     };
 
+    private static final Set<String> openFiles = new HashSet<String>();
     private static final DataFileEvents events = new DataFileEvents("File IO");
 
     private final Path path;
@@ -47,6 +50,8 @@ public class MutableDataFile implements DataFile {
     private MutableDataFile(Path path, FileChannel fileChannel) {
         this.path = path;
         this.channel = fileChannel;
+        events.openFile();
+        openFiles.add(path.toString());
     }
 
     @Override
@@ -129,6 +134,8 @@ public class MutableDataFile implements DataFile {
     public void close() throws IOException {
         sync();
         channel.close();
+        events.closeFile();
+        openFiles.remove(path.toString());
     }
 
     @Override

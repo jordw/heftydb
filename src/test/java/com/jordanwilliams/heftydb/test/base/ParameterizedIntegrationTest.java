@@ -69,7 +69,8 @@ public abstract class ParameterizedIntegrationTest {
             Object[] params = new Object[2];
 
             Config config = ConfigGenerator.testConfig();
-            List<Record> records = recordGenerator.testRecords(1, 1000, i, 16, 16);
+            List<Record> records = recordGenerator.testRecords(1, 1000, i, random.nextInt(255) + 1,
+                    random.nextInt(255));
             params[0] = records;
             params[1] = config;
 

@@ -68,7 +68,11 @@ public class RecordWriter {
 
     public void close() throws IOException {
         try {
-            writeMemoryTable(memoryTable);
+            if (memoryTable != null){
+                writeLog.close();
+                writeMemoryTable(memoryTable);
+            }
+
             tableExecutor.shutdown();
             tableExecutor.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -78,6 +82,7 @@ public class RecordWriter {
 
     private synchronized void rotateMemoryTable() throws IOException {
         if (memoryTable != null) {
+            writeLog.close();
             writeMemoryTable(memoryTable);
         }
 
@@ -87,20 +92,22 @@ public class RecordWriter {
         state.tables().add(memoryTable);
     }
 
-    private void writeMemoryTable(final Table memoryTable){
-        tableExecutor.submit(new FileTableWriter.Task(this.memoryTable.id(), 1, state.paths(), state.config(),
-                this.memoryTable.ascendingIterator(Long.MAX_VALUE), this.memoryTable.recordCount(),
+    private void writeMemoryTable(final Table tableToWrite){
+        FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, state.paths(), state.config(),
+                tableToWrite.ascendingIterator(Long.MAX_VALUE), tableToWrite.recordCount(),
                 new FileTableWriter.Task.Callback() {
                     @Override
                     public void finish() {
                         try {
-                            state.tables().swap(FileTable.open(memoryTable.id(), state.paths(), state.caches()
-                                    .recordBlockCache(), state.caches().indexBlockCache()), memoryTable);
-                            Files.deleteIfExists(state.paths().logPath(memoryTable.id()));
+                            state.tables().swap(FileTable.open(tableToWrite.id(), state.paths(), state.caches()
+                                    .recordBlockCache(), state.caches().indexBlockCache()), tableToWrite);
+                            Files.deleteIfExists(state.paths().logPath(tableToWrite.id()));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                     }
-                }));
+                });
+
+        task.run();
     }
 }

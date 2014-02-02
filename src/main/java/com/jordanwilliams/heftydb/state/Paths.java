@@ -70,6 +70,8 @@ public class Paths {
             sortedFilePaths.add(filePath);
         }
 
+        filePaths.close();
+
         return sortedFilePaths;
     }
 }

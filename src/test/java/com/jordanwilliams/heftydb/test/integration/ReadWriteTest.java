@@ -24,6 +24,7 @@ import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,21 +32,39 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
 
     public ReadWriteTest(List<Record> records, Config config) throws IOException {
         super(records, config);
+        writeRecords();
     }
 
     @Test
-    public void readWriteTest() throws Exception {
-        for (Record record : records){
-            db.put(record.key().data(), record.value().data());
-        }
-
-        db.close();
+    public void basicIteratorTest() throws Exception {
         db = HeftyDB.open(config);
 
         Iterator<Record> dbIterator = db.ascendingIterator(Snapshot.MAX);
 
         while (dbIterator.hasNext()){
-            System.out.println(dbIterator.next().key());
+            dbIterator.next().key().snapshotId();
         }
+
+        db.close();
+    }
+
+    @Test
+    public void readWriteTest() throws Exception {
+        db = HeftyDB.open(config);
+
+        for (Record record : records){
+            ByteBuffer key = record.key().data();
+            db.get(key);
+        }
+
+        db.close();
+    }
+
+    private void writeRecords() throws IOException {
+        for (Record record : records){
+            db.put(record.key().data(), record.value().data());
+        }
+
+        db.close();
     }
 }

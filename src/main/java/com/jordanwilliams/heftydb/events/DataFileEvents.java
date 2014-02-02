@@ -17,6 +17,7 @@
 package com.jordanwilliams.heftydb.events;
 
 
+import com.jordanwilliams.heftydb.metrics.CounterMetric;
 import com.jordanwilliams.heftydb.metrics.HistogramMetric;
 import com.jordanwilliams.heftydb.metrics.MetricsCollection;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
@@ -28,15 +29,25 @@ public class DataFileEvents implements Events {
     private static final ThreadLocal<StopWatch> timer = new ThreadLocal<StopWatch>();
 
     private final MetricsCollection metrics;
+    private final CounterMetric openFiles = new CounterMetric("openFiles");
     private final HistogramMetric readTime = new HistogramMetric("readTime", "us");
     private final HistogramMetric writeTime = new HistogramMetric("writeTime", "us");
     private final HistogramMetric syncTime = new HistogramMetric("syncTime", "us");
 
     public DataFileEvents(String type) {
         metrics = new MetricsCollection(type);
+        metrics.put(openFiles);
         metrics.put(readTime);
         metrics.put(writeTime);
         metrics.put(syncTime);
+    }
+
+    public void openFile() {
+        openFiles.increment();
+    }
+
+    public void closeFile() {
+        openFiles.decrement();
     }
 
     public void startRead() {
