@@ -62,15 +62,25 @@ public abstract class ParameterizedIntegrationTest {
     @Parameterized.Parameters
     public static Collection<Object[]> generateTestData() throws Exception {
         RecordGenerator recordGenerator = new RecordGenerator();
-        Random random = new Random(System.nanoTime());
+        final Random random = new Random(System.nanoTime());
         List<Object[]> testParams = new ArrayList<Object[]>();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
             Object[] params = new Object[2];
 
             Config config = ConfigGenerator.testConfig();
-            List<Record> records = recordGenerator.testRecords(1, 1000, i, random.nextInt(255) + 1,
-                    random.nextInt(255));
+            List<Record> records = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
+                        @Override
+                        public Integer apply() {
+                            return random.nextInt(255) + 1;
+                        }
+                    }, new RecordGenerator.Function<Integer>() {
+                        @Override
+                        public Integer apply() {
+                            return random.nextInt(255);
+                        }
+                    }
+            );
             params[0] = records;
             params[1] = config;
 

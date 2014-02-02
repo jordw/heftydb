@@ -29,21 +29,24 @@ import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class RecordWriter {
 
     private final State state;
-    private final ExecutorService tableExecutor;
+    private final ThreadPoolExecutor tableExecutor;
 
     private MemoryTable memoryTable;
     private WriteLog writeLog;
 
     public RecordWriter(State state) {
         this.state = state;
-        this.tableExecutor = Executors.newFixedThreadPool(state.config().tableWriterThreads());
+        this.tableExecutor = new ThreadPoolExecutor(state.config().tableWriterThreads(),
+                state.config().tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
+                new LinkedBlockingQueue<Runnable>(state.config()
+                .tableWriterThreads()), new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     public Snapshot write(ByteBuffer key, ByteBuffer value) throws IOException {
@@ -59,6 +62,8 @@ public class RecordWriter {
         Key recordKey = new Key(key, nextSnapshotId);
         Value recordValue = new Value(value);
         Record record = new Record(recordKey, recordValue);
+
+        System.out.println("Writing " + recordKey);
 
         writeLog.append(record);
         memoryTable.put(record);
@@ -108,6 +113,6 @@ public class RecordWriter {
                     }
                 });
 
-        task.run();
+        tableExecutor.submit(task);
     }
 }

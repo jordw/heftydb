@@ -133,6 +133,8 @@ public class FileTableWriter {
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
         recordBlockBuffer.rewind();
 
+        //System.out.println("Writing record block @ " + recordBlockOffset + " table " + tableDataFile.path());
+
         if (lastBlock) {
             tableDataFile.appendLong(recordBlockOffset - Sizes.INT_SIZE);
         }

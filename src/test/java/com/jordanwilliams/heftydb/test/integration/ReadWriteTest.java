@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.record.Snapshot;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void basicIteratorTest() throws Exception {
         db = HeftyDB.open(config);
 
@@ -49,6 +51,7 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void readWriteTest() throws Exception {
         db = HeftyDB.open(config);
 

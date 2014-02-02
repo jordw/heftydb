@@ -61,14 +61,24 @@ public abstract class ParameterizedRecordTest {
     public static Collection<Object[]> generateTestRecords() {
         RecordGenerator recordGenerator = new RecordGenerator();
         List<Object[]> testParams = new ArrayList<Object[]>();
-        Random random = new Random(System.nanoTime());
+        final Random random = new Random(System.nanoTime());
 
         for (int i = 0; i < 100; i++) {
             Object[] params = new Object[1];
 
-            List<Record> testRecords = recordGenerator.testRecords(1, 1000, i, random.nextInt(255) + 1,
-                    random.nextInt(255));
-            params[0] = testRecords;
+            List<Record> records = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
+                        @Override
+                        public Integer apply() {
+                            return random.nextInt(255) + 1;
+                        }
+                    }, new RecordGenerator.Function<Integer>() {
+                        @Override
+                        public Integer apply() {
+                            return random.nextInt(255);
+                        }
+                    }
+            );
+            params[0] = records;
 
             testParams.add(params);
         }

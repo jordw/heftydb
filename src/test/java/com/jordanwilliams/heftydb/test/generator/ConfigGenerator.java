@@ -56,12 +56,12 @@ public class ConfigGenerator {
 
             @Override
             public int tableWriterThreads() {
-                return 8;
+                return 1;
             }
 
             @Override
             public int tableCompactionThreads() {
-                return 2;
+                return 1;
             }
 
             @Override

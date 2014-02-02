@@ -31,6 +31,10 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 public class RecordGenerator {
 
+    public interface Function<T> {
+        public T apply();
+    }
+
     private final KeyValueGenerator testDataGenerator = new KeyValueGenerator();
 
     public static ConcurrentNavigableMap<Key, Record> toMap(List<Record> records) {
@@ -43,13 +47,14 @@ public class RecordGenerator {
         return recordMap;
     }
 
-    public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse, int keySize, int valueSize) {
+    public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse, Function<Integer> keySize,
+                                    Function<Integer> valueSize) {
         int snapshotId = startingSnapshotId;
         List<Record> records = new ArrayList<Record>(recordCount);
 
         for (int i = 0; i < recordCount; i++) {
-            ByteBuffer key = testDataGenerator.testKey(keySize, keyReuse);
-            ByteBuffer value = testDataGenerator.testValue(valueSize);
+            ByteBuffer key = testDataGenerator.testKey(keySize.apply(), keyReuse);
+            ByteBuffer value = testDataGenerator.testValue(valueSize.apply());
             records.add(new Record(new Key(key, snapshotId), new Value(value)));
             snapshotId++;
         }
@@ -57,6 +62,23 @@ public class RecordGenerator {
         Collections.sort(records);
 
         return records;
+    }
+
+
+    public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse, final int keySize,
+                                    final int valueSize) {
+        return testRecords(startingSnapshotId, recordCount, keyReuse, new Function<Integer>() {
+                    @Override
+                    public Integer apply() {
+                        return keySize;
+                    }
+                }, new Function<Integer>() {
+                    @Override
+                    public Integer apply() {
+                        return valueSize;
+                    }
+                }
+        );
     }
 
     public List<Record> testRecords(int recordCount, int keyReuse, int keySize, int valueSize) {
