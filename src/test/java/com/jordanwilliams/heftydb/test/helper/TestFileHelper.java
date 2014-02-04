@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.util;
+package com.jordanwilliams.heftydb.test.helper;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -22,7 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class TestFileUtils {
+public class TestFileHelper {
 
     public static final Path TEMP_PATH = Paths.get("/tmp/heftytest");
 

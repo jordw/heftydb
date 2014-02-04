@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,23 +40,23 @@ public abstract class ParameterizedIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() throws IOException {
-        TestFileUtils.createTestDirectory();
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.createTestDirectory();
+        TestFileHelper.cleanUpTestFiles();
     }
 
     @AfterClass
     public static void afterClass() throws IOException {
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 
     @Before
     public void beforeTest() throws IOException {
-        TestFileUtils.createTestDirectory();
+        TestFileHelper.createTestDirectory();
     }
 
     @After
     public void afterTest() throws IOException {
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 
     @Parameterized.Parameters
@@ -69,7 +69,7 @@ public abstract class ParameterizedIntegrationTest {
             Object[] params = new Object[2];
 
             Config config = ConfigGenerator.testConfig();
-            List<Tuple> tuples = tupleGenerator.testRecords(1, 1000, i, new TupleGenerator.Function<Integer>() {
+            List<Tuple> tuples = tupleGenerator.testRecords(1, 1000, 20, new TupleGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255) + 1;
@@ -98,5 +98,13 @@ public abstract class ParameterizedIntegrationTest {
         this.db = HeftyDB.open(config);
         this.tuples = tuples;
         this.config = config;
+    }
+
+    protected void writeRecords() throws IOException {
+        for (Tuple tuple : tuples){
+            db.put(tuple.key().data(), tuple.value().data());
+        }
+
+        db.close();
     }
 }

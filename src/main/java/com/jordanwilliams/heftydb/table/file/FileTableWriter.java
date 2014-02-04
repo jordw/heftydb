@@ -129,6 +129,7 @@ public class FileTableWriter {
         ByteBuffer recordBlockBuffer = dataBlock.memory().directBuffer();
 
         tableDataFile.appendInt(recordBlockBuffer.capacity());
+
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
         recordBlockBuffer.rewind();
 

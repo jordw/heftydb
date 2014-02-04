@@ -26,7 +26,7 @@ import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
@@ -37,7 +37,7 @@ public class FileTablePerformance {
     private static final int RECORD_COUNT = 20 * 1000000;
 
     public static void main(String[] args) throws Exception {
-        TestFileUtils.createTestDirectory();
+        TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
@@ -65,6 +65,6 @@ public class FileTablePerformance {
         }
 
         System.out.println(iterations / watch.elapsedSeconds());
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 }

@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.read;
 import com.jordanwilliams.heftydb.util.PeekableIterator;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,14 +65,25 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
     }
 
     private final Queue<T> next = new LinkedList<T>();
-    private final PriorityQueue<ComparableIterator<T>> iteratorHeap = new PriorityQueue<ComparableIterator<T>>();
+    private final PriorityQueue<ComparableIterator<T>> iteratorHeap;
 
     public MergingIterator(List<Iterator<T>> iterators) {
+        this.iteratorHeap = new PriorityQueue<ComparableIterator<T>>();
         buildIteratorHeap(iterators);
     }
 
     public MergingIterator(Iterator<T>... iterators) {
-        buildIteratorHeap(Arrays.asList(iterators));
+        this(Arrays.asList(iterators));
+    }
+
+    public MergingIterator(boolean descending, Iterator<T>... iterators) {
+        this(descending, Arrays.asList(iterators));
+    }
+
+    public MergingIterator(boolean descending, List<Iterator<T>> iterators) {
+        this.iteratorHeap = descending ? new PriorityQueue<ComparableIterator<T>>(iterators.size(),
+                Collections.reverseOrder()) : new PriorityQueue<ComparableIterator<T>>();
+        buildIteratorHeap(iterators);
     }
 
     @Override

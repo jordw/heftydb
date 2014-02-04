@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.test.base;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -37,24 +37,24 @@ public abstract class ParameterizedRecordTest {
 
     @BeforeClass
     public static void beforeClass() throws IOException {
-        TestFileUtils.createTestDirectory();
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.createTestDirectory();
+        TestFileHelper.cleanUpTestFiles();
     }
 
     @AfterClass
     public static void afterClass() throws IOException {
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 
     @Before
     public void beforeTest() throws IOException {
         tupleGenerator = new TupleGenerator();
-        TestFileUtils.createTestDirectory();
+        TestFileHelper.createTestDirectory();
     }
 
     @After
     public void afterTest() throws IOException {
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 
     @Parameterized.Parameters

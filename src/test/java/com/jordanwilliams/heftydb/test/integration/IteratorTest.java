@@ -19,30 +19,49 @@ package com.jordanwilliams.heftydb.test.integration;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.db.Record;
+import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.helper.CompareHelper;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-public class ReadWriteTest extends ParameterizedIntegrationTest {
+public class IteratorTest extends ParameterizedIntegrationTest {
 
-    public ReadWriteTest(List<Tuple> tuples, Config config) throws IOException {
+    public IteratorTest(List<Tuple> tuples, Config config) throws IOException {
         super(tuples, config);
         writeRecords();
     }
 
     @Test
-    public void readWriteTest() throws Exception {
+    public void ascendingIteratorTest() throws Exception {
         db = HeftyDB.open(config);
 
-        for (Tuple tuple : TupleGenerator.latest(tuples, Long.MAX_VALUE)){
-            Record record = db.get(tuple.key().data());
-            CompareHelper.compareKeyValue(tuple, record);
-        }
+        Iterator<Record> dbIterator = db.ascendingIterator(Snapshot.MAX);
+        Iterator<Tuple> tupleIterator = TupleGenerator.latest(tuples, Long.MAX_VALUE).iterator();
+
+        CompareHelper.compareKeyValue(tupleIterator, dbIterator);
+
+        db.close();
+    }
+
+    @Test
+    @Ignore
+    public void descendingIteratorTest() throws Exception {
+        db = HeftyDB.open(config);
+
+        Iterator<Record> dbIterator = db.descendingIterator(Snapshot.MAX);
+        List<Tuple> latest = TupleGenerator.latest(tuples, Long.MAX_VALUE);
+        Collections.reverse(latest);
+        Iterator<Tuple> tupleIterator = latest.iterator();
+
+        CompareHelper.compareKeyValue(tupleIterator, dbIterator);
 
         db.close();
     }

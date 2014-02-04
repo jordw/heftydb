@@ -23,7 +23,7 @@ import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.Random;
 public class IndexPerformance {
 
     public static void main(String[] args) throws Exception {
-        TestFileUtils.createTestDirectory();
+        TestFileHelper.createTestDirectory();
         TupleGenerator generator = new TupleGenerator();
         List<Tuple> tuples = generator.testRecords(1, 500000, 20, 16, 100);
 
@@ -55,6 +55,6 @@ public class IndexPerformance {
         }
 
         System.out.println(iterations / watch.elapsedSeconds());
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 }

@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import com.jordanwilliams.heftydb.write.TableWriter;
 
@@ -30,7 +30,7 @@ public class RecordWriterPerformance {
     private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
-        TestFileUtils.createTestDirectory();
+        TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
@@ -47,6 +47,6 @@ public class RecordWriterPerformance {
         tableWriter.close();
 
         System.out.println(RECORD_COUNT / watch.elapsedSeconds());
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 }

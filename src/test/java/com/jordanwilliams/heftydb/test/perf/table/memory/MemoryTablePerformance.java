@@ -22,7 +22,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 
 import java.util.Random;
@@ -32,7 +32,7 @@ public class MemoryTablePerformance {
     private static final int RECORD_COUNT = 128000;
 
     public static void main(String[] args) throws Exception {
-        TestFileUtils.createTestDirectory();
+        TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
@@ -44,7 +44,7 @@ public class MemoryTablePerformance {
         }
 
         System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
 
         Random random = new Random(System.nanoTime());
         watch = StopWatch.start();
@@ -55,6 +55,6 @@ public class MemoryTablePerformance {
         }
 
         System.out.println("Reads " + iterations / watch.elapsedSeconds());
-        TestFileUtils.cleanUpTestFiles();
+        TestFileHelper.cleanUpTestFiles();
     }
 }

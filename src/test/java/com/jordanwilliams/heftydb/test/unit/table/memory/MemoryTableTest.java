@@ -67,7 +67,7 @@ public class MemoryTableTest extends ParameterizedRecordTest {
     @Test
     public void ascendingIteratorTest() throws IOException {
         Iterator<Tuple> tableRecordIterator = memoryTable.ascendingIterator(Long.MAX_VALUE);
-        Iterator<Tuple> recordIterator = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE).iterator();
+        Iterator<Tuple> recordIterator = tupleGenerator.latest(tuples, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -76,7 +76,7 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void ascendingRangeIteratorTest() throws IOException {
-        List<Tuple> latestTuples = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        List<Tuple> latestTuples = tupleGenerator.latest(tuples, Long.MAX_VALUE);
         int medianKeyIndex = random.nextInt(latestTuples.size());
         Key medianKey = latestTuples.get(medianKeyIndex).key();
         Iterator<Tuple> tableRecordIterator = memoryTable.ascendingIterator(medianKey, Long.MAX_VALUE);
@@ -90,7 +90,7 @@ public class MemoryTableTest extends ParameterizedRecordTest {
     @Test
     public void descendingIteratorTest() throws IOException {
         Iterator<Tuple> tableRecordIterator = memoryTable.descendingIterator(Long.MAX_VALUE);
-        List<Tuple> latestTuples = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        List<Tuple> latestTuples = tupleGenerator.latest(tuples, Long.MAX_VALUE);
         ListIterator<Tuple> recordIterator = latestTuples.listIterator(latestTuples.size());
 
         while (tableRecordIterator.hasNext()) {
@@ -100,7 +100,7 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void descendingRangeIteratorTest() throws IOException {
-        List<Tuple> latestTuples = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        List<Tuple> latestTuples = tupleGenerator.latest(tuples, Long.MAX_VALUE);
         int medianKeyIndex = random.nextInt(latestTuples.size());
         Key medianKey = latestTuples.get(medianKeyIndex).key();
 

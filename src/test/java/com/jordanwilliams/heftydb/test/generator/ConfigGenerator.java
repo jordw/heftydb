@@ -22,7 +22,7 @@ import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -30,7 +30,7 @@ import java.util.Collections;
 public class ConfigGenerator {
 
     public static Paths testPaths() {
-        return new Paths(TestFileUtils.TEMP_PATH, TestFileUtils.TEMP_PATH);
+        return new Paths(TestFileHelper.TEMP_PATH, TestFileHelper.TEMP_PATH);
     }
 
     public static Caches testCaches() {
@@ -76,12 +76,12 @@ public class ConfigGenerator {
 
             @Override
             public Path tableDirectory() {
-                return TestFileUtils.TEMP_PATH;
+                return TestFileHelper.TEMP_PATH;
             }
 
             @Override
             public Path logDirectory() {
-                return TestFileUtils.TEMP_PATH;
+                return TestFileHelper.TEMP_PATH;
             }
         };
     }

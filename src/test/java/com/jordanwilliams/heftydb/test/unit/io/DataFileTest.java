@@ -20,7 +20,7 @@ package com.jordanwilliams.heftydb.test.unit.io;
 import com.jordanwilliams.heftydb.io.MappedDataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.test.base.FileTest;
-import com.jordanwilliams.heftydb.test.util.TestFileUtils;
+import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ public class DataFileTest extends FileTest {
     private static final ByteBuffer TEST_BYTES = ByteBuffer.wrap("I am some very impressive test data".getBytes());
     private static final ByteBuffer MORE_TEST_BYTES = ByteBuffer.wrap("Test data is very interesting".getBytes());
 
-    private final Path testFile = TestFileUtils.TEMP_PATH.resolve("testfile");
+    private final Path testFile = TestFileHelper.TEMP_PATH.resolve("testfile");
 
     @Test
     public void mutableDataFileTest() throws IOException {

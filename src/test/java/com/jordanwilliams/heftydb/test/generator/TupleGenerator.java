@@ -89,7 +89,7 @@ public class TupleGenerator {
         return testRecords(recordCount, keyReuse, 16, 100);
     }
 
-    public static List<Tuple> latestRecords(List<Tuple> tuples, long snapshotId) {
+    public static List<Tuple> latest(List<Tuple> tuples, long snapshotId) {
         SortedMap<ByteBuffer, Tuple> latestRecordMap = new TreeMap<ByteBuffer, Tuple>();
 
         for (Tuple tuple : tuples) {

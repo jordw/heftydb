@@ -59,7 +59,7 @@ public class TableReader implements Iterable<Tuple> {
             tableIterators.add(table.ascendingIterator(snapshotId));
         }
 
-        return new MergingIterator<Tuple>(tableIterators);
+        return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
     }
 
     public Iterator<Tuple> descendingIterator(long snapshotId) {
@@ -69,7 +69,7 @@ public class TableReader implements Iterable<Tuple> {
             tableIterators.add(table.descendingIterator(snapshotId));
         }
 
-        return new MergingIterator<Tuple>(tableIterators);
+        return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
     }
 
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
@@ -79,7 +79,7 @@ public class TableReader implements Iterable<Tuple> {
             tableIterators.add(table.ascendingIterator(key, snapshotId));
         }
 
-        return new MergingIterator<Tuple>(tableIterators);
+        return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
     }
 
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
@@ -89,7 +89,7 @@ public class TableReader implements Iterable<Tuple> {
             tableIterators.add(table.descendingIterator(key, snapshotId));
         }
 
-        return new MergingIterator<Tuple>(tableIterators);
+        return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
     }
 
     public void close() throws IOException {
