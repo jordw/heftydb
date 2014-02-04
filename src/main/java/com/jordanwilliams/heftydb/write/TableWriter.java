@@ -34,7 +34,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class TupleWriter {
+public class TableWriter {
 
     private final State state;
     private final ThreadPoolExecutor tableExecutor;
@@ -42,7 +42,7 @@ public class TupleWriter {
     private MemoryTable memoryTable;
     private WriteLog writeLog;
 
-    public TupleWriter(State state) {
+    public TableWriter(State state) {
         this.state = state;
         this.tableExecutor = new ThreadPoolExecutor(state.config().tableWriterThreads(),
                 state.config().tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,

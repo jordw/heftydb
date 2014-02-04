@@ -33,7 +33,7 @@ package com.jordanwilliams.heftydb.test.base;
  */
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -59,8 +59,8 @@ public abstract class RecordTest {
 
     @Before
     public void beforeTest() throws IOException {
-        recordGenerator = new RecordGenerator();
-        this.tuples = recordGenerator.testRecords(1, 100, 20, random.nextInt(100) + 1, 100);
+        tupleGenerator = new TupleGenerator();
+        this.tuples = tupleGenerator.testRecords(1, 100, 20, random.nextInt(100) + 1, 100);
         TestFileUtils.createTestDirectory();
     }
 
@@ -70,10 +70,10 @@ public abstract class RecordTest {
     }
 
     protected final Random random = new Random(System.nanoTime());
-    protected RecordGenerator recordGenerator;
+    protected TupleGenerator tupleGenerator;
     protected List<Tuple> tuples;
 
     protected List<Tuple> generateMoreTestRecords(int startingSnapshotId){
-        return recordGenerator.testRecords(startingSnapshotId, 100, 20, random.nextInt(100) + 1, 100);
+        return tupleGenerator.testRecords(startingSnapshotId, 100, 20, random.nextInt(100) + 1, 100);
     }
 }

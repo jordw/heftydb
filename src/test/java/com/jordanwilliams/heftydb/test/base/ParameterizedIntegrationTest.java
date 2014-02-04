@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -61,7 +61,7 @@ public abstract class ParameterizedIntegrationTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> generateTestData() throws Exception {
-        RecordGenerator recordGenerator = new RecordGenerator();
+        TupleGenerator tupleGenerator = new TupleGenerator();
         final Random random = new Random(System.nanoTime());
         List<Object[]> testParams = new ArrayList<Object[]>();
 
@@ -69,12 +69,12 @@ public abstract class ParameterizedIntegrationTest {
             Object[] params = new Object[2];
 
             Config config = ConfigGenerator.testConfig();
-            List<Tuple> tuples = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
+            List<Tuple> tuples = tupleGenerator.testRecords(1, 1000, i, new TupleGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255) + 1;
                         }
-                    }, new RecordGenerator.Function<Integer>() {
+                    }, new TupleGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255);

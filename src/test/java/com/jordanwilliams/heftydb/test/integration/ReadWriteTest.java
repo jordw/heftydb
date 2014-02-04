@@ -18,9 +18,11 @@ package com.jordanwilliams.heftydb.test.integration;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.HeftyDB;
+import com.jordanwilliams.heftydb.db.Record;
 import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -39,10 +41,11 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
     public void basicIteratorTest() throws Exception {
         db = HeftyDB.open(config);
 
-        Iterator<Tuple> dbIterator = db.ascendingIterator(Snapshot.MAX);
+        Iterator<Record> dbIterator = db.ascendingIterator(Snapshot.MAX);
+        Iterator<Tuple> tupleIterator = TupleGenerator.latestRecords(tuples, Long.MAX_VALUE).iterator();
 
         while (dbIterator.hasNext()){
-            dbIterator.next().key().snapshotId();
+
         }
 
         db.close();
@@ -54,8 +57,6 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
 
         for (Tuple tuple : tuples){
             ByteBuffer key = tuple.key().data();
-            Tuple read = db.get(key);
-            System.out.println(read);
         }
 
         db.close();

@@ -22,7 +22,7 @@ import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
@@ -33,7 +33,7 @@ public class IndexPerformance {
 
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
-        RecordGenerator generator = new RecordGenerator();
+        TupleGenerator generator = new TupleGenerator();
         List<Tuple> tuples = generator.testRecords(1, 500000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();

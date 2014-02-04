@@ -26,11 +26,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class TupleReader implements Iterable<Tuple> {
+public class TableReader implements Iterable<Tuple> {
 
     private final State state;
 
-    public TupleReader(State state) {
+    public TableReader(State state) {
         this.state = state;
     }
 

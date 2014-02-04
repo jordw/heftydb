@@ -29,7 +29,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-public class RecordGenerator {
+public class TupleGenerator {
 
     public interface Function<T> {
         public T apply();

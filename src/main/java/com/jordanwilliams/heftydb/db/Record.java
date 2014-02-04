@@ -16,9 +16,37 @@
 
 package com.jordanwilliams.heftydb.db;
 
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.util.ByteBuffers;
+
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 
 public class Record implements Comparable<Record> {
+
+    public static class RecordIterator implements Iterator<Record> {
+
+        private final Iterator<Tuple> tupleIterator;
+
+        public RecordIterator(Iterator<Tuple> tupleIterator) {
+            this.tupleIterator = tupleIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return tupleIterator.hasNext();
+        }
+
+        @Override
+        public Record next() {
+            return new Record(tupleIterator.next());
+        }
+
+        @Override
+        public void remove() {
+            tupleIterator.remove();
+        }
+    }
 
     private final ByteBuffer key;
     private final ByteBuffer value;
@@ -28,6 +56,10 @@ public class Record implements Comparable<Record> {
         this.key = key;
         this.value = value;
         this.snapshot = snapshot;
+    }
+
+    public Record(Tuple tuple){
+        this(tuple.key().data(), tuple.value().data(), new Snapshot(tuple.key().snapshotId()));
     }
 
     public ByteBuffer key() {
@@ -77,9 +109,9 @@ public class Record implements Comparable<Record> {
 
     @Override
     public String toString() {
-        return "Tuple{" +
-                "key=" + key +
-                ", value=" + value +
+        return "Record{" +
+                "key=" + ByteBuffers.toString(key) +
+                ", value=" + ByteBuffers.toString(value) +
                 ", snapshot=" + snapshot +
                 '}';
     }

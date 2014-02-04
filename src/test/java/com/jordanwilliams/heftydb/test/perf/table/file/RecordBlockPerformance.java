@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.perf.table.file;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 
 import java.util.List;
 import java.util.Random;
@@ -27,7 +27,7 @@ import java.util.Random;
 public class RecordBlockPerformance {
 
     public static void main(String[] args) {
-        RecordGenerator generator = new RecordGenerator();
+        TupleGenerator generator = new TupleGenerator();
         List<Tuple> tuples = generator.testRecords(1, 64000, 20, 16, 100);
 
         DataBlock.Builder blockBuilder = new DataBlock.Builder();

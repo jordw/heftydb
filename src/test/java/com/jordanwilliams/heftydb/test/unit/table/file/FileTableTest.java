@@ -72,7 +72,7 @@ public class FileTableTest extends ParameterizedRecordTest {
     @Test
     public void ascendingIteratorTest() throws IOException {
         Iterator<Tuple> tableRecordIterator = fileTable.ascendingIterator(Long.MAX_VALUE);
-        Iterator<Tuple> recordIterator = recordGenerator.latestRecords(tuples, Long.MAX_VALUE).iterator();
+        Iterator<Tuple> recordIterator = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -81,7 +81,7 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void ascendingRangeIteratorTest() throws IOException {
-        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        List<Tuple> latestTuples = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE);
         int medianKeyIndex = random.nextInt(latestTuples.size());
         Key medianKey = latestTuples.get(medianKeyIndex).key();
         Iterator<Tuple> tableRecordIterator = fileTable.ascendingIterator(medianKey, Long.MAX_VALUE);
@@ -95,7 +95,7 @@ public class FileTableTest extends ParameterizedRecordTest {
     @Test
     public void descendingIteratorTest() throws IOException {
         Iterator<Tuple> tableRecordIterator = fileTable.descendingIterator(Long.MAX_VALUE);
-        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        List<Tuple> latestTuples = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE);
         ListIterator<Tuple> recordIterator = latestTuples.listIterator(latestTuples.size());
 
         while (tableRecordIterator.hasNext()) {
@@ -105,7 +105,7 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void descendingRangeIteratorTest() throws IOException {
-        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        List<Tuple> latestTuples = tupleGenerator.latestRecords(tuples, Long.MAX_VALUE);
         int medianKeyIndex = random.nextInt(latestTuples.size());
         Key medianKey = latestTuples.get(medianKeyIndex).key();
 

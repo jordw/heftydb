@@ -33,4 +33,14 @@ public class ByteBuffers {
         intBuffer.rewind();
         return intBuffer;
     }
+
+    public static String toString(ByteBuffer byteBuffer){
+        byte[] bytes = new byte[byteBuffer.capacity()];
+
+        for (int i = 0; i < byteBuffer.capacity(); i++){
+            bytes[i] = byteBuffer.get(i);
+        }
+
+        return new String(bytes);
+    }
 }

@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.test.base;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -48,7 +48,7 @@ public abstract class ParameterizedRecordTest {
 
     @Before
     public void beforeTest() throws IOException {
-        recordGenerator = new RecordGenerator();
+        tupleGenerator = new TupleGenerator();
         TestFileUtils.createTestDirectory();
     }
 
@@ -59,19 +59,19 @@ public abstract class ParameterizedRecordTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> generateTestRecords() {
-        RecordGenerator recordGenerator = new RecordGenerator();
+        TupleGenerator tupleGenerator = new TupleGenerator();
         List<Object[]> testParams = new ArrayList<Object[]>();
         final Random random = new Random(System.nanoTime());
 
         for (int i = 0; i < 100; i++) {
             Object[] params = new Object[1];
 
-            List<Tuple> tuples = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
+            List<Tuple> tuples = tupleGenerator.testRecords(1, 1000, i, new TupleGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255) + 1;
                         }
-                    }, new RecordGenerator.Function<Integer>() {
+                    }, new TupleGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255);
@@ -87,7 +87,7 @@ public abstract class ParameterizedRecordTest {
     }
 
     protected final List<Tuple> tuples;
-    protected RecordGenerator recordGenerator;
+    protected TupleGenerator tupleGenerator;
 
     public ParameterizedRecordTest(List<Tuple> testTuples) {
         this.tuples = testTuples;
