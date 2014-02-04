@@ -16,15 +16,15 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.write.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,23 +39,30 @@ public class FileTableTest extends ParameterizedRecordTest {
     private final FileTable fileTable;
     private final Random random = new Random(System.nanoTime());
 
-    public FileTableTest(List<Record> testRecords) throws IOException {
-        super(testRecords);
+    public FileTableTest(List<Tuple> testTuples) throws IOException {
+        super(testTuples);
         this.fileTable = openFileTable();
     }
 
     @Test
     public void readWriteTest() throws IOException {
-        for (Record record : records) {
-            Record read = fileTable.get(record.key());
-            Assert.assertEquals("Records match", record, read);
+        for (Tuple tuple : tuples) {
+            Tuple read = fileTable.get(tuple.key());
+            Assert.assertEquals("Records match", tuple, read);
+        }
+    }
+
+    @Test
+    public void mightContainTest() throws IOException {
+        for (Tuple tuple : tuples){
+            Assert.assertTrue("Tuple might be in the table", fileTable.mightContain(tuple.key()));
         }
     }
 
     @Test
     public void allIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = fileTable.iterator();
-        Iterator<Record> recordIterator = records.iterator();
+        Iterator<Tuple> tableRecordIterator = fileTable.iterator();
+        Iterator<Tuple> recordIterator = tuples.iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -64,8 +71,8 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void ascendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = fileTable.ascendingIterator(Long.MAX_VALUE);
-        Iterator<Record> recordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).iterator();
+        Iterator<Tuple> tableRecordIterator = fileTable.ascendingIterator(Long.MAX_VALUE);
+        Iterator<Tuple> recordIterator = recordGenerator.latestRecords(tuples, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -74,11 +81,11 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void ascendingRangeIteratorTest() throws IOException {
-        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
-        int medianKeyIndex = random.nextInt(latestRecords.size());
-        Key medianKey = latestRecords.get(medianKeyIndex).key();
-        Iterator<Record> tableRecordIterator = fileTable.ascendingIterator(medianKey, Long.MAX_VALUE);
-        Iterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex);
+        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        int medianKeyIndex = random.nextInt(latestTuples.size());
+        Key medianKey = latestTuples.get(medianKeyIndex).key();
+        Iterator<Tuple> tableRecordIterator = fileTable.ascendingIterator(medianKey, Long.MAX_VALUE);
+        Iterator<Tuple> recordIterator = latestTuples.listIterator(medianKeyIndex);
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -87,9 +94,9 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void descendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = fileTable.descendingIterator(Long.MAX_VALUE);
-        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
-        ListIterator<Record> recordIterator = latestRecords.listIterator(latestRecords.size());
+        Iterator<Tuple> tableRecordIterator = fileTable.descendingIterator(Long.MAX_VALUE);
+        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        ListIterator<Tuple> recordIterator = latestTuples.listIterator(latestTuples.size());
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.previous(), tableRecordIterator.next());
@@ -98,12 +105,12 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void descendingRangeIteratorTest() throws IOException {
-        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
-        int medianKeyIndex = random.nextInt(latestRecords.size());
-        Key medianKey = latestRecords.get(medianKeyIndex).key();
+        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        int medianKeyIndex = random.nextInt(latestTuples.size());
+        Key medianKey = latestTuples.get(medianKeyIndex).key();
 
-        Iterator<Record> tableRecordIterator = fileTable.descendingIterator(medianKey, Long.MAX_VALUE);
-        ListIterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex + 1);
+        Iterator<Tuple> tableRecordIterator = fileTable.descendingIterator(medianKey, Long.MAX_VALUE);
+        ListIterator<Tuple> recordIterator = latestTuples.listIterator(medianKeyIndex + 1);
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.previous(), tableRecordIterator.next());
@@ -112,13 +119,13 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     private FileTable openFileTable() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter tableWriter = FileTableWriter.open(1, paths, 100, 512, 512, 1);
+        FileTableWriter tableWriter = FileTableWriter.open(1, paths, tuples.size(), 512, 512, 1);
 
-        for (Record record : records) {
-            tableWriter.write(record);
+        for (Tuple tuple : tuples) {
+            tableWriter.write(tuple);
         }
 
         tableWriter.finish();
-        return FileTable.open(1, paths, new RecordBlock.Cache(), new IndexBlock.Cache());
+        return FileTable.open(1, paths, new DataBlock.Cache(), new IndexBlock.Cache());
     }
 }

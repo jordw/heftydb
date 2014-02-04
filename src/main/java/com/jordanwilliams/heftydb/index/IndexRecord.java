@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.table.file;
+package com.jordanwilliams.heftydb.index;
 
-import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 public class IndexRecord {

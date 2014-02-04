@@ -17,13 +17,13 @@
 package com.jordanwilliams.heftydb.test.perf.write;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-import com.jordanwilliams.heftydb.write.RecordWriter;
+import com.jordanwilliams.heftydb.write.TupleWriter;
 
 public class RecordWriterPerformance {
 
@@ -35,16 +35,16 @@ public class RecordWriterPerformance {
         Value value = new Value(keyValueGenerator.testValue(100));
 
         State state = ConfigGenerator.testState();
-        RecordWriter recordWriter = new RecordWriter(state);
+        TupleWriter tupleWriter = new TupleWriter(state);
 
         StopWatch watch = StopWatch.start();
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
-            recordWriter.write(ByteBuffers.fromString(i + ""), value.data());
+            tupleWriter.write(ByteBuffers.fromString(i + ""), value.data());
         }
 
-        recordWriter.close();
+        tupleWriter.close();
 
         System.out.println(RECORD_COUNT / watch.elapsedSeconds());
         TestFileUtils.cleanUpTestFiles();

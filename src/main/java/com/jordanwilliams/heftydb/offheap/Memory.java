@@ -105,6 +105,11 @@ public class Memory {
         }
     }
 
+    @Override
+    public String toString() {
+        return toHexString(directBuffer);
+    }
+
     private static ByteBuffer rawDirectBuffer(long address, int size) {
         try {
             return (ByteBuffer) directBufferConstructor.newInstance(address, size);
@@ -121,5 +126,17 @@ public class Memory {
         }
 
         return pageCount * pageSize;
+    }
+
+    private static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
+    private static String toHexString(ByteBuffer byteBuffer) {
+        char[] hexChars = new char[byteBuffer.capacity() * 2];
+        for (int i = 0; i < byteBuffer.capacity(); i++) {
+            int v = byteBuffer.get(i) & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 }

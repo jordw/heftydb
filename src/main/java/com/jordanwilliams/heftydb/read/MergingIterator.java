@@ -76,7 +76,7 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
-        //Still have a previously fetched record
+        //Still have a previously fetched data
         if (!next.isEmpty()) {
             return true;
         }

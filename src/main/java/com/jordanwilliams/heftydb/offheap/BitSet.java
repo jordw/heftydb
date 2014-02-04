@@ -55,7 +55,7 @@ public class BitSet implements Offheap {
         }
 
         public long bitCount() {
-            return usableBytes() * 8;
+            return usableBytes * 8;
         }
     }
 
@@ -73,7 +73,8 @@ public class BitSet implements Offheap {
 
     public boolean get(long index) {
         int offset = memoryOffset(index);
-        return ((directBuffer.getLong(offset) & (1L << index)) != 0);
+        long currentValue = directBuffer.getLong(offset);
+        return (currentValue & (1L << index)) != 0;
     }
 
     public int usableBytes() {
@@ -90,6 +91,6 @@ public class BitSet implements Offheap {
     }
 
     private static int memoryOffset(long bitIndex) {
-        return (int) ((bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE);
+        return (int) (bitIndex >> ADDRESS_BITS_PER_WORD) * Sizes.LONG_SIZE;
     }
 }

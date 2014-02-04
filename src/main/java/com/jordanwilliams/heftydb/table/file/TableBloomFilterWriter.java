@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.write;
+package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -37,8 +37,8 @@ public class TableBloomFilterWriter {
         this.filterFile = filterFile;
     }
 
-    public void write(Record record) throws IOException {
-        filterBuilder.put(record.key());
+    public void write(Key key) throws IOException {
+        filterBuilder.put(key);
     }
 
     public void finish() throws IOException {

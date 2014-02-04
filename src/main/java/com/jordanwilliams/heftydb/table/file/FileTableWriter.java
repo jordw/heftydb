@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.write;
+package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.index.IndexWriter;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
-import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.IndexRecord;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
-import com.jordanwilliams.heftydb.table.file.TableTrailer;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
@@ -40,13 +39,13 @@ public class FileTableWriter {
 
         private final long tableId;
         private final int level;
-        private final Iterator<Record> records;
+        private final Iterator<Tuple> records;
         private final long recordCount;
         private final Paths paths;
         private final Config config;
         private final Callback callback;
 
-        public Task(long tableId, int level, Paths paths, Config config, Iterator<Record> records, long recordCount,
+        public Task(long tableId, int level, Paths paths, Config config, Iterator<Tuple> records, long recordCount,
                     Callback callback) {
             this.tableId = tableId;
             this.level = level;
@@ -57,7 +56,7 @@ public class FileTableWriter {
             this.callback = callback;
         }
 
-        public Task(long tableId, int level, Paths paths, Config config, Iterator<Record> records, long recordCount) {
+        public Task(long tableId, int level, Paths paths, Config config, Iterator<Tuple> records, long recordCount) {
             this.tableId = tableId;
             this.level = level;
             this.paths = paths;
@@ -94,27 +93,27 @@ public class FileTableWriter {
     private final TableTrailer.Builder trailerBuilder;
     private final DataFile tableDataFile;
 
-    private RecordBlock.Builder recordBlockBuilder;
+    private DataBlock.Builder recordBlockBuilder;
 
     private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter, DataFile
             tableDataFile, int maxRecordBlockSize,
                             int level) throws IOException {
         this.indexWriter = indexWriter;
         this.filterWriter = filterWriter;
-        this.recordBlockBuilder = new RecordBlock.Builder();
+        this.recordBlockBuilder = new DataBlock.Builder();
         this.maxRecordBlockSize = maxRecordBlockSize;
         this.trailerBuilder = new TableTrailer.Builder(tableId, level);
         this.tableDataFile = tableDataFile;
     }
 
-    public void write(Record record) throws IOException {
+    public void write(Tuple tuple) throws IOException {
         if (recordBlockBuilder.size() >= maxRecordBlockSize) {
             writeRecordBlock(false);
         }
 
-        recordBlockBuilder.addRecord(record);
-        filterWriter.write(record);
-        trailerBuilder.put(record);
+        recordBlockBuilder.addRecord(tuple);
+        filterWriter.write(tuple.key());
+        trailerBuilder.put(tuple);
     }
 
     public void finish() throws IOException {
@@ -126,23 +125,21 @@ public class FileTableWriter {
     }
 
     private void writeRecordBlock(boolean lastBlock) throws IOException {
-        RecordBlock recordBlock = recordBlockBuilder.build();
-        ByteBuffer recordBlockBuffer = recordBlock.memory().directBuffer();
+        DataBlock dataBlock = recordBlockBuilder.build();
+        ByteBuffer recordBlockBuffer = dataBlock.memory().directBuffer();
 
         tableDataFile.appendInt(recordBlockBuffer.capacity());
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
         recordBlockBuffer.rewind();
 
-        //System.out.println("Writing record block @ " + recordBlockOffset + " table " + tableDataFile.path());
-
         if (lastBlock) {
             tableDataFile.appendLong(recordBlockOffset - Sizes.INT_SIZE);
         }
 
-        Record startRecord = recordBlock.startRecord();
-        indexWriter.write(new IndexRecord(startRecord.key(), recordBlockOffset, recordBlockBuffer.capacity()));
-        recordBlock.memory().release();
-        recordBlockBuilder = new RecordBlock.Builder();
+        Tuple startTuple = dataBlock.startRecord();
+        indexWriter.write(new IndexRecord(startTuple.key(), recordBlockOffset, recordBlockBuffer.capacity()));
+        dataBlock.memory().release();
+        recordBlockBuilder = new DataBlock.Builder();
     }
 
     private void writeTrailer() throws IOException {

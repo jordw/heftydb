@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.table.file;
+package com.jordanwilliams.heftydb.test.unit.index;
 
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.Index;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.IndexRecord;
+import com.jordanwilliams.heftydb.index.Index;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.write.IndexWriter;
+import com.jordanwilliams.heftydb.index.IndexWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,8 +36,8 @@ public class IndexTest extends ParameterizedRecordTest {
     private final Index index;
     private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
 
-    public IndexTest(List<Record> testRecords) throws Exception {
-        super(testRecords);
+    public IndexTest(List<Tuple> testTuples) throws Exception {
+        super(testTuples);
         this.index = createIndex();
     }
 
@@ -45,8 +45,8 @@ public class IndexTest extends ParameterizedRecordTest {
     public void getTest() throws IOException {
         int count = 0;
 
-        for (Record record : records) {
-            IndexRecord indexRecord = index.get(record.key());
+        for (Tuple tuple : tuples) {
+            IndexRecord indexRecord = index.get(tuple.key());
             Assert.assertEquals("Index blocks are found", count, indexRecord.blockOffset());
             count++;
         }
@@ -60,8 +60,8 @@ public class IndexTest extends ParameterizedRecordTest {
 
         int count = 0;
 
-        for (Record record : records) {
-            IndexRecord indexRecord = new IndexRecord(record.key(), count, 128);
+        for (Tuple tuple : tuples) {
+            IndexRecord indexRecord = new IndexRecord(tuple.key(), count, 128);
             indexRecords.add(indexRecord);
             indexWriter.write(indexRecord);
             count++;

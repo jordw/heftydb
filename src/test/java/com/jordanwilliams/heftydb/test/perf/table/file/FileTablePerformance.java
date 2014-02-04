@@ -17,18 +17,18 @@
 package com.jordanwilliams.heftydb.test.perf.table.file;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.table.file.FileTable;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-import com.jordanwilliams.heftydb.write.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
 import java.util.Random;
 
@@ -47,14 +47,14 @@ public class FileTablePerformance {
         FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
-            fileTableWriter.write(new Record(new Key(ByteBuffers.fromString(i + ""), i), value));
+            fileTableWriter.write(new Tuple(new Key(ByteBuffers.fromString(i + ""), i), value));
         }
 
         fileTableWriter.finish();
 
         System.out.println("Reading file table");
 
-        FileTable fileTable = FileTable.open(1, paths, new RecordBlock.Cache(32768000), new IndexBlock.Cache(16384000));
+        FileTable fileTable = FileTable.open(1, paths, new DataBlock.Cache(32768000), new IndexBlock.Cache(16384000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();

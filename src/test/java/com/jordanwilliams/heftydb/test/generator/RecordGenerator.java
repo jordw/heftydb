@@ -16,9 +16,9 @@
 
 package com.jordanwilliams.heftydb.test.generator;
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.data.Value;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -37,35 +37,35 @@ public class RecordGenerator {
 
     private final KeyValueGenerator testDataGenerator = new KeyValueGenerator();
 
-    public static ConcurrentNavigableMap<Key, Record> toMap(List<Record> records) {
-        ConcurrentNavigableMap<Key, Record> recordMap = new ConcurrentSkipListMap<Key, Record>();
+    public static ConcurrentNavigableMap<Key, Tuple> toMap(List<Tuple> tuples) {
+        ConcurrentNavigableMap<Key, Tuple> recordMap = new ConcurrentSkipListMap<Key, Tuple>();
 
-        for (Record record : records) {
-            recordMap.put(record.key(), record);
+        for (Tuple tuple : tuples) {
+            recordMap.put(tuple.key(), tuple);
         }
 
         return recordMap;
     }
 
-    public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse, Function<Integer> keySize,
+    public List<Tuple> testRecords(int startingSnapshotId, int recordCount, int keyReuse, Function<Integer> keySize,
                                     Function<Integer> valueSize) {
         int snapshotId = startingSnapshotId;
-        List<Record> records = new ArrayList<Record>(recordCount);
+        List<Tuple> tuples = new ArrayList<Tuple>(recordCount);
 
         for (int i = 0; i < recordCount; i++) {
             ByteBuffer key = testDataGenerator.testKey(keySize.apply(), keyReuse);
             ByteBuffer value = testDataGenerator.testValue(valueSize.apply());
-            records.add(new Record(new Key(key, snapshotId), new Value(value)));
+            tuples.add(new Tuple(new Key(key, snapshotId), new Value(value)));
             snapshotId++;
         }
 
-        Collections.sort(records);
+        Collections.sort(tuples);
 
-        return records;
+        return tuples;
     }
 
 
-    public List<Record> testRecords(int startingSnapshotId, int recordCount, int keyReuse, final int keySize,
+    public List<Tuple> testRecords(int startingSnapshotId, int recordCount, int keyReuse, final int keySize,
                                     final int valueSize) {
         return testRecords(startingSnapshotId, recordCount, keyReuse, new Function<Integer>() {
                     @Override
@@ -81,25 +81,25 @@ public class RecordGenerator {
         );
     }
 
-    public List<Record> testRecords(int recordCount, int keyReuse, int keySize, int valueSize) {
+    public List<Tuple> testRecords(int recordCount, int keyReuse, int keySize, int valueSize) {
         return testRecords(0, recordCount, keyReuse, keySize, valueSize);
     }
 
-    public List<Record> testRecords(int recordCount, int keyReuse) {
+    public List<Tuple> testRecords(int recordCount, int keyReuse) {
         return testRecords(recordCount, keyReuse, 16, 100);
     }
 
-    public static List<Record> latestRecords(List<Record> records, long snapshotId) {
-        SortedMap<ByteBuffer, Record> latestRecordMap = new TreeMap<ByteBuffer, Record>();
+    public static List<Tuple> latestRecords(List<Tuple> tuples, long snapshotId) {
+        SortedMap<ByteBuffer, Tuple> latestRecordMap = new TreeMap<ByteBuffer, Tuple>();
 
-        for (Record record : records) {
-            Record existing = latestRecordMap.get(record.key().data());
+        for (Tuple tuple : tuples) {
+            Tuple existing = latestRecordMap.get(tuple.key().data());
 
-            if (existing == null || record.key().snapshotId() > existing.key().snapshotId()) {
-                latestRecordMap.put(record.key().data(), record);
+            if (existing == null || tuple.key().snapshotId() > existing.key().snapshotId()) {
+                latestRecordMap.put(tuple.key().data(), tuple);
             }
         }
 
-        return new ArrayList<Record>(latestRecordMap.values());
+        return new ArrayList<Tuple>(latestRecordMap.values());
     }
 }

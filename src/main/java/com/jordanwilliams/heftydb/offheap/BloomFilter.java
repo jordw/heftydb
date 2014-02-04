@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.offheap;
 
 import com.google.common.hash.Hashing;
-import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;

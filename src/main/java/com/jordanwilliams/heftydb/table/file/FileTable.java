@@ -16,13 +16,16 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.index.Index;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.read.LatestRecordIterator;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.read.LatestTupleIterator;
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -34,7 +37,7 @@ import java.util.NoSuchElementException;
 
 public class FileTable implements Table {
 
-    private class AscendingRecordBlockIterator implements Iterator<RecordBlock> {
+    private class AscendingRecordBlockIterator implements Iterator<DataBlock> {
 
         private final long maxOffset;
         private long fileOffset = 0;
@@ -50,7 +53,7 @@ public class FileTable implements Table {
         }
 
         @Override
-        public RecordBlock next() {
+        public DataBlock next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -74,7 +77,7 @@ public class FileTable implements Table {
         }
     }
 
-    private class DescendingRecordBlockIterator implements Iterator<RecordBlock> {
+    private class DescendingRecordBlockIterator implements Iterator<DataBlock> {
 
         private long fileOffset;
 
@@ -88,7 +91,7 @@ public class FileTable implements Table {
         }
 
         @Override
-        public RecordBlock next() {
+        public DataBlock next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -112,20 +115,20 @@ public class FileTable implements Table {
         }
     }
 
-    private class AscendingIterator implements Iterator<Record> {
+    private class AscendingIterator implements Iterator<Tuple> {
 
-        protected final Iterator<RecordBlock> recordBlockIterator;
-        protected Iterator<Record> recordIterator;
-        protected RecordBlock recordBlock;
+        protected final Iterator<DataBlock> recordBlockIterator;
+        protected Iterator<Tuple> recordIterator;
+        protected DataBlock dataBlock;
 
-        private AscendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator,
-                                  RecordBlock startRecordBlock) {
+        private AscendingIterator(Iterator<DataBlock> recordBlockIterator, Iterator<Tuple> startIterator,
+                                  DataBlock startDataBlock) {
             this.recordBlockIterator = recordBlockIterator;
             this.recordIterator = startIterator;
-            this.recordBlock = startRecordBlock;
+            this.dataBlock = startDataBlock;
         }
 
-        private AscendingIterator(Iterator<RecordBlock> recordBlockIterator) {
+        private AscendingIterator(Iterator<DataBlock> recordBlockIterator) {
             this.recordBlockIterator = recordBlockIterator;
         }
 
@@ -149,7 +152,7 @@ public class FileTable implements Table {
         }
 
         @Override
-        public Record next() {
+        public Tuple next() {
             if (recordIterator == null || !recordIterator.hasNext()) {
                 if (!hasNext()) {
                     throw new NoSuchElementException();
@@ -165,16 +168,16 @@ public class FileTable implements Table {
         }
 
         protected boolean nextRecordBlock() throws IOException {
-            if (recordBlock != null) {
-                recordBlock.memory().release();
+            if (dataBlock != null) {
+                dataBlock.memory().release();
             }
 
             if (!recordBlockIterator.hasNext()) {
                 return false;
             }
 
-            recordBlock = recordBlockIterator.next();
-            recordIterator = recordBlock.ascendingIterator();
+            dataBlock = recordBlockIterator.next();
+            recordIterator = dataBlock.ascendingIterator();
 
             return true;
         }
@@ -182,27 +185,27 @@ public class FileTable implements Table {
 
     private class DescendingIterator extends AscendingIterator {
 
-        private DescendingIterator(Iterator<RecordBlock> recordBlockIterator, Iterator<Record> startIterator,
-                                   RecordBlock startRecordBlock) {
-            super(recordBlockIterator, startIterator, startRecordBlock);
+        private DescendingIterator(Iterator<DataBlock> recordBlockIterator, Iterator<Tuple> startIterator,
+                                   DataBlock startDataBlock) {
+            super(recordBlockIterator, startIterator, startDataBlock);
         }
 
-        private DescendingIterator(Iterator<RecordBlock> recordBlockIterator) {
+        private DescendingIterator(Iterator<DataBlock> recordBlockIterator) {
             super(recordBlockIterator);
         }
 
         @Override
         protected boolean nextRecordBlock() throws IOException {
-            if (recordBlock != null) {
-                recordBlock.memory().release();
+            if (dataBlock != null) {
+                dataBlock.memory().release();
             }
 
             if (!recordBlockIterator.hasNext()) {
                 return false;
             }
 
-            recordBlock = recordBlockIterator.next();
-            recordIterator = recordBlock.descendingIterator();
+            dataBlock = recordBlockIterator.next();
+            recordIterator = dataBlock.descendingIterator();
 
             return true;
         }
@@ -213,11 +216,11 @@ public class FileTable implements Table {
     private final Index index;
     private final TableBloomFilter tableBloomFilter;
     private final TableTrailer trailer;
-    private final RecordBlock.Cache recordCache;
+    private final DataBlock.Cache recordCache;
     private final DataFile tableFile;
 
     private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
-                      TableTrailer trailer, RecordBlock.Cache recordCache) throws IOException {
+                      TableTrailer trailer, DataBlock.Cache recordCache) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;
@@ -233,7 +236,7 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Record get(Key key) {
+    public Tuple get(Key key) {
         try {
             IndexRecord indexRecord = index.get(key);
 
@@ -241,23 +244,23 @@ public class FileTable implements Table {
                 return null;
             }
 
-            RecordBlock recordBlock = getRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
-            return recordBlock.get(key);
+            DataBlock dataBlock = getRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
+            return dataBlock.get(key);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Iterator<Record> ascendingIterator(long snapshotId) {
-        return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator(0)));
+    public Iterator<Tuple> ascendingIterator(long snapshotId) {
+        return new LatestTupleIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator(0)));
     }
 
     @Override
-    public Iterator<Record> descendingIterator(long snapshotId) {
+    public Iterator<Tuple> descendingIterator(long snapshotId) {
         try {
             long startOffset = tableFile.readLong(tableFile.size() - TableTrailer.SIZE - Sizes.LONG_SIZE);
-            return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
+            return new LatestTupleIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
                     (startOffset)));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -265,27 +268,26 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
+    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
-            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
-            Iterator<Record> startRecordIterator = startRecordBlock.ascendingIterator(key);
-            return new LatestRecordIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator
-                    (indexRecord.blockOffset() + indexRecord.blockSize()), startRecordIterator, startRecordBlock));
+            DataBlock startDataBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
+            Iterator<Tuple> startRecordIterator = startDataBlock.ascendingIterator(key);
+            return new LatestTupleIterator(snapshotId, new AscendingIterator(new AscendingRecordBlockIterator
+                    (indexRecord.blockOffset() + indexRecord.blockSize()), startRecordIterator, startDataBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Iterator<Record> descendingIterator(Key key, long snapshotId) {
+    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
-            RecordBlock startRecordBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
-            Iterator<Record> startRecordIterator = startRecordBlock.descendingIterator(key);
-            return new LatestRecordIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
-                    (indexRecord.blockOffset() - indexRecord.blockSize() - Sizes.LONG_SIZE), startRecordIterator,
-                    startRecordBlock));
+            DataBlock startDataBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
+            Iterator<Tuple> startRecordIterator = startDataBlock.descendingIterator(key);
+            return new LatestTupleIterator(snapshotId, new DescendingIterator(new DescendingRecordBlockIterator
+                    (indexRecord.blockOffset() - indexRecord.blockSize() - Sizes.LONG_SIZE), startRecordIterator, startDataBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -333,7 +335,7 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Iterator<Record> iterator() {
+    public Iterator<Tuple> iterator() {
         return new AscendingIterator(new AscendingRecordBlockIterator(0));
     }
 
@@ -359,32 +361,32 @@ public class FileTable implements Table {
         return (int) (tableId ^ (tableId >>> 32));
     }
 
-    private RecordBlock getRecordBlock(long offset, int size) throws IOException {
-        RecordBlock recordBlock = recordCache.get(tableId, offset);
+    private DataBlock getRecordBlock(long offset, int size) throws IOException {
+        DataBlock dataBlock = recordCache.get(tableId, offset);
 
-        if (recordBlock == null) {
-            recordBlock = readRecordBlock(offset, size);
-            recordCache.put(tableId, offset, recordBlock);
+        if (dataBlock == null) {
+            dataBlock = readRecordBlock(offset, size);
+            recordCache.put(tableId, offset, dataBlock);
         }
 
-        return recordBlock;
+        return dataBlock;
     }
 
-    private RecordBlock readRecordBlock(long offset, int size) throws IOException {
+    private DataBlock readRecordBlock(long offset, int size) throws IOException {
         Memory recordBlockMemory = Memory.allocate(size);
 
         try {
             ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
             tableFile.read(recordBlockBuffer, offset);
             recordBlockBuffer.rewind();
-            return new RecordBlock(new ByteMap(recordBlockMemory));
+            return new DataBlock(new ByteMap(recordBlockMemory));
         } catch (IOException e) {
             recordBlockMemory.release();
             throw e;
         }
     }
 
-    public static FileTable open(long tableId, Paths paths, RecordBlock.Cache recordCache,
+    public static FileTable open(long tableId, Paths paths, DataBlock.Cache recordCache,
                                  IndexBlock.Cache indexCache) throws IOException {
         Index index = Index.open(tableId, paths, indexCache);
         TableBloomFilter tableBloomFilter = TableBloomFilter.read(tableId, paths);

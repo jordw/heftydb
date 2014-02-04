@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.table.file;
+package com.jordanwilliams.heftydb.test.unit.index;
 
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.IndexRecord;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,15 +32,15 @@ public class IndexBlockRandomTest extends ParameterizedRecordTest {
     private final IndexBlock indexBlock;
     private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();
 
-    public IndexBlockRandomTest(List<Record> testRecords) {
-        super(testRecords);
+    public IndexBlockRandomTest(List<Tuple> testTuples) {
+        super(testTuples);
 
         int count = 0;
 
         IndexBlock.Builder indexBlockBuilder = new IndexBlock.Builder();
 
-        for (Record record : records) {
-            IndexRecord indexRecord = new IndexRecord(record.key(), count, 128);
+        for (Tuple tuple : tuples) {
+            IndexRecord indexRecord = new IndexRecord(tuple.key(), count, 128);
             indexRecords.add(indexRecord);
             indexBlockBuilder.addRecord(indexRecord);
             count++;

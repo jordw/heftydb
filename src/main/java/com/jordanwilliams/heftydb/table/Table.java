@@ -16,26 +16,26 @@
 
 package com.jordanwilliams.heftydb.table;
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
 
 import java.util.Iterator;
 
-public interface Table extends Iterable<Record>, Comparable<Table> {
+public interface Table extends Iterable<Tuple>, Comparable<Table> {
 
     public long id();
 
     public boolean mightContain(Key key);
 
-    public Record get(Key key);
+    public Tuple get(Key key);
 
-    public Iterator<Record> ascendingIterator(long snapshotId);
+    public Iterator<Tuple> ascendingIterator(long snapshotId);
 
-    public Iterator<Record> descendingIterator(long snapshotId);
+    public Iterator<Tuple> descendingIterator(long snapshotId);
 
-    public Iterator<Record> ascendingIterator(Key key, long snapshotId);
+    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId);
 
-    public Iterator<Record> descendingIterator(Key key, long snapshotId);
+    public Iterator<Tuple> descendingIterator(Key key, long snapshotId);
 
     public long recordCount();
 

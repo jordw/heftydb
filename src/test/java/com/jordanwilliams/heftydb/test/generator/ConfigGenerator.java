@@ -20,8 +20,8 @@ import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 
 import java.nio.file.Path;
@@ -34,7 +34,7 @@ public class ConfigGenerator {
     }
 
     public static Caches testCaches() {
-        return new Caches(new RecordBlock.Cache(32768000), new IndexBlock.Cache(16384000));
+        return new Caches(new DataBlock.Cache(32768000), new IndexBlock.Cache(16384000));
     }
 
     public static Config testConfig() {

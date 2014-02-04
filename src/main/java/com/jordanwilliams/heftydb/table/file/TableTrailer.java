@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,8 +38,8 @@ public class TableTrailer {
             this.level = level;
         }
 
-        public void put(Record record){
-            maxSnapshotId = Math.max(record.key().snapshotId(), maxSnapshotId);
+        public void put(Tuple tuple){
+            maxSnapshotId = Math.max(tuple.key().snapshotId(), maxSnapshotId);
             recordCount++;
         }
 

@@ -16,14 +16,13 @@
 
 package com.jordanwilliams.heftydb.db;
 
-import com.jordanwilliams.heftydb.read.RecordReader;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Snapshot;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.read.TupleReader;
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.StateInitializer;
-import com.jordanwilliams.heftydb.write.RecordWriter;
+import com.jordanwilliams.heftydb.write.TupleWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,44 +30,44 @@ import java.util.Iterator;
 
 public class HeftyDB {
 
-    private final RecordWriter recordWriter;
-    private final RecordReader recordReader;
+    private final TupleWriter tupleWriter;
+    private final TupleReader recordReader;
 
     public HeftyDB(State state) {
-        this.recordWriter = new RecordWriter(state);
-        this.recordReader = new RecordReader(state);
+        this.tupleWriter = new TupleWriter(state);
+        this.recordReader = new TupleReader(state);
     }
 
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
-        return recordWriter.write(key, value);
+        return tupleWriter.write(key, value);
     }
 
-    public Record get(ByteBuffer key) throws IOException {
+    public Tuple get(ByteBuffer key) throws IOException {
         return recordReader.get(new Key(key, Long.MAX_VALUE));
     }
 
-    public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
+    public Tuple get(ByteBuffer key, Snapshot snapshot) throws IOException {
         return recordReader.get(new Key(key, snapshot.id()));
     }
 
-    public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
+    public Iterator<Tuple> ascendingIterator(Snapshot snapshot) throws IOException {
         return recordReader.ascendingIterator(snapshot.id());
     }
 
-    public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
+    public Iterator<Tuple> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
         return recordReader.ascendingIterator(new Key(key, snapshot.id()), snapshot.id());
     }
 
-    public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
+    public Iterator<Tuple> descendingIterator(Snapshot snapshot) throws IOException {
         return recordReader.descendingIterator(snapshot.id());
     }
 
-    public Iterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
+    public Iterator<Tuple> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
         return recordReader.descendingIterator(new Key(key, snapshot.id()), snapshot.id());
     }
 
     public void close() throws IOException {
-        recordWriter.close();
+        tupleWriter.close();
         recordReader.close();
     }
 

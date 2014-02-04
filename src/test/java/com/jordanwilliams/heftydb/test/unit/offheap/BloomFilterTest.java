@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
-import com.jordanwilliams.heftydb.record.Key;
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class BloomFilterTest {
         Set<Key> testDataSet = new HashSet<Key>();
 
         for (int i = 0; i < 1000; i++) {
-            testDataSet.add(new Key(generator.testKey(100, 0), i));
+            testDataSet.add(new Key(generator.testKey(255, 0), i));
         }
 
         return testDataSet;

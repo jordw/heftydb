@@ -17,9 +17,9 @@
 package com.jordanwilliams.heftydb.test.perf.table.file;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.IndexRecord;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 
 import java.util.ArrayList;

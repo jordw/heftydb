@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.memory;
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import org.junit.Assert;
@@ -34,23 +34,30 @@ public class MemoryTableTest extends ParameterizedRecordTest {
     private final MemoryTable memoryTable;
     private final Random random = new Random(System.nanoTime());
 
-    public MemoryTableTest(List<Record> testRecords) throws IOException {
-        super(testRecords);
+    public MemoryTableTest(List<Tuple> testTuples) throws IOException {
+        super(testTuples);
         this.memoryTable = createMemoryTable();
     }
 
     @Test
     public void readWriteTest() throws IOException {
-        for (Record record : records) {
-            Record read = memoryTable.get(record.key());
-            Assert.assertEquals("Records match", record, read);
+        for (Tuple tuple : tuples) {
+            Tuple read = memoryTable.get(tuple.key());
+            Assert.assertEquals("Records match", tuple, read);
+        }
+    }
+
+    @Test
+    public void mightContainTest() throws IOException {
+        for (Tuple tuple : tuples){
+            Assert.assertTrue("Tuple might be in the table", memoryTable.mightContain(tuple.key()));
         }
     }
 
     @Test
     public void allIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = memoryTable.iterator();
-        Iterator<Record> recordIterator = records.iterator();
+        Iterator<Tuple> tableRecordIterator = memoryTable.iterator();
+        Iterator<Tuple> recordIterator = tuples.iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -59,8 +66,8 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void ascendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = memoryTable.ascendingIterator(Long.MAX_VALUE);
-        Iterator<Record> recordIterator = recordGenerator.latestRecords(records, Long.MAX_VALUE).iterator();
+        Iterator<Tuple> tableRecordIterator = memoryTable.ascendingIterator(Long.MAX_VALUE);
+        Iterator<Tuple> recordIterator = recordGenerator.latestRecords(tuples, Long.MAX_VALUE).iterator();
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -69,11 +76,11 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void ascendingRangeIteratorTest() throws IOException {
-        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
-        int medianKeyIndex = random.nextInt(latestRecords.size());
-        Key medianKey = latestRecords.get(medianKeyIndex).key();
-        Iterator<Record> tableRecordIterator = memoryTable.ascendingIterator(medianKey, Long.MAX_VALUE);
-        Iterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex);
+        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        int medianKeyIndex = random.nextInt(latestTuples.size());
+        Key medianKey = latestTuples.get(medianKeyIndex).key();
+        Iterator<Tuple> tableRecordIterator = memoryTable.ascendingIterator(medianKey, Long.MAX_VALUE);
+        Iterator<Tuple> recordIterator = latestTuples.listIterator(medianKeyIndex);
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.next(), tableRecordIterator.next());
@@ -82,9 +89,9 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void descendingIteratorTest() throws IOException {
-        Iterator<Record> tableRecordIterator = memoryTable.descendingIterator(Long.MAX_VALUE);
-        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
-        ListIterator<Record> recordIterator = latestRecords.listIterator(latestRecords.size());
+        Iterator<Tuple> tableRecordIterator = memoryTable.descendingIterator(Long.MAX_VALUE);
+        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        ListIterator<Tuple> recordIterator = latestTuples.listIterator(latestTuples.size());
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.previous(), tableRecordIterator.next());
@@ -93,12 +100,12 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void descendingRangeIteratorTest() throws IOException {
-        List<Record> latestRecords = recordGenerator.latestRecords(records, Long.MAX_VALUE);
-        int medianKeyIndex = random.nextInt(latestRecords.size());
-        Key medianKey = latestRecords.get(medianKeyIndex).key();
+        List<Tuple> latestTuples = recordGenerator.latestRecords(tuples, Long.MAX_VALUE);
+        int medianKeyIndex = random.nextInt(latestTuples.size());
+        Key medianKey = latestTuples.get(medianKeyIndex).key();
 
-        Iterator<Record> tableRecordIterator = memoryTable.descendingIterator(medianKey, Long.MAX_VALUE);
-        ListIterator<Record> recordIterator = latestRecords.listIterator(medianKeyIndex + 1);
+        Iterator<Tuple> tableRecordIterator = memoryTable.descendingIterator(medianKey, Long.MAX_VALUE);
+        ListIterator<Tuple> recordIterator = latestTuples.listIterator(medianKeyIndex + 1);
 
         while (tableRecordIterator.hasNext()) {
             Assert.assertEquals("Records match", recordIterator.previous(), tableRecordIterator.next());
@@ -108,8 +115,8 @@ public class MemoryTableTest extends ParameterizedRecordTest {
     private MemoryTable createMemoryTable() {
         MemoryTable memoryTable = new MemoryTable(1);
 
-        for (Record record : records) {
-            memoryTable.put(record);
+        for (Tuple tuple : tuples) {
+            memoryTable.put(tuple);
         }
 
         return memoryTable;

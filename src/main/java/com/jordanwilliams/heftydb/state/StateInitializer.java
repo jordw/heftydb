@@ -16,15 +16,15 @@
 
 package com.jordanwilliams.heftydb.state;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.log.WriteLog;
-import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
-import com.jordanwilliams.heftydb.write.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,7 +43,7 @@ public class StateInitializer {
     public StateInitializer(Config config) {
         this.config = config;
         this.paths = new Paths(config.tableDirectory(), config.logDirectory());
-        this.caches = new Caches(new RecordBlock.Cache(config.tableCacheSize()), new IndexBlock.Cache(config.indexCacheSize()));
+        this.caches = new Caches(new DataBlock.Cache(config.tableCacheSize()), new IndexBlock.Cache(config.indexCacheSize()));
     }
 
     public State initialize() throws IOException {
@@ -88,8 +88,8 @@ public class StateInitializer {
     private Table logTable(WriteLog log){
         MutableTable memoryTable = new MemoryTable(log.tableId());
 
-        for (Record record : log){
-            memoryTable.put(record);
+        for (Tuple tuple : log){
+            memoryTable.put(tuple);
         }
 
         return memoryTable;

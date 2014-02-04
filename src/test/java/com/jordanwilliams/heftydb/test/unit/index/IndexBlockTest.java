@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.table.file;
+package com.jordanwilliams.heftydb.test.unit.index;
 
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.IndexRecord;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;

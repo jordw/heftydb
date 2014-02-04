@@ -16,14 +16,15 @@
 
 package com.jordanwilliams.heftydb.write;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.log.WriteLog;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Snapshot;
-import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.db.Snapshot;
+import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class RecordWriter {
+public class TupleWriter {
 
     private final State state;
     private final ThreadPoolExecutor tableExecutor;
@@ -41,7 +42,7 @@ public class RecordWriter {
     private MemoryTable memoryTable;
     private WriteLog writeLog;
 
-    public RecordWriter(State state) {
+    public TupleWriter(State state) {
         this.state = state;
         this.tableExecutor = new ThreadPoolExecutor(state.config().tableWriterThreads(),
                 state.config().tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
@@ -61,12 +62,10 @@ public class RecordWriter {
 
         Key recordKey = new Key(key, nextSnapshotId);
         Value recordValue = new Value(value);
-        Record record = new Record(recordKey, recordValue);
+        Tuple tuple = new Tuple(recordKey, recordValue);
 
-        System.out.println("Writing " + recordKey);
-
-        writeLog.append(record);
-        memoryTable.put(record);
+        writeLog.append(tuple);
+        memoryTable.put(tuple);
 
         return new Snapshot(nextSnapshotId);
     }
@@ -113,6 +112,6 @@ public class RecordWriter {
                     }
                 });
 
-        tableExecutor.submit(task);
+        task.run();
     }
 }

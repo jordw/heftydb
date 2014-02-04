@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.test.base;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.HeftyDB;
-import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
@@ -65,11 +65,11 @@ public abstract class ParameterizedIntegrationTest {
         final Random random = new Random(System.nanoTime());
         List<Object[]> testParams = new ArrayList<Object[]>();
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 100; i++) {
             Object[] params = new Object[2];
 
             Config config = ConfigGenerator.testConfig();
-            List<Record> records = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
+            List<Tuple> tuples = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255) + 1;
@@ -81,7 +81,7 @@ public abstract class ParameterizedIntegrationTest {
                         }
                     }
             );
-            params[0] = records;
+            params[0] = tuples;
             params[1] = config;
 
             testParams.add(params);
@@ -91,12 +91,12 @@ public abstract class ParameterizedIntegrationTest {
     }
 
     protected HeftyDB db;
-    protected final List<Record> records;
+    protected final List<Tuple> tuples;
     protected final Config config;
 
-    public ParameterizedIntegrationTest(List<Record> records, Config config) throws IOException {
+    public ParameterizedIntegrationTest(List<Tuple> tuples, Config config) throws IOException {
         this.db = HeftyDB.open(config);
-        this.records = records;
+        this.tuples = tuples;
         this.config = config;
     }
 }

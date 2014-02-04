@@ -17,14 +17,14 @@
 package com.jordanwilliams.heftydb.test.perf.table.file;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.Index;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
+import com.jordanwilliams.heftydb.index.Index;
+import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
-import com.jordanwilliams.heftydb.write.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
 import java.util.List;
 import java.util.Random;
@@ -34,12 +34,12 @@ public class IndexPerformance {
     public static void main(String[] args) throws Exception {
         TestFileUtils.createTestDirectory();
         RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 500000, 20, 16, 100);
+        List<Tuple> tuples = generator.testRecords(1, 500000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 32000, 32000, 1);
-        for (Record record : records) {
-            fileTableWriter.write(record);
+        for (Tuple tuple : tuples) {
+            fileTableWriter.write(tuple);
         }
 
         fileTableWriter.finish();
@@ -51,7 +51,7 @@ public class IndexPerformance {
         int iterations = 1000000;
 
         for (int i = 0; i < iterations; i++) {
-            index.get(records.get(random.nextInt(records.size())).key());
+            index.get(tuples.get(random.nextInt(tuples.size())).key());
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

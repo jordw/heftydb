@@ -16,12 +16,11 @@
 
 package com.jordanwilliams.heftydb.test.integration;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.HeftyDB;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Snapshot;
+import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,17 +30,16 @@ import java.util.List;
 
 public class ReadWriteTest extends ParameterizedIntegrationTest {
 
-    public ReadWriteTest(List<Record> records, Config config) throws IOException {
-        super(records, config);
+    public ReadWriteTest(List<Tuple> tuples, Config config) throws IOException {
+        super(tuples, config);
         writeRecords();
     }
 
     @Test
-    @Ignore
     public void basicIteratorTest() throws Exception {
         db = HeftyDB.open(config);
 
-        Iterator<Record> dbIterator = db.ascendingIterator(Snapshot.MAX);
+        Iterator<Tuple> dbIterator = db.ascendingIterator(Snapshot.MAX);
 
         while (dbIterator.hasNext()){
             dbIterator.next().key().snapshotId();
@@ -51,21 +49,21 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
     }
 
     @Test
-    @Ignore
     public void readWriteTest() throws Exception {
         db = HeftyDB.open(config);
 
-        for (Record record : records){
-            ByteBuffer key = record.key().data();
-            db.get(key);
+        for (Tuple tuple : tuples){
+            ByteBuffer key = tuple.key().data();
+            Tuple read = db.get(key);
+            System.out.println(read);
         }
 
         db.close();
     }
 
     private void writeRecords() throws IOException {
-        for (Record record : records){
-            db.put(record.key().data(), record.value().data());
+        for (Tuple tuple : tuples){
+            db.put(tuple.key().data(), tuple.value().data());
         }
 
         db.close();

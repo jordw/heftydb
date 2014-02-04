@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.test.base;
 
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.After;
@@ -66,7 +66,7 @@ public abstract class ParameterizedRecordTest {
         for (int i = 0; i < 100; i++) {
             Object[] params = new Object[1];
 
-            List<Record> records = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
+            List<Tuple> tuples = recordGenerator.testRecords(1, 1000, i, new RecordGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
                             return random.nextInt(255) + 1;
@@ -78,7 +78,7 @@ public abstract class ParameterizedRecordTest {
                         }
                     }
             );
-            params[0] = records;
+            params[0] = tuples;
 
             testParams.add(params);
         }
@@ -86,10 +86,10 @@ public abstract class ParameterizedRecordTest {
         return testParams;
     }
 
-    protected final List<Record> records;
+    protected final List<Tuple> tuples;
     protected RecordGenerator recordGenerator;
 
-    public ParameterizedRecordTest(List<Record> testRecords) {
-        this.records = testRecords;
+    public ParameterizedRecordTest(List<Tuple> testTuples) {
+        this.tuples = testTuples;
     }
 }

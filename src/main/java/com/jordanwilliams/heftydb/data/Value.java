@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.record;
+package com.jordanwilliams.heftydb.data;
 
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import net.jcip.annotations.Immutable;

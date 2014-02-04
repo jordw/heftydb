@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.record;
+package com.jordanwilliams.heftydb.db;
 
-public class Snapshot {
+public class Snapshot implements Comparable<Snapshot> {
 
     public static final Snapshot MAX = new Snapshot(Long.MAX_VALUE);
+    public static final Snapshot MIN = new Snapshot(0);
 
     private final long id;
 
@@ -28,6 +29,11 @@ public class Snapshot {
 
     public long id() {
         return id;
+    }
+
+    @Override
+    public int compareTo(Snapshot o) {
+        return Long.compare(id, o.id());
     }
 
     @Override

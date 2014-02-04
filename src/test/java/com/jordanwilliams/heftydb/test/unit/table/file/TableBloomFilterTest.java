@@ -14,41 +14,42 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.log;
+package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.table.file.TableBloomFilter;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
+import com.jordanwilliams.heftydb.table.file.TableBloomFilterWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
-public class WriteLogTest extends ParameterizedRecordTest {
+public class TableBloomFilterTest extends ParameterizedRecordTest {
 
-    public WriteLogTest(List<Tuple> testTuples) throws Exception {
+    private final TableBloomFilter bloomFilter;
+
+    public TableBloomFilterTest(List<Tuple> testTuples) throws Exception {
         super(testTuples);
+
+        Paths paths = ConfigGenerator.testPaths();
+        TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(1, paths, tuples.size());
+
+        for (Tuple tuple : tuples){
+            filterWriter.write(tuple.key());
+        }
+
+        filterWriter.finish();
+
+        this.bloomFilter = TableBloomFilter.read(1, paths);
     }
 
     @Test
-    public void readWriteTest() throws IOException {
-        Paths paths = ConfigGenerator.testPaths();
-        WriteLog log = WriteLog.open(1, paths);
-
-        for (Tuple tuple : tuples) {
-            log.append(tuple);
-        }
-
-        Iterator<Tuple> logIterator = log.iterator();
-        Iterator<Tuple> recordIterator = tuples.iterator();
-
-        while (logIterator.hasNext()) {
-            Assert.assertEquals("Records match", recordIterator.next(), logIterator.next());
+    public void mightContainTest(){
+        for (Tuple tuple : tuples){
+            Assert.assertTrue("Filter contains the key", bloomFilter.mightContain(tuple.key()));
         }
     }
-
 }

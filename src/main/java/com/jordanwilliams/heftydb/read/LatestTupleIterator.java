@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.read;
 
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -24,42 +24,42 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class LatestRecordIterator implements Iterator<Record> {
+public class LatestTupleIterator implements Iterator<Tuple> {
 
-    private final Iterator<Record> recordIterator;
-    private final Queue<Record> nextRecord = new LinkedList<Record>();
+    private final Iterator<Tuple> recordIterator;
+    private final Queue<Tuple> nextTuple = new LinkedList<Tuple>();
     private final long maxSnapshotId;
-    private final SortedSet<Record> currentKeyRecords = new TreeSet<Record>();
+    private final SortedSet<Tuple> currentKeyTuples = new TreeSet<Tuple>();
 
-    public LatestRecordIterator(long maxSnapshotId, Iterator<Record> recordIterator) {
+    public LatestTupleIterator(long maxSnapshotId, Iterator<Tuple> recordIterator) {
         this.maxSnapshotId = maxSnapshotId;
         this.recordIterator = recordIterator;
     }
 
     @Override
     public boolean hasNext() {
-        if (!nextRecord.isEmpty()) {
+        if (!nextTuple.isEmpty()) {
             return true;
         }
 
-        Record record = fetchNextRecord();
+        Tuple tuple = fetchNextRecord();
 
-        if (record == null) {
+        if (tuple == null) {
             return false;
         }
 
-        nextRecord.add(record);
+        nextTuple.add(tuple);
 
         return true;
     }
 
     @Override
-    public Record next() {
-        if (nextRecord.isEmpty()) {
+    public Tuple next() {
+        if (nextTuple.isEmpty()) {
             hasNext();
         }
 
-        return nextRecord.poll();
+        return nextTuple.poll();
     }
 
     @Override
@@ -67,34 +67,34 @@ public class LatestRecordIterator implements Iterator<Record> {
         throw new UnsupportedOperationException();
     }
 
-    private Record fetchNextRecord() {
+    private Tuple fetchNextRecord() {
         while (recordIterator.hasNext()) {
-            Record next = recordIterator.next();
+            Tuple next = recordIterator.next();
 
             if (next.key().snapshotId() > maxSnapshotId) {
                 continue;
             }
 
-            boolean nextKeyEqualCurrent = currentKeyRecords.isEmpty() || next.key().data().equals(currentKeyRecords
+            boolean nextKeyEqualCurrent = currentKeyTuples.isEmpty() || next.key().data().equals(currentKeyTuples
                     .last().key().data());
 
             if (nextKeyEqualCurrent) {
-                currentKeyRecords.add(next);
+                currentKeyTuples.add(next);
                 continue;
             }
 
-            Record newest = currentKeyRecords.last();
-            currentKeyRecords.clear();
-            currentKeyRecords.add(next);
+            Tuple newest = currentKeyTuples.last();
+            currentKeyTuples.clear();
+            currentKeyTuples.add(next);
             return newest;
         }
 
-        if (currentKeyRecords.isEmpty()) {
+        if (currentKeyTuples.isEmpty()) {
             return null;
         }
 
-        Record newest = currentKeyRecords.last();
-        currentKeyRecords.clear();
+        Tuple newest = currentKeyTuples.last();
+        currentKeyTuples.clear();
         return newest;
     }
 }

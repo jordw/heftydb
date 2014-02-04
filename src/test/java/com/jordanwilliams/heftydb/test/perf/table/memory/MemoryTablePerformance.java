@@ -17,9 +17,9 @@
 package com.jordanwilliams.heftydb.test.perf.table.memory;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
@@ -40,7 +40,7 @@ public class MemoryTablePerformance {
         MemoryTable memTable = new MemoryTable(1);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
-            memTable.put(new Record(new Key(ByteBuffers.fromString(i + ""), i), value));
+            memTable.put(new Tuple(new Key(ByteBuffers.fromString(i + ""), i), value));
         }
 
         System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());

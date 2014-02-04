@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
-import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,13 +29,13 @@ public class ByteMapTest extends ParameterizedRecordTest {
 
     private final ByteMap byteMap;
 
-    public ByteMapTest(List<Record> testRecords) {
-        super(testRecords);
+    public ByteMapTest(List<Tuple> testTuples) {
+        super(testTuples);
 
         ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
 
-        for (Record record : records){
-            byteMapBuilder.add(record.key(), record.value());
+        for (Tuple tuple : tuples){
+            byteMapBuilder.add(tuple.key(), tuple.value());
         }
 
         this.byteMap = byteMapBuilder.build();
@@ -43,36 +43,36 @@ public class ByteMapTest extends ParameterizedRecordTest {
 
     @Test
     public void getTest() {
-        for (int i = 0; i < records.size(); i++) {
+        for (int i = 0; i < tuples.size(); i++) {
             ByteMap.Entry entry = byteMap.get(i);
-            Record record = records.get(i);
-            Assert.assertEquals("Keys match", record.key(), entry.key());
-            Assert.assertEquals("Values match", record.value(), entry.value());
+            Tuple tuple = tuples.get(i);
+            Assert.assertEquals("Keys match", tuple.key(), entry.key());
+            Assert.assertEquals("Values match", tuple.value(), entry.value());
         }
     }
 
     @Test
     public void floorIndexMatchTest() {
-        for (int i = 0; i < records.size(); i++) {
-            Record record = records.get(i);
-            int floorIndex = byteMap.floorIndex(record.key());
+        for (int i = 0; i < tuples.size(); i++) {
+            Tuple tuple = tuples.get(i);
+            int floorIndex = byteMap.floorIndex(tuple.key());
             ByteMap.Entry entry = byteMap.get(floorIndex);
-            Assert.assertEquals("Keys match", record.key(), entry.key());
-            Assert.assertEquals("Values match", record.value(), entry.value());
+            Assert.assertEquals("Keys match", tuple.key(), entry.key());
+            Assert.assertEquals("Values match", tuple.value(), entry.value());
         }
     }
 
 
     @Test
     public void iteratorTest(){
-        Iterator<Record> recordIterator = records.iterator();
+        Iterator<Tuple> recordIterator = tuples.iterator();
         Iterator<ByteMap.Entry> byteMapIterator = byteMap.iterator();
 
         while (recordIterator.hasNext()){
-            Record recordNext = recordIterator.next();
+            Tuple tupleNext = recordIterator.next();
             ByteMap.Entry byteMapNext = byteMapIterator.next();
 
-            Assert.assertEquals("Records match", recordNext, new Record(byteMapNext.key(), byteMapNext.value()));
+            Assert.assertEquals("Records match", tupleNext, new Tuple(byteMapNext.key(), byteMapNext.value()));
         }
     }
 }

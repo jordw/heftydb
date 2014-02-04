@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.record;
+package com.jordanwilliams.heftydb.data;
 
 import com.jordanwilliams.heftydb.util.Serializer;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -23,43 +23,43 @@ import net.jcip.annotations.Immutable;
 import java.nio.ByteBuffer;
 
 @Immutable
-public class Record implements Comparable<Record> {
+public class Tuple implements Comparable<Tuple> {
 
-    public static Serializer<Record> SERIALIZER = new Serializer<Record>() {
+    public static Serializer<Tuple> SERIALIZER = new Serializer<Tuple>() {
         @Override
-        public int size(Record record) {
+        public int size(Tuple tuple) {
             int size = 0;
 
             //Key
             size += Sizes.INT_SIZE;
-            size += record.key().size();
+            size += tuple.key().size();
             size += Sizes.LONG_SIZE;
 
             //Value
             size += Sizes.INT_SIZE;
-            size += record.value().size();
+            size += tuple.value().size();
 
             return size;
         }
 
         @Override
-        public void serialize(Record record, ByteBuffer recordBuffer) {
+        public void serialize(Tuple tuple, ByteBuffer recordBuffer) {
             //Key
-            recordBuffer.putInt(record.key.size());
-            recordBuffer.put(record.key.data());
-            recordBuffer.putLong(record.key.snapshotId());
-            record.key().data().rewind();
+            recordBuffer.putInt(tuple.key.size());
+            recordBuffer.put(tuple.key.data());
+            recordBuffer.putLong(tuple.key.snapshotId());
+            tuple.key().data().rewind();
 
             //Value
-            recordBuffer.putInt(record.value.size());
-            recordBuffer.put(record.value().data());
-            record.value().data().rewind();
+            recordBuffer.putInt(tuple.value.size());
+            recordBuffer.put(tuple.value().data());
+            tuple.value().data().rewind();
 
             recordBuffer.rewind();
         }
 
         @Override
-        public Record deserialize(ByteBuffer recordBuffer) {
+        public Tuple deserialize(ByteBuffer recordBuffer) {
             //Key
             int keySize = recordBuffer.getInt();
             ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
@@ -73,14 +73,14 @@ public class Record implements Comparable<Record> {
             recordBuffer.get(valueBuffer.array());
             Value value = new Value(valueBuffer);
 
-            return new Record(key, value);
+            return new Tuple(key, value);
         }
     };
 
     private final Key key;
     private final Value value;
 
-    public Record(Key key, Value value) {
+    public Tuple(Key key, Value value) {
         this.key = key;
         this.value = value;
     }
@@ -98,7 +98,7 @@ public class Record implements Comparable<Record> {
     }
 
     @Override
-    public int compareTo(Record o) {
+    public int compareTo(Tuple o) {
         return key.compareTo(o.key);
     }
 
@@ -107,10 +107,10 @@ public class Record implements Comparable<Record> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Record record = (Record) o;
+        Tuple tuple = (Tuple) o;
 
-        if (key != null ? !key.equals(record.key) : record.key != null) return false;
-        if (value != null ? !value.equals(record.value) : record.value != null) return false;
+        if (key != null ? !key.equals(tuple.key) : tuple.key != null) return false;
+        if (value != null ? !value.equals(tuple.value) : tuple.value != null) return false;
 
         return true;
     }
@@ -124,7 +124,7 @@ public class Record implements Comparable<Record> {
 
     @Override
     public String toString() {
-        return "Record{" +
+        return "Tuple{" +
                 "key=" + key +
                 ", value=" + value +
                 '}';

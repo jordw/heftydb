@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.read;
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.table.Table;
 
@@ -26,70 +26,70 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class RecordReader implements Iterable<Record> {
+public class TupleReader implements Iterable<Tuple> {
 
     private final State state;
 
-    public RecordReader(State state) {
+    public TupleReader(State state) {
         this.state = state;
     }
 
-    public Record get(Key key) {
-        Record closestRecord = null;
+    public Tuple get(Key key) {
+        Tuple closestTuple = null;
 
         for (Table table : state.tables()){
             if (table.mightContain(key)){
-                Record tableRecord = table.get(key);
+                Tuple tableTuple = table.get(key);
 
-                if (tableRecord != null){
-                    if (closestRecord == null || tableRecord.key().snapshotId() > closestRecord.key().snapshotId()){
-                        closestRecord = tableRecord;
+                if (tableTuple != null){
+                    if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()){
+                        closestTuple = tableTuple;
                     }
                 }
             }
         }
 
-        return closestRecord;
+        return closestTuple;
     }
 
-    public Iterator<Record> ascendingIterator(long snapshotId) {
-        List<Iterator<Record>> tableIterators = new ArrayList<Iterator<Record>>();
+    public Iterator<Tuple> ascendingIterator(long snapshotId) {
+        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
         for (Table table : state.tables()){
             tableIterators.add(table.ascendingIterator(snapshotId));
         }
 
-        return new MergingIterator<Record>(tableIterators);
+        return new MergingIterator<Tuple>(tableIterators);
     }
 
-    public Iterator<Record> descendingIterator(long snapshotId) {
-        List<Iterator<Record>> tableIterators = new ArrayList<Iterator<Record>>();
+    public Iterator<Tuple> descendingIterator(long snapshotId) {
+        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
         for (Table table : state.tables()){
             tableIterators.add(table.descendingIterator(snapshotId));
         }
 
-        return new MergingIterator<Record>(tableIterators);
+        return new MergingIterator<Tuple>(tableIterators);
     }
 
-    public Iterator<Record> ascendingIterator(Key key, long snapshotId) {
-        List<Iterator<Record>> tableIterators = new ArrayList<Iterator<Record>>();
+    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
+        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
         for (Table table : state.tables()){
             tableIterators.add(table.ascendingIterator(key, snapshotId));
         }
 
-        return new MergingIterator<Record>(tableIterators);
+        return new MergingIterator<Tuple>(tableIterators);
     }
 
-    public Iterator<Record> descendingIterator(Key key, long snapshotId) {
-        List<Iterator<Record>> tableIterators = new ArrayList<Iterator<Record>>();
+    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
+        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
         for (Table table : state.tables()){
             tableIterators.add(table.descendingIterator(key, snapshotId));
         }
 
-        return new MergingIterator<Record>(tableIterators);
+        return new MergingIterator<Tuple>(tableIterators);
     }
 
     public void close() throws IOException {
@@ -99,7 +99,7 @@ public class RecordReader implements Iterable<Record> {
     }
 
     @Override
-    public Iterator<Record> iterator() {
+    public Iterator<Tuple> iterator() {
         return ascendingIterator(Long.MAX_VALUE);
     }
 }

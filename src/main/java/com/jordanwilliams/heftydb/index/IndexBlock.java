@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.table.file;
+package com.jordanwilliams.heftydb.index;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -23,8 +23,8 @@ import com.google.common.cache.Weigher;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Value;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;

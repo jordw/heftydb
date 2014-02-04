@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,31 +25,31 @@ import org.junit.Test;
 import java.util.Iterator;
 import java.util.List;
 
-public class RecordBlockRandomTest extends ParameterizedRecordTest {
+public class TupleBlockRandomTest extends ParameterizedRecordTest {
 
-    private final RecordBlock recordBlock;
+    private final DataBlock dataBlock;
 
-    public RecordBlockRandomTest(List<Record> testRecords) {
-        super(testRecords);
+    public TupleBlockRandomTest(List<Tuple> testTuples) {
+        super(testTuples);
 
-        RecordBlock.Builder byteMapBuilder = new RecordBlock.Builder();
+        DataBlock.Builder byteMapBuilder = new DataBlock.Builder();
 
-        for (Record record : records){
-            byteMapBuilder.addRecord(record);
+        for (Tuple tuple : tuples){
+            byteMapBuilder.addRecord(tuple);
         }
 
-        this.recordBlock = byteMapBuilder.build();
+        this.dataBlock = byteMapBuilder.build();
     }
 
     @Test
     public void iteratorTest(){
-        Iterator<Record> recordIterator = records.iterator();
-        Iterator<Record> recordBlockIterator = recordBlock.ascendingIterator();
+        Iterator<Tuple> recordIterator = tuples.iterator();
+        Iterator<Tuple> recordBlockIterator = dataBlock.ascendingIterator();
 
         while (recordIterator.hasNext()){
-            Record recordNext = recordIterator.next();
-            Record blockNext = recordBlockIterator.next();
-            Assert.assertEquals("Records match", recordNext, blockNext);
+            Tuple tupleNext = recordIterator.next();
+            Tuple blockNext = recordBlockIterator.next();
+            Assert.assertEquals("Records match", tupleNext, blockNext);
         }
     }
 }

@@ -16,10 +16,10 @@
 
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.record.Value;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,52 +30,52 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-public class RecordBlockTest {
+public class TupleBlockTest {
 
     private static final ByteBuffer TEST_KEY_1 = ByteBuffers.fromString("An awesome test key");
     private static final ByteBuffer TEST_KEY_2 = ByteBuffers.fromString("Bad as I want to be");
     private static final ByteBuffer TEST_KEY_3 = ByteBuffers.fromString("Dog I am a test key");
 
-    private final RecordBlock recordBlock;
-    private final List<Record> records = new ArrayList<Record>();
+    private final DataBlock dataBlock;
+    private final List<Tuple> tuples = new ArrayList<Tuple>();
 
-    public RecordBlockTest() {
-        records.add(new Record(new Key(TEST_KEY_1, 1), Value.TOMBSTONE_VALUE));
-        records.add(new Record(new Key(TEST_KEY_1, 2), Value.TOMBSTONE_VALUE));
-        records.add(new Record(new Key(TEST_KEY_2, 3), Value.TOMBSTONE_VALUE));
-        records.add(new Record(new Key(TEST_KEY_3, 4), Value.TOMBSTONE_VALUE));
-        records.add(new Record(new Key(TEST_KEY_3, 5), Value.TOMBSTONE_VALUE));
+    public TupleBlockTest() {
+        tuples.add(new Tuple(new Key(TEST_KEY_1, 1), Value.TOMBSTONE_VALUE));
+        tuples.add(new Tuple(new Key(TEST_KEY_1, 2), Value.TOMBSTONE_VALUE));
+        tuples.add(new Tuple(new Key(TEST_KEY_2, 3), Value.TOMBSTONE_VALUE));
+        tuples.add(new Tuple(new Key(TEST_KEY_3, 4), Value.TOMBSTONE_VALUE));
+        tuples.add(new Tuple(new Key(TEST_KEY_3, 5), Value.TOMBSTONE_VALUE));
 
-        RecordBlock.Builder builder = new RecordBlock.Builder();
-        for (Record record : records) {
-            builder.addRecord(record);
+        DataBlock.Builder builder = new DataBlock.Builder();
+        for (Tuple tuple : tuples) {
+            builder.addRecord(tuple);
         }
 
-        recordBlock = builder.build();
+        dataBlock = builder.build();
     }
 
     @Test
     public void findRecordExistsTest() {
-        Record record = recordBlock.get(new Key(TEST_KEY_1, Long.MAX_VALUE));
-        Assert.assertEquals("Record matches", 2, record.key().snapshotId());
+        Tuple tuple = dataBlock.get(new Key(TEST_KEY_1, Long.MAX_VALUE));
+        Assert.assertEquals("Tuple matches", 2, tuple.key().snapshotId());
     }
 
     @Test
     public void findRecordExistsEndTest() {
-        Record record = recordBlock.get(new Key(TEST_KEY_3, Long.MAX_VALUE));
-        Assert.assertEquals("Record matches", 5, record.key().snapshotId());
+        Tuple tuple = dataBlock.get(new Key(TEST_KEY_3, Long.MAX_VALUE));
+        Assert.assertEquals("Tuple matches", 5, tuple.key().snapshotId());
     }
 
     @Test
     public void findRecordMissingTest() {
-        Record record = recordBlock.get(new Key(ByteBuffers.fromString("Doesn't exist"), 0));
-        Assert.assertNull("Record is null", record);
+        Tuple tuple = dataBlock.get(new Key(ByteBuffers.fromString("Doesn't exist"), 0));
+        Assert.assertNull("Tuple is null", tuple);
     }
 
     @Test
     public void recordIteratorTest() {
-        Iterator<Record> blockRecords = recordBlock.iterator();
-        Iterator<Record> expectedRecords = records.iterator();
+        Iterator<Tuple> blockRecords = dataBlock.iterator();
+        Iterator<Tuple> expectedRecords = tuples.iterator();
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -84,8 +84,8 @@ public class RecordBlockTest {
 
     @Test
     public void descendingIteratorTest() {
-        Iterator<Record> blockRecords = recordBlock.descendingIterator();
-        ListIterator<Record> expectedRecords = records.listIterator(5);
+        Iterator<Tuple> blockRecords = dataBlock.descendingIterator();
+        ListIterator<Tuple> expectedRecords = tuples.listIterator(5);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
@@ -94,8 +94,8 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorTest() {
-        Iterator<Record> blockRecords = recordBlock.ascendingIterator(new Key(TEST_KEY_2, 1));
-        ListIterator<Record> expectedRecords = records.listIterator(2);
+        Iterator<Tuple> blockRecords = dataBlock.ascendingIterator(new Key(TEST_KEY_2, 1));
+        ListIterator<Tuple> expectedRecords = tuples.listIterator(2);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -104,8 +104,8 @@ public class RecordBlockTest {
 
     @Test
     public void rangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = recordBlock.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
-        ListIterator<Record> expectedRecords = records.listIterator(3);
+        Iterator<Tuple> blockRecords = dataBlock.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        ListIterator<Tuple> expectedRecords = tuples.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.next(), blockRecords.next());
@@ -114,8 +114,8 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorTest() {
-        Iterator<Record> blockRecords = recordBlock.descendingIterator(new Key(TEST_KEY_2, 1));
-        ListIterator<Record> expectedRecords = records.listIterator(3);
+        Iterator<Tuple> blockRecords = dataBlock.descendingIterator(new Key(TEST_KEY_2, 1));
+        ListIterator<Tuple> expectedRecords = tuples.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());
@@ -124,8 +124,8 @@ public class RecordBlockTest {
 
     @Test
     public void descendingRangeIteratorInexactTest() {
-        Iterator<Record> blockRecords = recordBlock.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
-        ListIterator<Record> expectedRecords = records.listIterator(3);
+        Iterator<Tuple> blockRecords = dataBlock.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        ListIterator<Tuple> expectedRecords = tuples.listIterator(3);
 
         while (blockRecords.hasNext()) {
             Assert.assertEquals("Records match", expectedRecords.previous(), blockRecords.next());

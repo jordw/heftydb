@@ -20,31 +20,31 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
-import com.jordanwilliams.heftydb.record.Key;
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Key;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class RecordBlock implements Iterable<Record>, Offheap {
+public class DataBlock implements Iterable<Tuple>, Offheap {
 
     public static class Cache {
 
-        private final com.google.common.cache.Cache<String, RecordBlock> cache;
+        private final com.google.common.cache.Cache<String, DataBlock> cache;
 
         public Cache(long maxsize) {
-            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, RecordBlock>() {
+            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, DataBlock>() {
                 @Override
-                public int weigh(String key, RecordBlock value) {
+                public int weigh(String key, DataBlock value) {
                     return key.length() + value.memory().size();
                 }
-            }).removalListener(new RemovalListener<String, RecordBlock>() {
+            }).removalListener(new RemovalListener<String, DataBlock>() {
                 @Override
-                public void onRemoval(RemovalNotification<String, RecordBlock> removalNotification) {
+                public void onRemoval(RemovalNotification<String, DataBlock> removalNotification) {
                     removalNotification.getValue().memory().release();
                 }
             }).maximumWeight(maxsize).build();
@@ -54,12 +54,12 @@ public class RecordBlock implements Iterable<Record>, Offheap {
             this(1024000);
         }
 
-        public RecordBlock get(long tableId, long offset) {
+        public DataBlock get(long tableId, long offset) {
             return cache.getIfPresent(key(tableId, offset));
         }
 
-        public void put(long tableId, long offset, RecordBlock recordBlock) {
-            cache.put(key(tableId, offset), recordBlock);
+        public void put(long tableId, long offset, DataBlock dataBlock) {
+            cache.put(key(tableId, offset), dataBlock);
         }
 
         private String key(long tableId, long offset) {
@@ -76,21 +76,21 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
         private int size;
 
-        public void addRecord(Record record) {
-            byteMapBuilder.add(new Key(record.key().data(), record.key().snapshotId()), record.value());
-            size += record.size();
+        public void addRecord(Tuple tuple) {
+            byteMapBuilder.add(new Key(tuple.key().data(), tuple.key().snapshotId()), tuple.value());
+            size += tuple.size();
         }
 
         public int size() {
             return size;
         }
 
-        public RecordBlock build() {
-            return new RecordBlock(byteMapBuilder.build());
+        public DataBlock build() {
+            return new DataBlock(byteMapBuilder.build());
         }
     }
 
-    private class RecordIterator implements Iterator<Record> {
+    private class RecordIterator implements Iterator<Tuple> {
 
         private final Iterator<ByteMap.Entry> entryIterator;
 
@@ -104,9 +104,9 @@ public class RecordBlock implements Iterable<Record>, Offheap {
         }
 
         @Override
-        public Record next() {
+        public Tuple next() {
             ByteMap.Entry nextEntry = entryIterator.next();
-            return new Record(nextEntry.key(), nextEntry.value());
+            return new Tuple(nextEntry.key(), nextEntry.value());
         }
 
         @Override
@@ -117,43 +117,43 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     private final ByteMap byteMap;
 
-    public RecordBlock(ByteMap byteMap) {
+    public DataBlock(ByteMap byteMap) {
         this.byteMap = byteMap;
     }
 
-    public Record get(Key key) {
+    public Tuple get(Key key) {
         int closestIndex = byteMap.floorIndex(key);
 
         if (closestIndex < 0 || closestIndex >= byteMap.entryCount()) {
             return null;
         }
 
-        Record closestRecord = deserializeRecord(closestIndex);
-        return closestRecord.key().data().equals(key.data()) ? closestRecord : null;
+        Tuple closestTuple = deserializeRecord(closestIndex);
+        return closestTuple.key().data().equals(key.data()) ? closestTuple : null;
     }
 
-    public Record startRecord() {
+    public Tuple startRecord() {
         return deserializeRecord(0);
     }
 
-    public Iterator<Record> ascendingIterator() {
+    public Iterator<Tuple> ascendingIterator() {
         return new RecordIterator(byteMap.ascendingIterator());
     }
 
-    public Iterator<Record> ascendingIterator(Key key) {
+    public Iterator<Tuple> ascendingIterator(Key key) {
         return new RecordIterator(byteMap.ascendingIterator(key));
     }
 
-    public Iterator<Record> descendingIterator() {
+    public Iterator<Tuple> descendingIterator() {
         return new RecordIterator(byteMap.descendingIterator());
     }
 
-    public Iterator<Record> descendingIterator(Key key) {
+    public Iterator<Tuple> descendingIterator(Key key) {
         return new RecordIterator(byteMap.descendingIterator(key));
     }
 
     @Override
-    public Iterator<Record> iterator() {
+    public Iterator<Tuple> iterator() {
         return new RecordIterator(byteMap.ascendingIterator());
     }
 
@@ -164,16 +164,16 @@ public class RecordBlock implements Iterable<Record>, Offheap {
 
     @Override
     public String toString() {
-        List<Record> records = new ArrayList<Record>();
-        for (Record record : this) {
-            records.add(record);
+        List<Tuple> tuples = new ArrayList<Tuple>();
+        for (Tuple tuple : this) {
+            tuples.add(tuple);
         }
 
-        return "RecordBlock{records=" + records + "}";
+        return "DataBlock{tuples=" + tuples + "}";
     }
 
-    private Record deserializeRecord(int recordIndex) {
+    private Tuple deserializeRecord(int recordIndex) {
         ByteMap.Entry entry = byteMap.get(recordIndex);
-        return new Record(entry.key(), entry.value());
+        return new Tuple(entry.key(), entry.value());
     }
 }

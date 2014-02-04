@@ -16,10 +16,10 @@
 
 package com.jordanwilliams.heftydb.log;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.record.Record;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
 
@@ -30,39 +30,39 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-public class WriteLog implements Iterable<Record> {
+public class WriteLog implements Iterable<Tuple> {
 
-    private class LogIterator implements Iterator<Record> {
+    private class LogIterator implements Iterator<Tuple> {
 
-        private final Queue<Record> nextRecord = new LinkedList<Record>();
+        private final Queue<Tuple> nextTuple = new LinkedList<Tuple>();
         private long fileOffset = 0;
 
         @Override
         public boolean hasNext() {
-            if (!nextRecord.isEmpty()) {
+            if (!nextTuple.isEmpty()) {
                 return true;
             }
 
-            Record next = nextRecord();
+            Tuple next = nextRecord();
 
             if (next == null) {
                 return false;
             }
 
-            nextRecord.add(next);
+            nextTuple.add(next);
 
             return true;
         }
 
         @Override
-        public Record next() {
-            if (nextRecord.isEmpty()) {
+        public Tuple next() {
+            if (nextTuple.isEmpty()) {
                 if (!hasNext()) {
                     throw new NoSuchElementException();
                 }
             }
 
-            return nextRecord.poll();
+            return nextTuple.poll();
         }
 
         @Override
@@ -70,7 +70,7 @@ public class WriteLog implements Iterable<Record> {
             throw new UnsupportedOperationException();
         }
 
-        private Record nextRecord() {
+        private Tuple nextRecord() {
             try {
                 if (fileOffset >= logFile.size()) {
                     return null;
@@ -84,7 +84,7 @@ public class WriteLog implements Iterable<Record> {
                 fileOffset += recordSize;
                 recordBuffer.rewind();
 
-                return Record.SERIALIZER.deserialize(recordBuffer);
+                return Tuple.SERIALIZER.deserialize(recordBuffer);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -99,11 +99,11 @@ public class WriteLog implements Iterable<Record> {
         this.logFile = logFile;
     }
 
-    public void append(Record record) throws IOException {
-        Memory recordMemory = Memory.allocate(Record.SERIALIZER.size(record));
+    public void append(Tuple tuple) throws IOException {
+        Memory recordMemory = Memory.allocate(Tuple.SERIALIZER.size(tuple));
 
         try {
-            Record.SERIALIZER.serialize(record, recordMemory.directBuffer());
+            Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
             logFile.appendInt(recordMemory.size());
             logFile.append(recordMemory.directBuffer());
         } finally {
@@ -120,7 +120,7 @@ public class WriteLog implements Iterable<Record> {
     }
 
     @Override
-    public Iterator<Record> iterator() {
+    public Iterator<Tuple> iterator() {
         return new LogIterator();
     }
 

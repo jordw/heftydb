@@ -32,7 +32,7 @@ package com.jordanwilliams.heftydb.test.base;
  * limitations under the License.
  */
 
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 import com.jordanwilliams.heftydb.test.util.TestFileUtils;
 import org.junit.After;
@@ -60,7 +60,7 @@ public abstract class RecordTest {
     @Before
     public void beforeTest() throws IOException {
         recordGenerator = new RecordGenerator();
-        this.records = recordGenerator.testRecords(1, 100, 20, random.nextInt(100) + 1, 100);
+        this.tuples = recordGenerator.testRecords(1, 100, 20, random.nextInt(100) + 1, 100);
         TestFileUtils.createTestDirectory();
     }
 
@@ -71,9 +71,9 @@ public abstract class RecordTest {
 
     protected final Random random = new Random(System.nanoTime());
     protected RecordGenerator recordGenerator;
-    protected List<Record> records;
+    protected List<Tuple> tuples;
 
-    protected List<Record> generateMoreTestRecords(int startingSnapshotId){
+    protected List<Tuple> generateMoreTestRecords(int startingSnapshotId){
         return recordGenerator.testRecords(startingSnapshotId, 100, 20, random.nextInt(100) + 1, 100);
     }
 }

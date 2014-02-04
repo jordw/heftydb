@@ -16,9 +16,9 @@
 
 package com.jordanwilliams.heftydb.test.perf.table.file;
 
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.record.Record;
-import com.jordanwilliams.heftydb.table.file.RecordBlock;
+import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.test.generator.RecordGenerator;
 
 import java.util.List;
@@ -28,21 +28,21 @@ public class RecordBlockPerformance {
 
     public static void main(String[] args) {
         RecordGenerator generator = new RecordGenerator();
-        List<Record> records = generator.testRecords(1, 64000, 20, 16, 100);
+        List<Tuple> tuples = generator.testRecords(1, 64000, 20, 16, 100);
 
-        RecordBlock.Builder blockBuilder = new RecordBlock.Builder();
-        for (Record record : records) {
-            blockBuilder.addRecord(record);
+        DataBlock.Builder blockBuilder = new DataBlock.Builder();
+        for (Tuple tuple : tuples) {
+            blockBuilder.addRecord(tuple);
         }
 
-        RecordBlock block = blockBuilder.build();
+        DataBlock block = blockBuilder.build();
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
         int iterations = 2000000;
 
         for (int i = 0; i < iterations; i++) {
-            block.get(records.get(random.nextInt(records.size())).key());
+            block.get(tuples.get(random.nextInt(tuples.size())).key());
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

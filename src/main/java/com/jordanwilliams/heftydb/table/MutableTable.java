@@ -16,9 +16,9 @@
 
 package com.jordanwilliams.heftydb.table;
 
-import com.jordanwilliams.heftydb.record.Record;
+import com.jordanwilliams.heftydb.data.Tuple;
 
 public interface MutableTable extends Table {
 
-    public void put(Record record);
+    public void put(Tuple tuple);
 }

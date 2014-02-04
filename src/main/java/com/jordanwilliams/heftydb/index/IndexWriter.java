@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.write;
+package com.jordanwilliams.heftydb.index;
 
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.IndexRecord;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
