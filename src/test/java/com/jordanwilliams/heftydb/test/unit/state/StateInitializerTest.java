@@ -16,15 +16,15 @@
 
 package com.jordanwilliams.heftydb.test.unit.state;
 
-import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.StateInitializer;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,7 +44,7 @@ public class StateInitializerTest extends RecordTest {
     public void existingStateTest() throws Exception {
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter tableWriter = FileTableWriter.open(1, paths, tuples.size(), 1024, 1024, 1);
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             tableWriter.write(tuple);
         }
         tableWriter.finish();
@@ -59,14 +59,14 @@ public class StateInitializerTest extends RecordTest {
     public void existingStateLogTest() throws Exception {
         Paths paths = ConfigGenerator.testPaths();
         FileTableWriter tableWriter = FileTableWriter.open(1, paths, tuples.size(), 1024, 1024, 1);
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             tableWriter.write(tuple);
         }
         tableWriter.finish();
 
         WriteLog log = WriteLog.open(2, paths);
         List<Tuple> moreTestTuples = generateMoreTestRecords(101);
-        for (Tuple tuple : moreTestTuples){
+        for (Tuple tuple : moreTestTuples) {
             log.append(tuple);
         }
 

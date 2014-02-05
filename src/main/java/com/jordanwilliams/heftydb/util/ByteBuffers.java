@@ -34,10 +34,10 @@ public class ByteBuffers {
         return intBuffer;
     }
 
-    public static String toString(ByteBuffer byteBuffer){
+    public static String toString(ByteBuffer byteBuffer) {
         byte[] bytes = new byte[byteBuffer.capacity()];
 
-        for (int i = 0; i < byteBuffer.capacity(); i++){
+        for (int i = 0; i < byteBuffer.capacity(); i++) {
             bytes[i] = byteBuffer.get(i);
         }
 

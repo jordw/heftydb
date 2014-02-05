@@ -19,9 +19,9 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.TableBloomFilter;
+import com.jordanwilliams.heftydb.table.file.TableBloomFilterWriter;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.table.file.TableBloomFilterWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class TableBloomFilterTest extends ParameterizedRecordTest {
         Paths paths = ConfigGenerator.testPaths();
         TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(1, paths, tuples.size());
 
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             filterWriter.write(tuple.key());
         }
 
@@ -47,8 +47,8 @@ public class TableBloomFilterTest extends ParameterizedRecordTest {
     }
 
     @Test
-    public void mightContainTest(){
-        for (Tuple tuple : tuples){
+    public void mightContainTest() {
+        for (Tuple tuple : tuples) {
             Assert.assertTrue("Filter contains the key", bloomFilter.mightContain(tuple.key()));
         }
     }

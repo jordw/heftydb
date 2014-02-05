@@ -34,7 +34,7 @@ public class ByteMapTest extends ParameterizedRecordTest {
 
         ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
 
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             byteMapBuilder.add(tuple.key(), tuple.value());
         }
 
@@ -64,11 +64,11 @@ public class ByteMapTest extends ParameterizedRecordTest {
 
 
     @Test
-    public void iteratorTest(){
+    public void iteratorTest() {
         Iterator<Tuple> recordIterator = tuples.iterator();
         Iterator<ByteMap.Entry> byteMapIterator = byteMap.iterator();
 
-        while (recordIterator.hasNext()){
+        while (recordIterator.hasNext()) {
             Tuple tupleNext = recordIterator.next();
             ByteMap.Entry byteMapNext = byteMapIterator.next();
 

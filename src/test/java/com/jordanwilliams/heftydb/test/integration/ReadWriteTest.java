@@ -39,7 +39,7 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
     public void readWriteTest() throws Exception {
         db = HeftyDB.open(config);
 
-        for (Tuple tuple : TupleGenerator.latest(tuples, Long.MAX_VALUE)){
+        for (Tuple tuple : TupleGenerator.latest(tuples, Long.MAX_VALUE)) {
             Record record = db.get(tuple.key().data());
             CompareHelper.compareKeyValue(tuple, record);
         }

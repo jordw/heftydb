@@ -58,7 +58,7 @@ public class Record implements Comparable<Record> {
         this.snapshot = snapshot;
     }
 
-    public Record(Tuple tuple){
+    public Record(Tuple tuple) {
         this(tuple.key().data(), tuple.value().data(), new Snapshot(tuple.key().snapshotId()));
     }
 
@@ -78,7 +78,7 @@ public class Record implements Comparable<Record> {
     public int compareTo(Record o) {
         int compare = key.compareTo(o.key);
 
-        if (compare != 0){
+        if (compare != 0) {
             return 0;
         }
 

@@ -16,10 +16,10 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
-import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;

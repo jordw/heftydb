@@ -101,7 +101,7 @@ public abstract class ParameterizedIntegrationTest {
     }
 
     protected void writeRecords() throws IOException {
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             db.put(tuple.key().data(), tuple.value().data());
         }
 

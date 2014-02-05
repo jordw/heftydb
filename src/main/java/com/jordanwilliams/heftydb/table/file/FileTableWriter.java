@@ -77,7 +77,7 @@ public class FileTableWriter {
 
                 tableWriter.finish();
 
-                if (callback != null){
+                if (callback != null) {
                     callback.finish();
                 }
             } catch (IOException e) {
@@ -94,9 +94,8 @@ public class FileTableWriter {
 
     private DataBlock.Builder recordBlockBuilder;
 
-    private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter, DataFile
-            tableDataFile, int maxRecordBlockSize,
-                            int level) throws IOException {
+    private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter,
+                            DataFile tableDataFile, int maxRecordBlockSize, int level) throws IOException {
         this.indexWriter = indexWriter;
         this.filterWriter = filterWriter;
         this.recordBlockBuilder = new DataBlock.Builder();
@@ -149,7 +148,6 @@ public class FileTableWriter {
         TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(tableId, paths, approxRecordCount);
         DataFile tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
 
-        return new FileTableWriter(tableId, indexWriter, filterWriter, tableDataFile, maxRecordBlockSize,
-                level);
+        return new FileTableWriter(tableId, indexWriter, filterWriter, tableDataFile, maxRecordBlockSize, level);
     }
 }

@@ -16,11 +16,11 @@
 
 package com.jordanwilliams.heftydb.test.generator;
 
+import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 
@@ -86,7 +86,7 @@ public class ConfigGenerator {
         };
     }
 
-    public static State testState(){
+    public static State testState() {
         return new State(Collections.EMPTY_LIST, testConfig(), testPaths(), testCaches(), 1);
     }
 }

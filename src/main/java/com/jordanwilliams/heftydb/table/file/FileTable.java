@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
@@ -25,7 +26,6 @@ import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.read.LatestTupleIterator;
-import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -277,8 +277,7 @@ public class FileTable implements Table {
             Iterator<Tuple> startRecordIterator = startDataBlock.ascendingIterator(key);
             long nextBlockOffset = indexRecord.blockOffset() + indexRecord.blockSize() + Sizes.INT_SIZE;
             return new LatestTupleIterator(snapshotId, new AscendingIterator(new AscendingBlockIterator
-                    (nextBlockOffset), startRecordIterator,
-                    startDataBlock));
+                    (nextBlockOffset), startRecordIterator, startDataBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -50,11 +50,11 @@ public class IndexBlockRandomTest extends ParameterizedRecordTest {
     }
 
     @Test
-    public void iteratorTest(){
+    public void iteratorTest() {
         Iterator<IndexRecord> indexRecordIterator = indexRecords.iterator();
         Iterator<IndexRecord> indexBlockIterator = indexBlock.ascendingIterator();
 
-        while (indexRecordIterator.hasNext()){
+        while (indexRecordIterator.hasNext()) {
             IndexRecord recordNext = indexRecordIterator.next();
             IndexRecord blockNext = indexBlockIterator.next();
             Assert.assertEquals("Records match", recordNext, blockNext);

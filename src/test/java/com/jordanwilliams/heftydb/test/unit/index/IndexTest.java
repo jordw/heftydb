@@ -17,13 +17,13 @@
 package com.jordanwilliams.heftydb.test.unit.index;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
+import com.jordanwilliams.heftydb.index.IndexWriter;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.index.IndexWriter;
 import org.junit.Assert;
 import org.junit.Test;
 

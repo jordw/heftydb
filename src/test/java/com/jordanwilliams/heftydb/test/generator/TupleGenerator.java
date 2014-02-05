@@ -48,7 +48,7 @@ public class TupleGenerator {
     }
 
     public List<Tuple> testRecords(int startingSnapshotId, int recordCount, int keyReuse, Function<Integer> keySize,
-                                    Function<Integer> valueSize) {
+                                   Function<Integer> valueSize) {
         int snapshotId = startingSnapshotId;
         List<Tuple> tuples = new ArrayList<Tuple>(recordCount);
 
@@ -66,7 +66,7 @@ public class TupleGenerator {
 
 
     public List<Tuple> testRecords(int startingSnapshotId, int recordCount, int keyReuse, final int keySize,
-                                    final int valueSize) {
+                                   final int valueSize) {
         return testRecords(startingSnapshotId, recordCount, keyReuse, new Function<Integer>() {
                     @Override
                     public Integer apply() {

@@ -37,12 +37,12 @@ public class TableReader implements Iterable<Tuple> {
     public Tuple get(Key key) {
         Tuple closestTuple = null;
 
-        for (Table table : state.tables()){
-            if (table.mightContain(key)){
+        for (Table table : state.tables()) {
+            if (table.mightContain(key)) {
                 Tuple tableTuple = table.get(key);
 
-                if (tableTuple != null){
-                    if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()){
+                if (tableTuple != null) {
+                    if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
                         closestTuple = tableTuple;
                     }
                 }
@@ -55,7 +55,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()){
+        for (Table table : state.tables()) {
             tableIterators.add(table.ascendingIterator(snapshotId));
         }
 
@@ -65,7 +65,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()){
+        for (Table table : state.tables()) {
             tableIterators.add(table.descendingIterator(snapshotId));
         }
 
@@ -75,7 +75,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()){
+        for (Table table : state.tables()) {
             tableIterators.add(table.ascendingIterator(key, snapshotId));
         }
 
@@ -85,7 +85,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()){
+        for (Table table : state.tables()) {
             tableIterators.add(table.descendingIterator(key, snapshotId));
         }
 
@@ -93,7 +93,7 @@ public class TableReader implements Iterable<Tuple> {
     }
 
     public void close() throws IOException {
-        for (Table table : state.tables()){
+        for (Table table : state.tables()) {
             table.close();
         }
     }

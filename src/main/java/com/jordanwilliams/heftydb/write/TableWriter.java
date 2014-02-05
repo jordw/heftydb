@@ -16,11 +16,11 @@
 
 package com.jordanwilliams.heftydb.write;
 
-import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.data.Key;
-import com.jordanwilliams.heftydb.db.Snapshot;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.db.Snapshot;
+import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
@@ -46,8 +46,8 @@ public class TableWriter {
         this.state = state;
         this.tableExecutor = new ThreadPoolExecutor(state.config().tableWriterThreads(),
                 state.config().tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
-                new LinkedBlockingQueue<Runnable>(state.config()
-                .tableWriterThreads()), new ThreadPoolExecutor.CallerRunsPolicy());
+                new LinkedBlockingQueue<Runnable>(state.config().tableWriterThreads()),
+                new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     public Snapshot write(ByteBuffer key, ByteBuffer value) throws IOException {
@@ -72,7 +72,7 @@ public class TableWriter {
 
     public void close() throws IOException {
         try {
-            if (memoryTable != null){
+            if (memoryTable != null) {
                 writeLog.close();
                 writeMemoryTable(memoryTable);
             }
@@ -96,21 +96,21 @@ public class TableWriter {
         state.tables().add(memoryTable);
     }
 
-    private void writeMemoryTable(final Table tableToWrite){
+    private void writeMemoryTable(final Table tableToWrite) {
         FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, state.paths(), state.config(),
                 tableToWrite.ascendingIterator(Long.MAX_VALUE), tableToWrite.recordCount(),
                 new FileTableWriter.Task.Callback() {
-                    @Override
-                    public void finish() {
-                        try {
-                            state.tables().swap(FileTable.open(tableToWrite.id(), state.paths(), state.caches()
-                                    .recordBlockCache(), state.caches().indexBlockCache()), tableToWrite);
-                            Files.deleteIfExists(state.paths().logPath(tableToWrite.id()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+            @Override
+            public void finish() {
+                try {
+                    state.tables().swap(FileTable.open(tableToWrite.id(), state.paths(),
+                            state.caches().recordBlockCache(), state.caches().indexBlockCache()), tableToWrite);
+                    Files.deleteIfExists(state.paths().logPath(tableToWrite.id()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
         tableExecutor.submit(task);
     }

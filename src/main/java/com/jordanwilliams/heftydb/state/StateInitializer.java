@@ -17,14 +17,14 @@
 package com.jordanwilliams.heftydb.state;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
-import com.jordanwilliams.heftydb.table.file.FileTable;
-import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
-import com.jordanwilliams.heftydb.table.memory.MemoryTable;
+import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
+import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,7 +43,8 @@ public class StateInitializer {
     public StateInitializer(Config config) {
         this.config = config;
         this.paths = new Paths(config.tableDirectory(), config.logDirectory());
-        this.caches = new Caches(new DataBlock.Cache(config.tableCacheSize()), new IndexBlock.Cache(config.indexCacheSize()));
+        this.caches = new Caches(new DataBlock.Cache(config.tableCacheSize()),
+                new IndexBlock.Cache(config.indexCacheSize()));
     }
 
     public State initialize() throws IOException {
@@ -56,7 +57,7 @@ public class StateInitializer {
         List<Table> tables = new ArrayList<Table>();
         Set<Path> metaTablePaths = paths.tableFilePaths();
 
-        for (Path path : metaTablePaths){
+        for (Path path : metaTablePaths) {
             long tableId = tableId(path);
             Table table = FileTable.open(tableId, paths, caches.recordBlockCache(), caches.indexBlockCache());
             maxSnapshotId = Math.max(table.maxSnapshotId(), maxSnapshotId);
@@ -69,7 +70,7 @@ public class StateInitializer {
     private void writeTablesFromLogs() throws IOException {
         Set<Path> logPaths = paths.logFilePaths();
 
-        for (Path path : logPaths){
+        for (Path path : logPaths) {
             long tableId = tableId(path);
 
             WriteLog log = WriteLog.open(tableId, paths);
@@ -85,17 +86,17 @@ public class StateInitializer {
         }
     }
 
-    private Table logTable(WriteLog log){
+    private Table logTable(WriteLog log) {
         MutableTable memoryTable = new MemoryTable(log.tableId());
 
-        for (Tuple tuple : log){
+        for (Tuple tuple : log) {
             memoryTable.put(tuple);
         }
 
         return memoryTable;
     }
 
-    private static long tableId(Path path){
+    private static long tableId(Path path) {
         String fileName = path.getFileName().toString();
         String id = fileName.split("\\.")[0];
         return Long.parseLong(id);

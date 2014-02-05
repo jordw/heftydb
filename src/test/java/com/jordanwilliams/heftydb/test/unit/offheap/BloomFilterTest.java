@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
-import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import org.junit.Assert;
 import org.junit.Test;

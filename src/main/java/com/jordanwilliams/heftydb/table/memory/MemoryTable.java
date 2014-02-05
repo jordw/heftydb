@@ -16,9 +16,9 @@
 
 package com.jordanwilliams.heftydb.table.memory;
 
+import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.read.LatestTupleIterator;
-import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
 
@@ -106,7 +106,8 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+    }
 
     @Override
     public boolean isPersistent() {
@@ -123,15 +124,15 @@ public class MemoryTable implements MutableTable {
         return Long.compare(id, o.id());
     }
 
-    private void advanceMaxSnapshotId(long newSnapshotId){
-        while (true){
+    private void advanceMaxSnapshotId(long newSnapshotId) {
+        while (true) {
             long currentMaxSnapshotId = maxSnapshotId.get();
 
-            if (newSnapshotId < currentMaxSnapshotId){
+            if (newSnapshotId < currentMaxSnapshotId) {
                 break;
             }
 
-            if (maxSnapshotId.compareAndSet(currentMaxSnapshotId, newSnapshotId)){
+            if (maxSnapshotId.compareAndSet(currentMaxSnapshotId, newSnapshotId)) {
                 break;
             }
         }

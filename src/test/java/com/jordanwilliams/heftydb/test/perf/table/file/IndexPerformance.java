@@ -16,15 +16,15 @@
 
 package com.jordanwilliams.heftydb.test.perf.table.file;
 
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.metrics.StopWatch;
+import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
-import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
 import java.util.List;
 import java.util.Random;

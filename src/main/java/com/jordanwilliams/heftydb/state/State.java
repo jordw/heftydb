@@ -48,7 +48,7 @@ public class State {
         return snapshots;
     }
 
-    public Caches caches(){
+    public Caches caches() {
         return caches;
     }
 

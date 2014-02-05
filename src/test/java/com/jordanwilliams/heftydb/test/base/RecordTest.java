@@ -73,7 +73,7 @@ public abstract class RecordTest {
     protected TupleGenerator tupleGenerator;
     protected List<Tuple> tuples;
 
-    protected List<Tuple> generateMoreTestRecords(int startingSnapshotId){
+    protected List<Tuple> generateMoreTestRecords(int startingSnapshotId) {
         return tupleGenerator.testRecords(startingSnapshotId, 100, 20, random.nextInt(100) + 1, 100);
     }
 }

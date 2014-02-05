@@ -24,15 +24,15 @@ import java.util.Iterator;
 
 public class CompareHelper {
 
-    public static void compareKeyValue(Iterator<Tuple> tupleIterator, Iterator<Record> recordIterator){
-        while (tupleIterator.hasNext()){
+    public static void compareKeyValue(Iterator<Tuple> tupleIterator, Iterator<Record> recordIterator) {
+        while (tupleIterator.hasNext()) {
             compareKeyValue(tupleIterator.next(), recordIterator.next());
         }
 
         Assert.assertFalse("Record iterator has next", recordIterator.hasNext());
     }
 
-    public static void compareKeyValue(Tuple tuple, Record record){
+    public static void compareKeyValue(Tuple tuple, Record record) {
         Assert.assertNotNull("Record is not null", record);
         Assert.assertNotNull("Tuple is not null", record);
         Assert.assertEquals("Keys match", tuple.key().data(), record.key());

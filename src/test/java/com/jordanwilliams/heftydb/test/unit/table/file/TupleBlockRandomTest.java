@@ -34,7 +34,7 @@ public class TupleBlockRandomTest extends ParameterizedRecordTest {
 
         DataBlock.Builder byteMapBuilder = new DataBlock.Builder();
 
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             byteMapBuilder.addRecord(tuple);
         }
 
@@ -42,11 +42,11 @@ public class TupleBlockRandomTest extends ParameterizedRecordTest {
     }
 
     @Test
-    public void iteratorTest(){
+    public void iteratorTest() {
         Iterator<Tuple> recordIterator = tuples.iterator();
         Iterator<Tuple> recordBlockIterator = dataBlock.ascendingIterator();
 
-        while (recordIterator.hasNext()){
+        while (recordIterator.hasNext()) {
             Tuple tupleNext = recordIterator.next();
             Tuple blockNext = recordBlockIterator.next();
             Assert.assertEquals("Records match", tupleNext, blockNext);

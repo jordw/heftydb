@@ -49,7 +49,7 @@ public class MemoryTableTest extends ParameterizedRecordTest {
 
     @Test
     public void mightContainTest() throws IOException {
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             Assert.assertTrue("Tuple might be in the table", memoryTable.mightContain(tuple.key()));
         }
     }

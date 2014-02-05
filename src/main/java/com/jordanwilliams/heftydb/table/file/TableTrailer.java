@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
-import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.io.DataFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,16 +38,16 @@ public class TableTrailer {
             this.level = level;
         }
 
-        public void put(Tuple tuple){
+        public void put(Tuple tuple) {
             maxSnapshotId = Math.max(tuple.key().snapshotId(), maxSnapshotId);
             recordCount++;
         }
 
-        public TableTrailer build(){
+        public TableTrailer build() {
             return new TableTrailer(serialize());
         }
 
-        private ByteBuffer serialize(){
+        private ByteBuffer serialize() {
             ByteBuffer trailerBuffer = ByteBuffer.allocate(SIZE);
             trailerBuffer.putLong(tableId);
             trailerBuffer.putInt(level);
@@ -64,7 +64,7 @@ public class TableTrailer {
     private final long recordCount;
     private final long maxSnapshotId;
 
-    public TableTrailer(ByteBuffer buffer){
+    public TableTrailer(ByteBuffer buffer) {
         this.tableId = buffer.getLong();
         this.level = buffer.getInt();
         this.recordCount = buffer.getLong();
@@ -89,7 +89,7 @@ public class TableTrailer {
         return level;
     }
 
-    public ByteBuffer buffer(){
+    public ByteBuffer buffer() {
         return buffer;
     }
 
