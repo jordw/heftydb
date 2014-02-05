@@ -64,6 +64,7 @@ public class FileTable implements Table {
 
                 fileOffset += Sizes.INT_SIZE;
                 fileOffset += nextBlockSize;
+                fileOffset += Sizes.INT_SIZE;
 
                 return readRecordBlock(nextBlockOffset, nextBlockSize);
             } catch (IOException e) {
@@ -98,8 +99,9 @@ public class FileTable implements Table {
 
             try {
                 int nextBlockSize = tableFile.readInt(fileOffset);
-                long nextBlockOffset = fileOffset + Sizes.INT_SIZE;
+                long nextBlockOffset = fileOffset - nextBlockSize;
 
+                fileOffset -= Sizes.INT_SIZE;
                 fileOffset -= nextBlockSize;
                 fileOffset -= Sizes.INT_SIZE;
 
@@ -259,7 +261,7 @@ public class FileTable implements Table {
     @Override
     public Iterator<Tuple> descendingIterator(long snapshotId) {
         try {
-            long startOffset = tableFile.readLong(tableFile.size() - TableTrailer.SIZE - Sizes.LONG_SIZE);
+            long startOffset = tableFile.size() - TableTrailer.SIZE - Sizes.INT_SIZE;
             return new LatestTupleIterator(snapshotId, new DescendingIterator(new DescendingBlockIterator
                     (startOffset)));
         } catch (IOException e) {
@@ -273,8 +275,10 @@ public class FileTable implements Table {
             IndexRecord indexRecord = index.get(key);
             DataBlock startDataBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             Iterator<Tuple> startRecordIterator = startDataBlock.ascendingIterator(key);
+            long nextBlockOffset = indexRecord.blockOffset() + indexRecord.blockSize() + Sizes.INT_SIZE;
             return new LatestTupleIterator(snapshotId, new AscendingIterator(new AscendingBlockIterator
-                    (indexRecord.blockOffset() + indexRecord.blockSize()), startRecordIterator, startDataBlock));
+                    (nextBlockOffset), startRecordIterator,
+                    startDataBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -286,8 +290,9 @@ public class FileTable implements Table {
             IndexRecord indexRecord = index.get(key);
             DataBlock startDataBlock = readRecordBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             Iterator<Tuple> startRecordIterator = startDataBlock.descendingIterator(key);
+            long nextBlockOffset = indexRecord.blockOffset() - Sizes.LONG_SIZE;
             return new LatestTupleIterator(snapshotId, new DescendingIterator(new DescendingBlockIterator
-                    (indexRecord.blockOffset() - indexRecord.blockSize() - Sizes.LONG_SIZE), startRecordIterator, startDataBlock));
+                    (nextBlockOffset), startRecordIterator, startDataBlock));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

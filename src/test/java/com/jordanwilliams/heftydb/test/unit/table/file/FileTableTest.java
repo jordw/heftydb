@@ -18,13 +18,13 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.FileTable;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -54,7 +54,7 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     @Test
     public void mightContainTest() throws IOException {
-        for (Tuple tuple : tuples){
+        for (Tuple tuple : tuples) {
             Assert.assertTrue("Tuple might be in the table", fileTable.mightContain(tuple.key()));
         }
     }

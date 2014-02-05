@@ -17,13 +17,12 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.index.IndexRecord;
-import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -108,7 +107,7 @@ public class FileTableWriter {
 
     public void write(Tuple tuple) throws IOException {
         if (recordBlockBuilder.size() >= maxRecordBlockSize) {
-            writeRecordBlock(false);
+            writeRecordBlock();
         }
 
         recordBlockBuilder.addRecord(tuple);
@@ -117,25 +116,21 @@ public class FileTableWriter {
     }
 
     public void finish() throws IOException {
-        writeRecordBlock(true);
+        writeRecordBlock();
         writeTrailer();
         filterWriter.finish();
         indexWriter.finish();
         tableDataFile.close();
     }
 
-    private void writeRecordBlock(boolean lastBlock) throws IOException {
+    private void writeRecordBlock() throws IOException {
         DataBlock dataBlock = recordBlockBuilder.build();
         ByteBuffer recordBlockBuffer = dataBlock.memory().directBuffer();
 
         tableDataFile.appendInt(recordBlockBuffer.capacity());
-
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
         recordBlockBuffer.rewind();
-
-        if (lastBlock) {
-            tableDataFile.appendLong(recordBlockOffset - Sizes.INT_SIZE);
-        }
+        tableDataFile.appendInt(recordBlockBuffer.capacity());
 
         Tuple startTuple = dataBlock.startRecord();
         indexWriter.write(new IndexRecord(startTuple.key(), recordBlockOffset, recordBlockBuffer.capacity()));

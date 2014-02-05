@@ -24,7 +24,6 @@ import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.helper.CompareHelper;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -52,7 +51,6 @@ public class IteratorTest extends ParameterizedIntegrationTest {
     }
 
     @Test
-    @Ignore
     public void descendingIteratorTest() throws Exception {
         db = HeftyDB.open(config);
 
