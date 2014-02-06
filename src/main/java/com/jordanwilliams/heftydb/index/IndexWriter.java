@@ -33,7 +33,7 @@ public class IndexWriter {
     private final int maxIndexBlockSize;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
 
-    private IndexWriter(long tableId, DataFile indexFile, int maxIndexBlockSize) {
+    private IndexWriter(DataFile indexFile, int maxIndexBlockSize) {
         this.indexFile = indexFile;
         this.maxIndexBlockSize = maxIndexBlockSize;
         indexBlockBuilders.add(new IndexBlock.Builder());
@@ -102,8 +102,8 @@ public class IndexWriter {
         return metaIndexRecord;
     }
 
-    public static IndexWriter open(long tableId, Paths paths, int maxIndexSize) throws IOException {
+    public static IndexWriter open(long tableId, Paths paths, int maxIndexBlockSize) throws IOException {
         DataFile indexFile = MutableDataFile.open(paths.indexPath(tableId));
-        return new IndexWriter(tableId, indexFile, maxIndexSize);
+        return new IndexWriter(indexFile, maxIndexBlockSize);
     }
 }

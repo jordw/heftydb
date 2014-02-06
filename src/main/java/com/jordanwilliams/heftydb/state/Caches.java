@@ -17,19 +17,19 @@
 package com.jordanwilliams.heftydb.state;
 
 import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 
 public class Caches {
 
-    private final DataBlock.Cache recordBlockCache;
+    private final TupleBlock.Cache recordBlockCache;
     private final IndexBlock.Cache indexBlockCache;
 
-    public Caches(DataBlock.Cache recordBlockCache, IndexBlock.Cache indexBlockCache) {
+    public Caches(TupleBlock.Cache recordBlockCache, IndexBlock.Cache indexBlockCache) {
         this.recordBlockCache = recordBlockCache;
         this.indexBlockCache = indexBlockCache;
     }
 
-    public DataBlock.Cache recordBlockCache() {
+    public TupleBlock.Cache recordBlockCache() {
         return recordBlockCache;
     }
 

@@ -14,39 +14,47 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.perf.write;
+package com.jordanwilliams.heftydb.test.performance.table.memory;
 
+import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
+import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-import com.jordanwilliams.heftydb.write.TableWriter;
 
-public class RecordWriterPerformance {
+import java.util.Random;
 
-    private static final int RECORD_COUNT = 1 * 1000000;
+public class MemoryTablePerformance {
+
+    private static final int RECORD_COUNT = 128000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
-        State state = ConfigGenerator.testState();
-        TableWriter tableWriter = new TableWriter(state);
-
         StopWatch watch = StopWatch.start();
+        MemoryTable memTable = new MemoryTable(1);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
-            value.data().rewind();
-            tableWriter.write(ByteBuffers.fromString(i + ""), value.data());
+            memTable.put(new Tuple(new Key(ByteBuffers.fromString(i + ""), i), value));
         }
 
-        tableWriter.close();
+        System.out.println("Writes " + RECORD_COUNT / watch.elapsedSeconds());
+        TestFileHelper.cleanUpTestFiles();
 
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds());
+        Random random = new Random(System.nanoTime());
+        watch = StopWatch.start();
+        int iterations = 10000000;
+
+        for (int i = 0; i < iterations; i++) {
+            memTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
+        }
+
+        System.out.println("Reads " + iterations / watch.elapsedSeconds());
         TestFileHelper.cleanUpTestFiles();
     }
 }

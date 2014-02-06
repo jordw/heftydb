@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
@@ -126,6 +126,6 @@ public class FileTableTest extends ParameterizedRecordTest {
         }
 
         tableWriter.finish();
-        return FileTable.open(1, paths, new DataBlock.Cache(), new IndexBlock.Cache());
+        return FileTable.open(1, paths, new TupleBlock.Cache(), new IndexBlock.Cache());
     }
 }

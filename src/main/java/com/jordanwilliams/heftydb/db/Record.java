@@ -24,11 +24,11 @@ import java.util.Iterator;
 
 public class Record implements Comparable<Record> {
 
-    public static class RecordIterator implements Iterator<Record> {
+    public static class TupleIterator implements Iterator<Record> {
 
         private final Iterator<Tuple> tupleIterator;
 
-        public RecordIterator(Iterator<Tuple> tupleIterator) {
+        public TupleIterator(Iterator<Tuple> tupleIterator) {
             this.tupleIterator = tupleIterator;
         }
 

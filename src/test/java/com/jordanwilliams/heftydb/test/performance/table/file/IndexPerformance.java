@@ -14,54 +14,44 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.perf.table.file;
+package com.jordanwilliams.heftydb.test.performance.table.file;
 
-import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
-import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
-import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
-import com.jordanwilliams.heftydb.util.ByteBuffers;
 
+import java.util.List;
 import java.util.Random;
 
-public class FileTablePerformance {
-
-    private static final int RECORD_COUNT = 20 * 1000000;
+public class IndexPerformance {
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
-        KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
-        Value value = new Value(keyValueGenerator.testValue(100));
-
-        System.out.println("Writing file table");
+        TupleGenerator generator = new TupleGenerator();
+        List<Tuple> tuples = generator.testRecords(1, 500000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, RECORD_COUNT, 32768, 8192, 1);
-        for (int i = 0; i < RECORD_COUNT; i++) {
-            value.data().rewind();
-            fileTableWriter.write(new Tuple(new Key(ByteBuffers.fromString(i + ""), i), value));
+        FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 32000, 32000, 1);
+        for (Tuple tuple : tuples) {
+            fileTableWriter.write(tuple);
         }
 
         fileTableWriter.finish();
 
-        System.out.println("Reading file table");
-
-        FileTable fileTable = FileTable.open(1, paths, new DataBlock.Cache(32768000), new IndexBlock.Cache(16384000));
+        Index index = Index.open(1, paths, new IndexBlock.Cache(4096000));
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
-        int iterations = 1 * 1000000;
+        int iterations = 1000000;
 
         for (int i = 0; i < iterations; i++) {
-            fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
+            index.get(tuples.get(random.nextInt(tuples.size())).key());
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

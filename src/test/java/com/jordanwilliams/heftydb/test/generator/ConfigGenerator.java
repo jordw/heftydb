@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 
 import java.nio.file.Path;
@@ -34,7 +34,56 @@ public class ConfigGenerator {
     }
 
     public static Caches testCaches() {
-        return new Caches(new DataBlock.Cache(32768000), new IndexBlock.Cache(16384000));
+        return new Caches(new TupleBlock.Cache(32768000), new IndexBlock.Cache(16384000));
+    }
+
+    public static Config perfConfig(){
+        return new Config() {
+            @Override
+            public int memoryTableSize() {
+                return 4096000;
+            }
+
+            @Override
+            public int fileTableBlockSize() {
+                return 32768;
+            }
+
+            @Override
+            public int indexBlockSize() {
+                return 65000;
+            }
+
+            @Override
+            public int tableWriterThreads() {
+                return 8;
+            }
+
+            @Override
+            public int tableCompactionThreads() {
+                return 8;
+            }
+
+            @Override
+            public long tableCacheSize() {
+                return 256000000;
+            }
+
+            @Override
+            public long indexCacheSize() {
+                return 32768000;
+            }
+
+            @Override
+            public Path tableDirectory() {
+                return TestFileHelper.TEMP_PATH;
+            }
+
+            @Override
+            public Path logDirectory() {
+                return TestFileHelper.TEMP_PATH;
+            }
+        };
     }
 
     public static Config testConfig() {

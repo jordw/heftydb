@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.perf.offheap;
+package com.jordanwilliams.heftydb.test.performance.offheap;
 
 import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.offheap.Memory;
 
 import java.util.Random;
 
-public class MemoryPerf {
+public class MemoryPerformance {
 
     public static void main(String[] args) throws Exception {
         Random random = new Random(System.nanoTime());

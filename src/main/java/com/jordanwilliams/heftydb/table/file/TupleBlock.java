@@ -30,21 +30,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class DataBlock implements Iterable<Tuple>, Offheap {
+public class TupleBlock implements Iterable<Tuple>, Offheap {
 
     public static class Cache {
 
-        private final com.google.common.cache.Cache<String, DataBlock> cache;
+        private final com.google.common.cache.Cache<String, TupleBlock> cache;
 
         public Cache(long maxsize) {
-            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, DataBlock>() {
+            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, TupleBlock>() {
                 @Override
-                public int weigh(String key, DataBlock value) {
+                public int weigh(String key, TupleBlock value) {
                     return key.length() + value.memory().size();
                 }
-            }).removalListener(new RemovalListener<String, DataBlock>() {
+            }).removalListener(new RemovalListener<String, TupleBlock>() {
                 @Override
-                public void onRemoval(RemovalNotification<String, DataBlock> removalNotification) {
+                public void onRemoval(RemovalNotification<String, TupleBlock> removalNotification) {
                     removalNotification.getValue().memory().release();
                 }
             }).maximumWeight(maxsize).build();
@@ -54,12 +54,12 @@ public class DataBlock implements Iterable<Tuple>, Offheap {
             this(1024000);
         }
 
-        public DataBlock get(long tableId, long offset) {
+        public TupleBlock get(long tableId, long offset) {
             return cache.getIfPresent(key(tableId, offset));
         }
 
-        public void put(long tableId, long offset, DataBlock dataBlock) {
-            cache.put(key(tableId, offset), dataBlock);
+        public void put(long tableId, long offset, TupleBlock tupleBlock) {
+            cache.put(key(tableId, offset), tupleBlock);
         }
 
         private String key(long tableId, long offset) {
@@ -85,16 +85,16 @@ public class DataBlock implements Iterable<Tuple>, Offheap {
             return size;
         }
 
-        public DataBlock build() {
-            return new DataBlock(byteMapBuilder.build());
+        public TupleBlock build() {
+            return new TupleBlock(byteMapBuilder.build());
         }
     }
 
-    private class RecordIterator implements Iterator<Tuple> {
+    private class TupleIterator implements Iterator<Tuple> {
 
         private final Iterator<ByteMap.Entry> entryIterator;
 
-        private RecordIterator(Iterator<ByteMap.Entry> entryIterator) {
+        private TupleIterator(Iterator<ByteMap.Entry> entryIterator) {
             this.entryIterator = entryIterator;
         }
 
@@ -117,7 +117,7 @@ public class DataBlock implements Iterable<Tuple>, Offheap {
 
     private final ByteMap byteMap;
 
-    public DataBlock(ByteMap byteMap) {
+    public TupleBlock(ByteMap byteMap) {
         this.byteMap = byteMap;
     }
 
@@ -128,33 +128,33 @@ public class DataBlock implements Iterable<Tuple>, Offheap {
             return null;
         }
 
-        Tuple closestTuple = deserializeRecord(closestIndex);
+        Tuple closestTuple = deserialize(closestIndex);
         return closestTuple.key().data().equals(key.data()) ? closestTuple : null;
     }
 
-    public Tuple startRecord() {
-        return deserializeRecord(0);
+    public Tuple first() {
+        return deserialize(0);
     }
 
     public Iterator<Tuple> ascendingIterator() {
-        return new RecordIterator(byteMap.ascendingIterator());
+        return new TupleIterator(byteMap.ascendingIterator());
     }
 
     public Iterator<Tuple> ascendingIterator(Key key) {
-        return new RecordIterator(byteMap.ascendingIterator(key));
+        return new TupleIterator(byteMap.ascendingIterator(key));
     }
 
     public Iterator<Tuple> descendingIterator() {
-        return new RecordIterator(byteMap.descendingIterator());
+        return new TupleIterator(byteMap.descendingIterator());
     }
 
     public Iterator<Tuple> descendingIterator(Key key) {
-        return new RecordIterator(byteMap.descendingIterator(key));
+        return new TupleIterator(byteMap.descendingIterator(key));
     }
 
     @Override
     public Iterator<Tuple> iterator() {
-        return new RecordIterator(byteMap.ascendingIterator());
+        return new TupleIterator(byteMap.ascendingIterator());
     }
 
     @Override
@@ -169,11 +169,11 @@ public class DataBlock implements Iterable<Tuple>, Offheap {
             tuples.add(tuple);
         }
 
-        return "DataBlock{tuples=" + tuples + "}";
+        return "TupleBlock{tuples=" + tuples + "}";
     }
 
-    private Tuple deserializeRecord(int recordIndex) {
-        ByteMap.Entry entry = byteMap.get(recordIndex);
+    private Tuple deserialize(int index) {
+        ByteMap.Entry entry = byteMap.get(index);
         return new Tuple(entry.key(), entry.value());
     }
 }

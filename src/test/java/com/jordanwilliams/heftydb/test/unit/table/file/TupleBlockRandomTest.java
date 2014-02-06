@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,24 +27,24 @@ import java.util.List;
 
 public class TupleBlockRandomTest extends ParameterizedRecordTest {
 
-    private final DataBlock dataBlock;
+    private final TupleBlock tupleBlock;
 
     public TupleBlockRandomTest(List<Tuple> testTuples) {
         super(testTuples);
 
-        DataBlock.Builder byteMapBuilder = new DataBlock.Builder();
+        TupleBlock.Builder byteMapBuilder = new TupleBlock.Builder();
 
         for (Tuple tuple : tuples) {
             byteMapBuilder.addRecord(tuple);
         }
 
-        this.dataBlock = byteMapBuilder.build();
+        this.tupleBlock = byteMapBuilder.build();
     }
 
     @Test
     public void iteratorTest() {
         Iterator<Tuple> recordIterator = tuples.iterator();
-        Iterator<Tuple> recordBlockIterator = dataBlock.ascendingIterator();
+        Iterator<Tuple> recordBlockIterator = tupleBlock.ascendingIterator();
 
         while (recordIterator.hasNext()) {
             Tuple tupleNext = recordIterator.next();

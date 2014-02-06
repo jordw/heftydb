@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
@@ -43,7 +43,7 @@ public class StateInitializer {
     public StateInitializer(Config config) {
         this.config = config;
         this.paths = new Paths(config.tableDirectory(), config.logDirectory());
-        this.caches = new Caches(new DataBlock.Cache(config.tableCacheSize()),
+        this.caches = new Caches(new TupleBlock.Cache(config.tableCacheSize()),
                 new IndexBlock.Cache(config.indexCacheSize()));
     }
 

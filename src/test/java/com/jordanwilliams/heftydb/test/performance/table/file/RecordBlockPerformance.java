@@ -14,44 +14,35 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.perf.table.file;
+package com.jordanwilliams.heftydb.test.performance.table.file;
 
-import com.jordanwilliams.heftydb.data.Key;
-import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.index.IndexRecord;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.StopWatch;
-import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
+import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class IndexBlockPerformance {
+public class RecordBlockPerformance {
 
     public static void main(String[] args) {
-        KeyValueGenerator generator = new KeyValueGenerator();
-        List<Key> keys = new ArrayList<Key>();
+        TupleGenerator generator = new TupleGenerator();
+        List<Tuple> tuples = generator.testRecords(1, 64000, 20, 16, 100);
 
-        for (int i = 0; i < 64000; i++) {
-            keys.add(new Key(generator.testKey(32, 0), i));
+        TupleBlock.Builder blockBuilder = new TupleBlock.Builder();
+        for (Tuple tuple : tuples) {
+            blockBuilder.addRecord(tuple);
         }
 
-        Collections.sort(keys);
-
-        IndexBlock.Builder blockBuilder = new IndexBlock.Builder();
-        for (Key key : keys) {
-            blockBuilder.addRecord(new IndexRecord(key, 0, 128));
-        }
-
-        IndexBlock block = blockBuilder.build();
+        TupleBlock block = blockBuilder.build();
 
         Random random = new Random(System.nanoTime());
         StopWatch watch = StopWatch.start();
         int iterations = 2000000;
 
         for (int i = 0; i < iterations; i++) {
-            block.get(keys.get(random.nextInt(keys.size())));
+            block.get(tuples.get(random.nextInt(tuples.size())).key());
         }
 
         System.out.println(iterations / watch.elapsedSeconds());

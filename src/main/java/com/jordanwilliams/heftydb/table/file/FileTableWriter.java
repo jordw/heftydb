@@ -26,6 +26,8 @@ import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 
 public class FileTableWriter {
@@ -77,6 +79,8 @@ public class FileTableWriter {
 
                 tableWriter.finish();
 
+                Files.move(paths.tempPath(tableId), paths.tablePath(tableId), StandardCopyOption.ATOMIC_MOVE);
+
                 if (callback != null) {
                     callback.finish();
                 }
@@ -92,13 +96,13 @@ public class FileTableWriter {
     private final TableTrailer.Builder trailerBuilder;
     private final DataFile tableDataFile;
 
-    private DataBlock.Builder recordBlockBuilder;
+    private TupleBlock.Builder recordBlockBuilder;
 
     private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter,
                             DataFile tableDataFile, int maxRecordBlockSize, int level) throws IOException {
         this.indexWriter = indexWriter;
         this.filterWriter = filterWriter;
-        this.recordBlockBuilder = new DataBlock.Builder();
+        this.recordBlockBuilder = new TupleBlock.Builder();
         this.maxRecordBlockSize = maxRecordBlockSize;
         this.trailerBuilder = new TableTrailer.Builder(tableId, level);
         this.tableDataFile = tableDataFile;
@@ -123,18 +127,18 @@ public class FileTableWriter {
     }
 
     private void writeRecordBlock() throws IOException {
-        DataBlock dataBlock = recordBlockBuilder.build();
-        ByteBuffer recordBlockBuffer = dataBlock.memory().directBuffer();
+        TupleBlock tupleBlock = recordBlockBuilder.build();
+        ByteBuffer recordBlockBuffer = tupleBlock.memory().directBuffer();
 
         tableDataFile.appendInt(recordBlockBuffer.capacity());
         long recordBlockOffset = tableDataFile.append(recordBlockBuffer);
         recordBlockBuffer.rewind();
         tableDataFile.appendInt(recordBlockBuffer.capacity());
 
-        Tuple startTuple = dataBlock.startRecord();
+        Tuple startTuple = tupleBlock.first();
         indexWriter.write(new IndexRecord(startTuple.key(), recordBlockOffset, recordBlockBuffer.capacity()));
-        dataBlock.memory().release();
-        recordBlockBuilder = new DataBlock.Builder();
+        tupleBlock.memory().release();
+        recordBlockBuilder = new TupleBlock.Builder();
     }
 
     private void writeTrailer() throws IOException {
@@ -146,7 +150,7 @@ public class FileTableWriter {
                                        int maxRecordBlockSize, int level) throws IOException {
         IndexWriter indexWriter = IndexWriter.open(tableId, paths, maxIndexBlockSize);
         TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(tableId, paths, approxRecordCount);
-        DataFile tableDataFile = MutableDataFile.open(paths.tablePath(tableId));
+        DataFile tableDataFile = MutableDataFile.open(paths.tempPath(tableId));
 
         return new FileTableWriter(tableId, indexWriter, filterWriter, tableDataFile, maxRecordBlockSize, level);
     }

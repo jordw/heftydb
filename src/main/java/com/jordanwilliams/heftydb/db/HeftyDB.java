@@ -16,13 +16,14 @@
 
 package com.jordanwilliams.heftydb.db;
 
+import com.jordanwilliams.heftydb.compact.Compactor;
+import com.jordanwilliams.heftydb.compact.FullCompactor;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.read.TableReader;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.StateInitializer;
 import com.jordanwilliams.heftydb.write.TableWriter;
-import com.sun.xml.internal.fastinfoset.stax.events.ReadIterator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,10 +33,12 @@ public class HeftyDB {
 
     private final TableWriter tableWriter;
     private final TableReader tableReader;
+    private final Compactor compactor;
 
     public HeftyDB(State state) {
         this.tableWriter = new TableWriter(state);
         this.tableReader = new TableReader(state);
+        this.compactor = new FullCompactor(state);
     }
 
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
@@ -51,24 +54,28 @@ public class HeftyDB {
     }
 
     public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
-        return new Record.RecordIterator(tableReader.ascendingIterator(snapshot.id()));
+        return new Record.TupleIterator(tableReader.ascendingIterator(snapshot.id()));
     }
 
     public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return new Record.RecordIterator(tableReader.ascendingIterator(new Key(key, snapshot.id()), snapshot.id()));
+        return new Record.TupleIterator(tableReader.ascendingIterator(new Key(key, snapshot.id()), snapshot.id()));
     }
 
     public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
-        return new Record.RecordIterator(tableReader.descendingIterator(snapshot.id()));
+        return new Record.TupleIterator(tableReader.descendingIterator(snapshot.id()));
     }
 
     public Iterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return new ReadIterator(tableReader.descendingIterator(new Key(key, snapshot.id()), snapshot.id()));
+        return new Record.TupleIterator(tableReader.descendingIterator(new Key(key, snapshot.id()), snapshot.id()));
     }
 
     public void close() throws IOException {
         tableWriter.close();
         tableReader.close();
+    }
+
+    public synchronized void compact() throws IOException {
+        compactor.compact();
     }
 
     public static HeftyDB open(Config config) throws IOException {

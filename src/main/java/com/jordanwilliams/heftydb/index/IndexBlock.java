@@ -118,7 +118,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         @Override
         public IndexRecord next() {
             ByteMap.Entry nextEntry = entryIterator.next();
-            return deserializeRecord(nextEntry);
+            return deserialize(nextEntry);
         }
 
         @Override
@@ -134,21 +134,21 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     }
 
     public IndexRecord startRecord() {
-        return deserializeRecord(0);
+        return deserialize(0);
     }
 
     public IndexRecord get(Key key) {
         int closestIndex = byteMap.floorIndex(key);
 
         if (closestIndex < 0) {
-            closestIndex = 0;
+            return null;
         }
 
         if (closestIndex >= byteMap.entryCount()) {
             closestIndex = byteMap.entryCount() - 1;
         }
 
-        return deserializeRecord(closestIndex);
+        return deserialize(closestIndex);
     }
 
     @Override
@@ -188,12 +188,12 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         return "IndexBlock{records=" + records + "}";
     }
 
-    private IndexRecord deserializeRecord(int recordIndex) {
-        ByteMap.Entry entry = byteMap.get(recordIndex);
-        return deserializeRecord(entry);
+    private IndexRecord deserialize(int index) {
+        ByteMap.Entry entry = byteMap.get(index);
+        return deserialize(entry);
     }
 
-    private IndexRecord deserializeRecord(ByteMap.Entry entry) {
+    private IndexRecord deserialize(ByteMap.Entry entry) {
         ByteBuffer entryValueBuffer = entry.value().data();
         long blockOffset = entryValueBuffer.getLong(0);
         int blockSize = entryValueBuffer.getInt(Sizes.LONG_SIZE);

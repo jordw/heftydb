@@ -112,6 +112,6 @@ public class TableWriter {
             }
         });
 
-        tableExecutor.submit(task);
+        task.run();
     }
 }

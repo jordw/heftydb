@@ -29,6 +29,7 @@ public class Paths {
     private static final String LOG_EXT = ".log";
     private static final String INDEX_EXT = ".index";
     private static final String FILTER_EXT = ".filter";
+    private static final String TEMP_EXT = ".temp";
 
     private final Path logDirectory;
     private final Path tableDirectory;
@@ -52,6 +53,10 @@ public class Paths {
 
     public Path logPath(long tableId) {
         return tableDirectory.resolve(tableId + LOG_EXT);
+    }
+
+    public Path tempPath(long tableId) {
+        return tableDirectory.resolve(tableId + TEMP_EXT);
     }
 
     public SortedSet<Path> tableFilePaths() throws IOException {

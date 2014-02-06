@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
-import com.jordanwilliams.heftydb.table.file.DataBlock;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class TupleBlockTest {
     private static final ByteBuffer TEST_KEY_2 = ByteBuffers.fromString("Bad as I want to be");
     private static final ByteBuffer TEST_KEY_3 = ByteBuffers.fromString("Dog I am a test key");
 
-    private final DataBlock dataBlock;
+    private final TupleBlock tupleBlock;
     private final List<Tuple> tuples = new ArrayList<Tuple>();
 
     public TupleBlockTest() {
@@ -46,35 +46,35 @@ public class TupleBlockTest {
         tuples.add(new Tuple(new Key(TEST_KEY_3, 4), Value.TOMBSTONE_VALUE));
         tuples.add(new Tuple(new Key(TEST_KEY_3, 5), Value.TOMBSTONE_VALUE));
 
-        DataBlock.Builder builder = new DataBlock.Builder();
+        TupleBlock.Builder builder = new TupleBlock.Builder();
         for (Tuple tuple : tuples) {
             builder.addRecord(tuple);
         }
 
-        dataBlock = builder.build();
+        tupleBlock = builder.build();
     }
 
     @Test
     public void findRecordExistsTest() {
-        Tuple tuple = dataBlock.get(new Key(TEST_KEY_1, Long.MAX_VALUE));
+        Tuple tuple = tupleBlock.get(new Key(TEST_KEY_1, Long.MAX_VALUE));
         Assert.assertEquals("Tuple matches", 2, tuple.key().snapshotId());
     }
 
     @Test
     public void findRecordExistsEndTest() {
-        Tuple tuple = dataBlock.get(new Key(TEST_KEY_3, Long.MAX_VALUE));
+        Tuple tuple = tupleBlock.get(new Key(TEST_KEY_3, Long.MAX_VALUE));
         Assert.assertEquals("Tuple matches", 5, tuple.key().snapshotId());
     }
 
     @Test
     public void findRecordMissingTest() {
-        Tuple tuple = dataBlock.get(new Key(ByteBuffers.fromString("Doesn't exist"), 0));
+        Tuple tuple = tupleBlock.get(new Key(ByteBuffers.fromString("Doesn't exist"), 0));
         Assert.assertNull("Tuple is null", tuple);
     }
 
     @Test
     public void recordIteratorTest() {
-        Iterator<Tuple> blockRecords = dataBlock.iterator();
+        Iterator<Tuple> blockRecords = tupleBlock.iterator();
         Iterator<Tuple> expectedRecords = tuples.iterator();
 
         while (blockRecords.hasNext()) {
@@ -84,7 +84,7 @@ public class TupleBlockTest {
 
     @Test
     public void descendingIteratorTest() {
-        Iterator<Tuple> blockRecords = dataBlock.descendingIterator();
+        Iterator<Tuple> blockRecords = tupleBlock.descendingIterator();
         ListIterator<Tuple> expectedRecords = tuples.listIterator(5);
 
         while (blockRecords.hasNext()) {
@@ -94,7 +94,7 @@ public class TupleBlockTest {
 
     @Test
     public void rangeIteratorTest() {
-        Iterator<Tuple> blockRecords = dataBlock.ascendingIterator(new Key(TEST_KEY_2, 1));
+        Iterator<Tuple> blockRecords = tupleBlock.ascendingIterator(new Key(TEST_KEY_2, 1));
         ListIterator<Tuple> expectedRecords = tuples.listIterator(2);
 
         while (blockRecords.hasNext()) {
@@ -104,7 +104,7 @@ public class TupleBlockTest {
 
     @Test
     public void rangeIteratorInexactTest() {
-        Iterator<Tuple> blockRecords = dataBlock.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        Iterator<Tuple> blockRecords = tupleBlock.ascendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
         ListIterator<Tuple> expectedRecords = tuples.listIterator(3);
 
         while (blockRecords.hasNext()) {
@@ -114,7 +114,7 @@ public class TupleBlockTest {
 
     @Test
     public void descendingRangeIteratorTest() {
-        Iterator<Tuple> blockRecords = dataBlock.descendingIterator(new Key(TEST_KEY_2, 1));
+        Iterator<Tuple> blockRecords = tupleBlock.descendingIterator(new Key(TEST_KEY_2, 1));
         ListIterator<Tuple> expectedRecords = tuples.listIterator(3);
 
         while (blockRecords.hasNext()) {
@@ -124,7 +124,7 @@ public class TupleBlockTest {
 
     @Test
     public void descendingRangeIteratorInexactTest() {
-        Iterator<Tuple> blockRecords = dataBlock.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
+        Iterator<Tuple> blockRecords = tupleBlock.descendingIterator(new Key(ByteBuffers.fromString("Box"), 0));
         ListIterator<Tuple> expectedRecords = tuples.listIterator(3);
 
         while (blockRecords.hasNext()) {

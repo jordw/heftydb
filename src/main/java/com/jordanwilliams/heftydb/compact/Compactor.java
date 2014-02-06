@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.offheap;
+package com.jordanwilliams.heftydb.compact;
 
-public interface Allocator {
+import java.io.IOException;
 
-    public long allocate(long bytes);
+public interface Compactor {
 
-    public void release(long address);
+    public void compact() throws IOException ;
 
-    public static Allocator allocator = new UnsafeAllocator();
 }
