@@ -19,10 +19,11 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import org.junit.Assert;
@@ -119,13 +120,12 @@ public class FileTableTest extends ParameterizedRecordTest {
 
     private FileTable openFileTable() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter tableWriter = FileTableWriter.open(1, paths, tuples.size(), 512, 512, 1);
+        Config config = ConfigGenerator.testConfig();
+        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
+                tuples.size());
 
-        for (Tuple tuple : tuples) {
-            tableWriter.write(tuple);
-        }
+        writerTask.run();
 
-        tableWriter.finish();
         return FileTable.open(1, paths, new TupleBlock.Cache(), new IndexBlock.Cache());
     }
 }

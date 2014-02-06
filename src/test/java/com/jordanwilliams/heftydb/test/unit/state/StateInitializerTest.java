@@ -43,13 +43,10 @@ public class StateInitializerTest extends RecordTest {
     @Test
     public void existingStateTest() throws Exception {
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter tableWriter = FileTableWriter.open(1, paths, tuples.size(), 1024, 1024, 1);
-        for (Tuple tuple : tuples) {
-            tableWriter.write(tuple);
-        }
-        tableWriter.finish();
-
         Config config = ConfigGenerator.testConfig();
+        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(), tuples.size());
+        writerTask.run();
+
         State state = new StateInitializer(config).initialize();
         Assert.assertEquals("Should be 1 table", 1, state.tables().all().size());
         Assert.assertEquals("Should be 100 as the max snapshot id", 100, state.snapshots().currentId());
@@ -58,11 +55,9 @@ public class StateInitializerTest extends RecordTest {
     @Test
     public void existingStateLogTest() throws Exception {
         Paths paths = ConfigGenerator.testPaths();
-        FileTableWriter tableWriter = FileTableWriter.open(1, paths, tuples.size(), 1024, 1024, 1);
-        for (Tuple tuple : tuples) {
-            tableWriter.write(tuple);
-        }
-        tableWriter.finish();
+        Config config = ConfigGenerator.testConfig();
+        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(), tuples.size());
+        writerTask.run();
 
         WriteLog log = WriteLog.open(2, paths);
         List<Tuple> moreTestTuples = generateMoreTestRecords(101);
@@ -70,7 +65,6 @@ public class StateInitializerTest extends RecordTest {
             log.append(tuple);
         }
 
-        Config config = ConfigGenerator.testConfig();
         State state = new StateInitializer(config).initialize();
         Assert.assertEquals("Should be 2 tables", 2, state.tables().all().size());
         Assert.assertEquals("Should be 100 as the max snapshot id", 200, state.snapshots().currentId());

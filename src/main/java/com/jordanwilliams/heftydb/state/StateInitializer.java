@@ -55,9 +55,9 @@ public class StateInitializer {
 
     private List<Table> loadTables() throws IOException {
         List<Table> tables = new ArrayList<Table>();
-        Set<Path> metaTablePaths = paths.tableFilePaths();
+        Set<Path> tablePaths = paths.tableFilePaths();
 
-        for (Path path : metaTablePaths) {
+        for (Path path : tablePaths) {
             long tableId = tableId(path);
             Table table = FileTable.open(tableId, paths, caches.recordBlockCache(), caches.indexBlockCache());
             maxSnapshotId = Math.max(table.maxSnapshotId(), maxSnapshotId);
