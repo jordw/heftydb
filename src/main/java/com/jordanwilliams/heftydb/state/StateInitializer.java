@@ -47,7 +47,7 @@ public class StateInitializer {
     }
 
     public State initialize() throws IOException {
-        clearTempTables();
+        deleteTempTables();
         writeTablesFromLogs();
         List<Table> tables = loadTables();
         return new State(tables, config, paths, caches, maxSnapshotId);
@@ -66,7 +66,7 @@ public class StateInitializer {
         return tables;
     }
 
-    private void clearTempTables() throws IOException {
+    private void deleteTempTables() throws IOException {
         Set<Long> tempIds = paths.tempTableFileIds();
 
         for (Long id : tempIds) {
