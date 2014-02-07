@@ -16,11 +16,15 @@
 
 package com.jordanwilliams.heftydb.test.performance.db;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
+import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 
@@ -28,9 +32,15 @@ import java.util.Random;
 
 public class ReadWritePerformance {
 
-    private static final int RECORD_COUNT = 1 * 1000000;
+    private static final int RECORD_COUNT = 5 * 1000000;
 
     public static void main(String[] args) throws Exception {
+        MetricRegistry metrics = new MetricRegistry();
+        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
+        Timer writeTimer = metrics.timer("writes");
+        Timer readTimer = metrics.timer("reads");
+        Timer readCompactedTimer = metrics.timer("compactedReads");
+
         TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
@@ -43,7 +53,9 @@ public class ReadWritePerformance {
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
+            Timer.Context watch = writeTimer.time();
             db.put(ByteBuffers.fromString(i + ""), value.data());
+            watch.stop();
         }
 
         db.close();
@@ -53,7 +65,9 @@ public class ReadWritePerformance {
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
+            Timer.Context watch = readTimer.time();
             db.get(ByteBuffers.fromString(key));
+            watch.stop();
         }
 
         db.compact();
@@ -61,10 +75,14 @@ public class ReadWritePerformance {
         //Read Compacted
         for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
+            Timer.Context watch = readCompactedTimer.time();
             db.get(ByteBuffers.fromString(key));
+            watch.stop();
         }
 
         db.close();
+
+        reporter.report();
 
         TestFileHelper.cleanUpTestFiles();
     }

@@ -16,8 +16,6 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
-import com.jordanwilliams.heftydb.util.Sizes;
-
 import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,12 +45,6 @@ public class Memory {
         this.baseAddress = allocator.allocate(size);
         this.size = size;
         this.directBuffer = rawDirectBuffer(baseAddress, size);
-
-        //Zero out memory
-        for (int i = 0; i < directBuffer.capacity() / Sizes.LONG_SIZE; i++) {
-            directBuffer.putLong(0L);
-        }
-
         directBuffer.rewind();
     }
 

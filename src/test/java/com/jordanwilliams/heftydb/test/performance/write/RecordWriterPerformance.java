@@ -16,10 +16,14 @@
 
 package com.jordanwilliams.heftydb.test.performance.write;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
+import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import com.jordanwilliams.heftydb.write.TableWriter;
@@ -29,19 +33,26 @@ public class RecordWriterPerformance {
     private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
+        MetricRegistry metrics = new MetricRegistry();
+        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
+        Timer timer = metrics.timer("writes");
+
         TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
-        State state = ConfigGenerator.testState();
+        State state = ConfigGenerator.perfState();
         TableWriter tableWriter = new TableWriter(state);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
+            Timer.Context watch = timer.time();
             tableWriter.write(ByteBuffers.fromString(i + ""), value.data());
+            watch.stop();
         }
 
         tableWriter.close();
+        reporter.report();
 
         TestFileHelper.cleanUpTestFiles();
     }

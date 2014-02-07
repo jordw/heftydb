@@ -92,6 +92,8 @@ public class DataFileTest extends FileTest {
         file.read(readBuffer, 0);
         readBuffer.flip();
 
+        TEST_BYTES.rewind();
+
         Assert.assertEquals("Read bytes", TEST_BYTES, readBuffer);
         Assert.assertEquals("File size", TEST_BYTES.capacity() + MORE_TEST_BYTES.capacity(), file.size());
     }

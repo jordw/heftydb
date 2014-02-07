@@ -16,6 +16,9 @@
 
 package com.jordanwilliams.heftydb.test.performance.db;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.db.Record;
@@ -23,19 +26,20 @@ import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
+import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 
 import java.util.Iterator;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class IteratorPerformance {
 
     private static final int RECORD_COUNT = 5 * 1000000;
 
     public static void main(String[] args) throws Exception {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        MetricRegistry metrics = new MetricRegistry();
+        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
+        Timer scanTimer = metrics.timer("scans");
 
         TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
@@ -55,10 +59,14 @@ public class IteratorPerformance {
         Iterator<Record> iterator = db.ascendingIterator(Snapshot.MAX);
 
         while (iterator.hasNext()){
+            Timer.Context watch = scanTimer.time();
             iterator.next();
+            watch.stop();
         }
 
         db.close();
+
+        reporter.report();
 
         TestFileHelper.cleanUpTestFiles();
     }

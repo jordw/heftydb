@@ -138,4 +138,8 @@ public class ConfigGenerator {
     public static State testState() {
         return new State(Collections.EMPTY_LIST, testConfig(), testPaths(), testCaches(), 1);
     }
+
+    public static State perfState() {
+        return new State(Collections.EMPTY_LIST, perfConfig(), testPaths(), testCaches(), 1);
+    }
 }

@@ -23,17 +23,7 @@ import java.lang.reflect.Field;
 
 public class UnsafeAllocator implements Allocator {
 
-    static final Unsafe unsafe;
-
-    @Override
-    public long allocate(long size) {
-        return unsafe.allocateMemory(size);
-    }
-
-    @Override
-    public void release(long address) {
-        unsafe.freeMemory(address);
-    }
+    public static final Unsafe unsafe;
 
     static {
         try {
@@ -43,5 +33,15 @@ public class UnsafeAllocator implements Allocator {
         } catch (Exception e) {
             throw new AssertionError(e);
         }
+    }
+
+    @Override
+    public long allocate(long size) {
+        return unsafe.allocateMemory(size);
+    }
+
+    @Override
+    public void release(long address) {
+        unsafe.freeMemory(address);
     }
 }

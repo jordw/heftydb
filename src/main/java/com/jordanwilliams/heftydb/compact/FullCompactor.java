@@ -43,12 +43,12 @@ public class FullCompactor implements Compactor {
     public void compact() throws IOException {
         Set<Table> toRemove = new HashSet<Table>();
         List<Iterator<Tuple>> iterators = new ArrayList<Iterator<Tuple>>();
-        long recordCount = 0;
+        long tupleCount = 0;
 
         for (Table table : state.tables().persistent()){
             toRemove.add(table);
             iterators.add(table.ascendingIterator(Long.MAX_VALUE));
-            recordCount += table.recordCount();
+            tupleCount += table.recordCount();
         }
 
         Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
@@ -59,6 +59,7 @@ public class FullCompactor implements Compactor {
                 .config(state.config())
                 .paths(state.paths())
                 .level(2)
+                .tupleCount(tupleCount)
                 .source(mergedIterator)
                 .build();
 
