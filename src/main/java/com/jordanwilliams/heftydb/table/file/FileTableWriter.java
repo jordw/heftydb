@@ -34,6 +34,56 @@ public class FileTableWriter {
 
     public static class Task implements Runnable {
 
+        public static class Builder {
+
+            private long tableId;
+            private int level = 1;
+            private Iterator<Tuple> source;
+            private long tupleCount;
+            private Paths paths;
+            private Config config;
+            private Callback callback;
+
+            public Builder tableId(long tableId) {
+                this.tableId = tableId;
+                return this;
+            }
+
+            public Builder level(int level) {
+                this.level = level;
+                return this;
+            }
+
+            public Builder source(Iterator<Tuple> source) {
+                this.source = source;
+                return this;
+            }
+
+            public Builder tupleCount(long tupleCount) {
+                this.tupleCount = tupleCount;
+                return this;
+            }
+
+            public Builder paths(Paths paths) {
+                this.paths = paths;
+                return this;
+            }
+
+            public Builder config(Config config) {
+                this.config = config;
+                return this;
+            }
+
+            public Builder callback(Callback callback) {
+                this.callback = callback;
+                return this;
+            }
+
+            public Task build(){
+                return new Task(tableId, level, paths, config, source, tupleCount, callback);
+            }
+        }
+
         public interface Callback {
             public void finish();
         }
@@ -55,16 +105,6 @@ public class FileTableWriter {
             this.records = records;
             this.recordCount = recordCount;
             this.callback = callback;
-        }
-
-        public Task(long tableId, int level, Paths paths, Config config, Iterator<Tuple> records, long recordCount) {
-            this.tableId = tableId;
-            this.level = level;
-            this.paths = paths;
-            this.config = config;
-            this.records = records;
-            this.recordCount = recordCount;
-            this.callback = null;
         }
 
         @Override

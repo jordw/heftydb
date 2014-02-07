@@ -54,8 +54,13 @@ public class FullCompactor implements Compactor {
         Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
         long nextTableId = state.tables().nextId();
 
-        FileTableWriter.Task writerTask = new FileTableWriter.Task(nextTableId, 2, state.paths(),
-                state.config(), mergedIterator, recordCount);
+        FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder()
+                .tableId(nextTableId)
+                .config(state.config())
+                .paths(state.paths())
+                .level(2)
+                .source(mergedIterator)
+                .build();
 
         writerTask.run();
 

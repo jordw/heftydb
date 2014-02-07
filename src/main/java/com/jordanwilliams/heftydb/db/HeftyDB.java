@@ -69,7 +69,7 @@ public class HeftyDB {
         return new Record.TupleIterator(tableReader.descendingIterator(new Key(key, snapshot.id()), snapshot.id()));
     }
 
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         tableWriter.close();
         tableReader.close();
     }

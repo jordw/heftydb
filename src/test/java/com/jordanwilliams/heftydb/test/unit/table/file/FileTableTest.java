@@ -122,7 +122,7 @@ public class FileTableTest extends ParameterizedRecordTest {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
-                tuples.size());
+                tuples.size(), null);
 
         writerTask.run();
 

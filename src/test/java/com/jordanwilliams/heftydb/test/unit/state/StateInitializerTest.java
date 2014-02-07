@@ -44,7 +44,8 @@ public class StateInitializerTest extends RecordTest {
     public void existingStateTest() throws Exception {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
-        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(), tuples.size());
+        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
+                tuples.size(), null);
         writerTask.run();
 
         State state = new StateInitializer(config).initialize();
@@ -56,7 +57,8 @@ public class StateInitializerTest extends RecordTest {
     public void existingStateLogTest() throws Exception {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
-        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(), tuples.size());
+        FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
+                tuples.size(), null);
         writerTask.run();
 
         WriteLog log = WriteLog.open(2, paths);
