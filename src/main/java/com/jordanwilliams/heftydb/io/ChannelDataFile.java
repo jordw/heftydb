@@ -16,7 +16,6 @@
 
 package com.jordanwilliams.heftydb.io;
 
-import com.jordanwilliams.heftydb.events.DataFileEvents;
 import com.jordanwilliams.heftydb.util.Sizes;
 import net.jcip.annotations.ThreadSafe;
 
@@ -41,7 +40,6 @@ public class ChannelDataFile implements DataFile {
     };
 
     private static final Set<String> openFiles = new HashSet<String>();
-    private static final DataFileEvents events = new DataFileEvents("File IO");
 
     private final Path path;
     private final FileChannel channel;
@@ -50,7 +48,6 @@ public class ChannelDataFile implements DataFile {
     private ChannelDataFile(Path path, FileChannel fileChannel) {
         this.path = path;
         this.channel = fileChannel;
-        events.openFile();
         openFiles.add(path.toString());
     }
 
@@ -73,38 +70,30 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public long read(ByteBuffer bufferToRead, long position) throws IOException {
-        events.startRead();
         long bytesRead = channel.read(bufferToRead, position);
-        events.finishRead();
         return bytesRead;
     }
 
     @Override
     public int readInt(long position) throws IOException {
-        events.startRead();
         ByteBuffer intBuffer = intBuffer();
         channel.read(intBuffer, position);
         intBuffer.rewind();
-        events.finishRead();
         return intBuffer.getInt();
     }
 
     @Override
     public long readLong(long position) throws IOException {
-        events.startRead();
         ByteBuffer longBuffer = longBuffer();
         channel.read(longBuffer, position);
         longBuffer.rewind();
-        events.finishRead();
         return longBuffer.getLong();
     }
 
     @Override
     public long write(ByteBuffer bufferToWrite, long position) throws IOException {
-        events.startWrite();
         bufferToWrite.rewind();
         long bytesWritten = channel.write(bufferToWrite, position);
-        events.finishWrite();
         return bytesWritten;
     }
 
@@ -125,16 +114,13 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public void sync() throws IOException {
-        events.startSync();
         channel.force(true);
-        events.finishSync();
     }
 
     @Override
     public void close() throws IOException {
         sync();
         channel.close();
-        events.closeFile();
         openFiles.remove(path.toString());
     }
 
@@ -175,9 +161,5 @@ public class ChannelDataFile implements DataFile {
         FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE);
         return new ChannelDataFile(path, dataFileChannel);
-    }
-
-    public static DataFileEvents events() {
-        return events;
     }
 }

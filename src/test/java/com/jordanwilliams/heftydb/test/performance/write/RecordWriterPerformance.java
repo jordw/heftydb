@@ -17,7 +17,6 @@
 package com.jordanwilliams.heftydb.test.performance.write;
 
 import com.jordanwilliams.heftydb.data.Value;
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
@@ -37,8 +36,6 @@ public class RecordWriterPerformance {
         State state = ConfigGenerator.testState();
         TableWriter tableWriter = new TableWriter(state);
 
-        StopWatch watch = StopWatch.start();
-
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
             tableWriter.write(ByteBuffers.fromString(i + ""), value.data());
@@ -46,7 +43,6 @@ public class RecordWriterPerformance {
 
         tableWriter.close();
 
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds());
         TestFileHelper.cleanUpTestFiles();
     }
 }

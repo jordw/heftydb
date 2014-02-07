@@ -18,8 +18,6 @@ package com.jordanwilliams.heftydb.test.performance.db;
 
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.HeftyDB;
-import com.jordanwilliams.heftydb.metrics.HistogramMetric;
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
@@ -43,53 +41,28 @@ public class ReadWritePerformance {
         //Write
         HeftyDB db = HeftyDB.open(config);
 
-        StopWatch watch = StopWatch.start();
-        HistogramMetric writeLatency = new HistogramMetric("writeLatency", "ms");
-
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
-            StopWatch writeWatch = StopWatch.start();
             db.put(ByteBuffers.fromString(i + ""), value.data());
-            writeLatency.record(writeWatch.elapsedMillis());
         }
-
-        System.out.println(writeLatency.summary());
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds() + " writes/sec");
 
         db.close();
 
-        db = HeftyDB.open(config);
-
         //Read
-        watch = StopWatch.start();
-        HistogramMetric readLatency = new HistogramMetric("readLatency", "ms");
+        db = HeftyDB.open(config);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
-            StopWatch readWatch = StopWatch.start();
             db.get(ByteBuffers.fromString(key));
-            readLatency.record(readWatch.elapsedMillis());
         }
-
-        System.out.println(readLatency.summary());
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds() + " reads/sec");
-
 
         db.compact();
 
         //Read Compacted
-        watch = StopWatch.start();
-        readLatency = new HistogramMetric("readLatency", "ms");
-
         for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
-            StopWatch readWatch = StopWatch.start();
             db.get(ByteBuffers.fromString(key));
-            readLatency.record(readWatch.elapsedMillis());
         }
-
-        System.out.println(readLatency.summary());
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds() + " reads/sec");
 
         db.close();
 

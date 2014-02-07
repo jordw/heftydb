@@ -20,11 +20,10 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
@@ -57,14 +56,12 @@ public class FileTablePerformance {
         FileTable fileTable = FileTable.open(1, paths, new TupleBlock.Cache(32768000), new IndexBlock.Cache(16384000));
 
         Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
         int iterations = 1 * 1000000;
 
         for (int i = 0; i < iterations; i++) {
             fileTable.get(new Key(ByteBuffers.fromString(random.nextInt(RECORD_COUNT) + ""), Long.MAX_VALUE));
         }
 
-        System.out.println(iterations / watch.elapsedSeconds());
         TestFileHelper.cleanUpTestFiles();
     }
 }

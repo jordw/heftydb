@@ -16,7 +16,6 @@
 
 package com.jordanwilliams.heftydb.test.performance.offheap;
 
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.offheap.Memory;
 
 import java.util.Random;
@@ -28,13 +27,9 @@ public class MemoryPerformance {
         int iterations = 1000000;
         Memory[] memoryArray = new Memory[iterations];
 
-        StopWatch watch = StopWatch.start();
-
         for (int i = 0; i < memoryArray.length; i++) {
             memoryArray[i] = Memory.allocate(random.nextInt(16384));
         }
-
-        System.out.println(iterations / watch.elapsedSeconds());
     }
 
 }

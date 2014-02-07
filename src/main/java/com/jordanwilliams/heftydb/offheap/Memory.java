@@ -16,8 +16,6 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
-import com.jordanwilliams.heftydb.events.Events;
-import com.jordanwilliams.heftydb.events.MemoryEvents;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.lang.reflect.Constructor;
@@ -25,8 +23,6 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
-
-    private static final MemoryEvents events = new MemoryEvents();
 
     private static final Allocator allocator = Allocator.allocator;
     private static final Constructor directBufferConstructor;
@@ -48,7 +44,6 @@ public class Memory {
     private long baseAddress;
 
     private Memory(int size) {
-        events.startMalloc(size);
         this.baseAddress = allocator.allocate(size);
         this.size = size;
         this.directBuffer = rawDirectBuffer(baseAddress, size);
@@ -59,7 +54,6 @@ public class Memory {
         }
 
         directBuffer.rewind();
-        events.finishMalloc();
     }
 
     public ByteBuffer directBuffer() {
@@ -71,10 +65,8 @@ public class Memory {
     }
 
     public void free() {
-        events.startFree(size);
         allocator.release(baseAddress);
         baseAddress = 0;
-        events.finishFree();
     }
 
     public int size() {
@@ -116,10 +108,6 @@ public class Memory {
 
     public static Memory allocate(int size, int align) {
         return allocate(pageAlignedSize(size, align));
-    }
-
-    public static Events events(){
-        return events;
     }
 
     private static ByteBuffer rawDirectBuffer(long address, int size) {

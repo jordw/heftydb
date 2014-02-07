@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.performance.table.file;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
@@ -47,14 +46,12 @@ public class IndexPerformance {
         Index index = Index.open(1, paths, new IndexBlock.Cache(4096000));
 
         Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
         int iterations = 1000000;
 
         for (int i = 0; i < iterations; i++) {
             index.get(tuples.get(random.nextInt(tuples.size())).key());
         }
 
-        System.out.println(iterations / watch.elapsedSeconds());
         TestFileHelper.cleanUpTestFiles();
     }
 }

@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.performance.table.file;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 
 import java.util.ArrayList;
@@ -47,13 +46,10 @@ public class IndexBlockPerformance {
         IndexBlock block = blockBuilder.build();
 
         Random random = new Random(System.nanoTime());
-        StopWatch watch = StopWatch.start();
         int iterations = 2000000;
 
         for (int i = 0; i < iterations; i++) {
             block.get(keys.get(random.nextInt(keys.size())));
         }
-
-        System.out.println(iterations / watch.elapsedSeconds());
     }
 }

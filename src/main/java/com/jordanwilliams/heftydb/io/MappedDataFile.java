@@ -16,7 +16,6 @@
 
 package com.jordanwilliams.heftydb.io;
 
-import com.jordanwilliams.heftydb.events.DataFileEvents;
 import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
@@ -28,8 +27,6 @@ import java.nio.file.StandardOpenOption;
 
 @ThreadSafe
 public class MappedDataFile implements DataFile {
-
-    private static final DataFileEvents events = new DataFileEvents("Mapped File IO");
 
     private final Path path;
     private final MappedByteBuffer mappedBuffer;
@@ -58,31 +55,25 @@ public class MappedDataFile implements DataFile {
 
     @Override
     public long read(ByteBuffer bufferToRead, long position) {
-        events.startRead();
         ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
         duplicateBuffer.position((int) position);
         duplicateBuffer.get(bufferToRead.array());
-        events.finishRead();
         return bufferToRead.capacity();
     }
 
     @Override
     public int readInt(long position) throws IOException {
-        events.startRead();
         ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
         duplicateBuffer.position((int) position);
         int value = duplicateBuffer.getInt();
-        events.finishRead();
         return value;
     }
 
     @Override
     public long readLong(long position) throws IOException {
-        events.startRead();
         ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
         duplicateBuffer.position((int) position);
         long value = duplicateBuffer.getLong();
-        events.finishRead();
         return value;
     }
 
@@ -126,9 +117,5 @@ public class MappedDataFile implements DataFile {
         MappedByteBuffer mappedByteBuffer = dataFileChannel.map(FileChannel.MapMode.READ_ONLY, 0,
                 dataFileChannel.size());
         return new MappedDataFile(path, dataFileChannel, mappedByteBuffer);
-    }
-
-    public static DataFileEvents events() {
-        return events;
     }
 }

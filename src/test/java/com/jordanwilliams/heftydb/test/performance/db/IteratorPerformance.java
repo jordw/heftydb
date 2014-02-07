@@ -20,8 +20,6 @@ import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.db.Record;
 import com.jordanwilliams.heftydb.db.Snapshot;
-import com.jordanwilliams.heftydb.metrics.HistogramMetric;
-import com.jordanwilliams.heftydb.metrics.StopWatch;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
@@ -48,34 +46,19 @@ public class IteratorPerformance {
         //Write
         final HeftyDB db = HeftyDB.open(config);
 
-        StopWatch watch = StopWatch.start();
-        HistogramMetric writeLatency = new HistogramMetric("writeLatency", "ms");
-
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
-            StopWatch writeWatch = StopWatch.start();
             db.put(ByteBuffers.fromString(i + ""), value.data());
-            writeLatency.record(writeWatch.elapsedMillis());
         }
 
-        System.out.println(writeLatency.summary());
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds() + " write/sec");
-
         //Scan
-        watch = StopWatch.start();
-        HistogramMetric scanLatency = new HistogramMetric("scanLatency", "ms");
-
         Iterator<Record> iterator = db.ascendingIterator(Snapshot.MAX);
 
         while (iterator.hasNext()){
-            StopWatch readWatch = StopWatch.start();
             iterator.next();
-            scanLatency.record(readWatch.elapsedMillis());
         }
 
         db.close();
-        System.out.println(scanLatency.summary());
-        System.out.println(RECORD_COUNT / watch.elapsedSeconds() + " reads/sec");
 
         TestFileHelper.cleanUpTestFiles();
     }
