@@ -21,14 +21,13 @@ import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
-import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
+import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +47,7 @@ public class StateInitializer {
     }
 
     public State initialize() throws IOException {
+        clearTempTables();
         writeTablesFromLogs();
         List<Table> tables = loadTables();
         return new State(tables, config, paths, caches, maxSnapshotId);
@@ -55,11 +55,10 @@ public class StateInitializer {
 
     private List<Table> loadTables() throws IOException {
         List<Table> tables = new ArrayList<Table>();
-        Set<Path> tablePaths = paths.tableFilePaths();
+        Set<Long> tableIds = paths.tableFileIds();
 
-        for (Path path : tablePaths) {
-            long tableId = tableId(path);
-            Table table = FileTable.open(tableId, paths, caches.recordBlockCache(), caches.indexBlockCache());
+        for (Long id : tableIds) {
+            Table table = FileTable.open(id, paths, caches.recordBlockCache(), caches.indexBlockCache());
             maxSnapshotId = Math.max(table.maxSnapshotId(), maxSnapshotId);
             tables.add(table);
         }
@@ -67,26 +66,34 @@ public class StateInitializer {
         return tables;
     }
 
+    private void clearTempTables() throws IOException {
+        Set<Long> tempIds = paths.tempTableFileIds();
+
+        for (Long id : tempIds) {
+            Files.deleteIfExists(paths.tablePath(id));
+            Files.deleteIfExists(paths.indexPath(id));
+            Files.deleteIfExists(paths.filterPath(id));
+        }
+    }
+
     private void writeTablesFromLogs() throws IOException {
-        Set<Path> logPaths = paths.logFilePaths();
+        Set<Long> logIds = paths.logFileIds();
 
-        for (Path path : logPaths) {
-            long tableId = tableId(path);
-
-            WriteLog log = WriteLog.open(tableId, paths);
-            Table memoryTable = logTable(log);
+        for (Long id : logIds) {
+            WriteLog log = WriteLog.open(id, paths);
+            Table memoryTable = readTable(log);
             log.close();
 
-            FileTableWriter.Task tableWriterTask = new FileTableWriter.Task(tableId, 1, paths, config,
+            FileTableWriter.Task tableWriterTask = new FileTableWriter.Task(id, 1, paths, config,
                     memoryTable.ascendingIterator(Long.MAX_VALUE), memoryTable.recordCount());
 
             tableWriterTask.run();
 
-            Files.deleteIfExists(paths.logPath(tableId));
+            Files.deleteIfExists(paths.logPath(id));
         }
     }
 
-    private Table logTable(WriteLog log) {
+    private Table readTable(WriteLog log) {
         MutableTable memoryTable = new MemoryTable(log.tableId());
 
         for (Tuple tuple : log) {
@@ -94,11 +101,5 @@ public class StateInitializer {
         }
 
         return memoryTable;
-    }
-
-    private static long tableId(Path path) {
-        String fileName = path.getFileName().toString();
-        String id = fileName.split("\\.")[0];
-        return Long.parseLong(id);
     }
 }
