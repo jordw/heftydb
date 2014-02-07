@@ -17,8 +17,8 @@
 package com.jordanwilliams.heftydb.test.unit.io;
 
 
+import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.MappedDataFile;
-import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.test.base.FileTest;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import org.junit.Assert;
@@ -42,7 +42,7 @@ public class DataFileTest extends FileTest {
         TEST_BYTES.rewind();
         MORE_TEST_BYTES.rewind();
 
-        MutableDataFile file = MutableDataFile.open(testFile);
+        ChannelDataFile file = ChannelDataFile.open(testFile);
 
         file.append(TEST_BYTES);
         file.append(MORE_TEST_BYTES);
@@ -62,7 +62,7 @@ public class DataFileTest extends FileTest {
 
     @Test
     public void mutableDataFilePrimitiveTest() throws IOException {
-        MutableDataFile file = MutableDataFile.open(testFile);
+        ChannelDataFile file = ChannelDataFile.open(testFile);
 
         file.appendInt(4);
         file.appendLong(8);

@@ -21,8 +21,8 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
+import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.read.LatestTupleIterator;
@@ -394,7 +394,7 @@ public class FileTable implements Table {
                                  IndexBlock.Cache indexCache) throws IOException {
         Index index = Index.open(tableId, paths, indexCache);
         TableBloomFilter tableBloomFilter = TableBloomFilter.read(tableId, paths);
-        DataFile tableFile = MutableDataFile.open(paths.tablePath(tableId));
+        DataFile tableFile = ChannelDataFile.open(paths.tablePath(tableId));
         TableTrailer trailer = TableTrailer.read(tableFile);
         return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache);
     }

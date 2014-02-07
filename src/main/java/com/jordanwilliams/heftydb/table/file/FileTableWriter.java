@@ -19,8 +19,8 @@ package com.jordanwilliams.heftydb.table.file;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
+import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 
@@ -190,7 +190,7 @@ public class FileTableWriter {
                                        int maxRecordBlockSize, int level) throws IOException {
         IndexWriter indexWriter = IndexWriter.open(tableId, paths, maxIndexBlockSize);
         TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(tableId, paths, approxRecordCount);
-        DataFile tableDataFile = MutableDataFile.open(paths.tempPath(tableId));
+        DataFile tableDataFile = ChannelDataFile.open(paths.tempPath(tableId));
 
         return new FileTableWriter(tableId, indexWriter, filterWriter, tableDataFile, maxRecordBlockSize, level);
     }

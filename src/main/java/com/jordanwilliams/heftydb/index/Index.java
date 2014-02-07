@@ -17,8 +17,8 @@
 package com.jordanwilliams.heftydb.index;
 
 import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -88,7 +88,7 @@ public class Index {
     }
 
     public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
-        DataFile indexFile = MutableDataFile.open(paths.indexPath(tableId));
+        DataFile indexFile = ChannelDataFile.open(paths.indexPath(tableId));
         return new Index(tableId, indexFile, cache);
     }
 }

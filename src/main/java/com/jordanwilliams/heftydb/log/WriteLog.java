@@ -17,8 +17,8 @@
 package com.jordanwilliams.heftydb.log;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -125,7 +125,7 @@ public class WriteLog implements Iterable<Tuple> {
     }
 
     public static WriteLog open(long tableId, Paths paths) throws IOException {
-        DataFile logFile = MutableDataFile.open(paths.logPath(tableId));
+        DataFile logFile = ChannelDataFile.open(paths.logPath(tableId));
         return new WriteLog(tableId, logFile);
     }
 }

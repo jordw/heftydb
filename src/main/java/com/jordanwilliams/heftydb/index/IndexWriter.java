@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.index;
 
+import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.io.MutableDataFile;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -103,7 +103,7 @@ public class IndexWriter {
     }
 
     public static IndexWriter open(long tableId, Paths paths, int maxIndexBlockSize) throws IOException {
-        DataFile indexFile = MutableDataFile.open(paths.indexPath(tableId));
+        DataFile indexFile = ChannelDataFile.open(paths.indexPath(tableId));
         return new IndexWriter(indexFile, maxIndexBlockSize);
     }
 }

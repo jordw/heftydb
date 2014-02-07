@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 @ThreadSafe
-public class MutableDataFile implements DataFile {
+public class ChannelDataFile implements DataFile {
 
     private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>() {
         @Override
@@ -47,7 +47,7 @@ public class MutableDataFile implements DataFile {
     private final FileChannel channel;
     private final AtomicLong appendPosition = new AtomicLong();
 
-    private MutableDataFile(Path path, FileChannel fileChannel) {
+    private ChannelDataFile(Path path, FileChannel fileChannel) {
         this.path = path;
         this.channel = fileChannel;
         events.openFile();
@@ -171,10 +171,10 @@ public class MutableDataFile implements DataFile {
         return longBuffer;
     }
 
-    public static MutableDataFile open(Path path) throws IOException {
+    public static ChannelDataFile open(Path path) throws IOException {
         FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE);
-        return new MutableDataFile(path, dataFileChannel);
+        return new ChannelDataFile(path, dataFileChannel);
     }
 
     public static DataFileEvents events() {
