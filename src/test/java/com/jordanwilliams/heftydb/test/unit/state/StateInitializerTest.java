@@ -36,7 +36,7 @@ public class StateInitializerTest extends RecordTest {
     public void defaultStateTest() throws Exception {
         Config config = ConfigGenerator.testConfig();
         State state = new StateInitializer(config).initialize();
-        Assert.assertTrue("No tables", state.tables().all().isEmpty());
+        Assert.assertTrue("No tables", state.tables().count() == 0);
         Assert.assertEquals("No Max Snapshot Id", 0, state.snapshots().currentId());
     }
 
@@ -49,7 +49,7 @@ public class StateInitializerTest extends RecordTest {
         writerTask.run();
 
         State state = new StateInitializer(config).initialize();
-        Assert.assertEquals("Should be 1 table", 1, state.tables().all().size());
+        Assert.assertEquals("Should be 1 table", 1, state.tables().count());
         Assert.assertEquals("Should be 100 as the max snapshot id", 100, state.snapshots().currentId());
     }
 
@@ -68,7 +68,7 @@ public class StateInitializerTest extends RecordTest {
         }
 
         State state = new StateInitializer(config).initialize();
-        Assert.assertEquals("Should be 2 tables", 2, state.tables().all().size());
+        Assert.assertEquals("Should be 2 tables", 2, state.tables().count());
         Assert.assertEquals("Should be 100 as the max snapshot id", 200, state.snapshots().currentId());
     }
 }

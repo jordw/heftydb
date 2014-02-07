@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.table.Table;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,6 +29,39 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Tables implements Iterable<Table> {
+
+    private class ReadLockIterator implements Iterator<Table> {
+
+        private final Iterator<Table> delegate;
+
+        public ReadLockIterator(Iterator<Table> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean hasNext() {
+            boolean hasNext = delegate.hasNext();
+            if (!hasNext) {
+                tableLock.readLock().unlock();
+            }
+
+            return hasNext;
+        }
+
+        @Override
+        public Table next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            return delegate.next();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     private final AtomicLong currentTableId = new AtomicLong();
     private final NavigableSet<Table> tables = new TreeSet<Table>();
@@ -46,17 +80,16 @@ public class Tables implements Iterable<Table> {
         return currentTableId.get();
     }
 
-    public SortedSet<Table> all() {
+    public Iterator<Table> all() {
         try {
             tableLock.readLock().lock();
-            SortedSet<Table> tableSnapshot = new TreeSet<Table>(tables);
-            return tableSnapshot;
+            return new ReadLockIterator(tables.iterator());
         } finally {
             tableLock.readLock().unlock();
         }
     }
 
-    public SortedSet<Table> persistent() {
+    public Iterator<Table> persistent() {
         try {
             tableLock.readLock().lock();
             SortedSet<Table> tableSnapshot = new TreeSet<Table>();
@@ -67,7 +100,7 @@ public class Tables implements Iterable<Table> {
                 }
             }
 
-            return tableSnapshot;
+            return new ReadLockIterator(tableSnapshot.iterator());
         } finally {
             tableLock.readLock().unlock();
         }
@@ -101,9 +134,12 @@ public class Tables implements Iterable<Table> {
         }
     }
 
+    public int count() {
+        return tables.size();
+    }
+
     @Override
     public Iterator<Table> iterator() {
-        SortedSet<Table> tables = all();
-        return tables.iterator();
+        return all();
     }
 }
