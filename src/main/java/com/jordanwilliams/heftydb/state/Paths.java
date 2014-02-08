@@ -96,10 +96,10 @@ public class Paths {
         return sortedFilePaths;
     }
 
-    private SortedSet<Long> fileIds(SortedSet<Path> paths){
+    private SortedSet<Long> fileIds(SortedSet<Path> paths) {
         SortedSet<Long> sortedFileIds = new TreeSet<Long>();
 
-        for (Path path :  paths){
+        for (Path path : paths) {
             sortedFileIds.add(tableId(path));
         }
 

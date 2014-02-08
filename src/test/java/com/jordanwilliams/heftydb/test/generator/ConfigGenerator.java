@@ -37,7 +37,7 @@ public class ConfigGenerator {
         return new Caches(new TupleBlock.Cache(32768000), new IndexBlock.Cache(16384000));
     }
 
-    public static Config perfConfig(){
+    public static Config perfConfig() {
         return new Config() {
             @Override
             public int memoryTableSize() {

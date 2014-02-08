@@ -45,38 +45,32 @@ public class FullCompactor implements Compactor {
         List<Iterator<Tuple>> iterators = new ArrayList<Iterator<Tuple>>();
         long tupleCount = 0;
 
-        state.tables().startIteration();
+        state.tables().readLock();
 
         try {
-            for (Table table : state.tables()){
-                if (table.isPersistent()){
+            for (Table table : state.tables()) {
+                if (table.isPersistent()) {
                     toRemove.add(table);
                     iterators.add(table.ascendingIterator(Long.MAX_VALUE));
                     tupleCount += table.recordCount();
                 }
             }
         } finally {
-            state.tables().finishIteration();
+            state.tables().readUnlock();
         }
 
         Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
         long nextTableId = state.tables().nextId();
 
-        FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder()
-                .tableId(nextTableId)
-                .config(state.config())
-                .paths(state.paths())
-                .level(2)
-                .tupleCount(tupleCount)
-                .source(mergedIterator)
-                .build();
+        FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config(state.config
+                ()).paths(state.paths()).level(2).tupleCount(tupleCount).source(mergedIterator).build();
 
         writerTask.run();
 
         state.tables().add(FileTable.open(nextTableId, state.paths(), state.caches().recordBlockCache(),
                 state.caches().indexBlockCache()));
 
-        for (Table table : toRemove){
+        for (Table table : toRemove) {
             state.tables().remove(table);
             Files.deleteIfExists(state.paths().tablePath(table.id()));
             Files.deleteIfExists(state.paths().indexPath(table.id()));

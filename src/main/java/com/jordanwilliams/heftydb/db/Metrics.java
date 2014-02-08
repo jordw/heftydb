@@ -30,7 +30,7 @@ public class Metrics {
     private final JmxReporter jmxReporter;
     private final ConsoleReporter consoleReporter;
 
-    public Metrics(Config config){
+    public Metrics(Config config) {
         this.jmxReporter = JmxReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo
                 (TimeUnit.SECONDS).inDomain(config.tableDirectory().toString()).build();
         this.consoleReporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS)
@@ -40,7 +40,7 @@ public class Metrics {
         consoleReporter.start(30, TimeUnit.SECONDS);
     }
 
-    public void register(String name, Metric metric){
+    public void register(String name, Metric metric) {
         metrics.register(name, metric);
     }
 }

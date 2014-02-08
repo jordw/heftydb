@@ -79,7 +79,7 @@ public class FileTableWriter {
                 return this;
             }
 
-            public Task build(){
+            public Task build() {
                 return new Task(tableId, level, paths, config, source, tupleCount, callback);
             }
         }

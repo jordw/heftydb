@@ -45,11 +45,11 @@ public class Tables implements Iterable<Table> {
         return currentTableId.get();
     }
 
-    public void startIteration(){
+    public void readLock() {
         tableLock.readLock().lock();
     }
 
-    public void finishIteration(){
+    public void readUnlock() {
         tableLock.readLock().unlock();
     }
 

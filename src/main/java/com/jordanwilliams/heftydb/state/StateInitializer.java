@@ -84,14 +84,9 @@ public class StateInitializer {
             Table memoryTable = readTable(log);
             log.close();
 
-            FileTableWriter.Task tableWriterTask = new FileTableWriter.Task.Builder()
-                    .tableId(id)
-                    .config(config)
-                    .paths(paths)
-                    .level(1)
-                    .tupleCount(memoryTable.recordCount())
-                    .source(memoryTable.ascendingIterator(Long.MAX_VALUE))
-                    .build();
+            FileTableWriter.Task tableWriterTask = new FileTableWriter.Task.Builder().tableId(id).config(config)
+                    .paths(paths).level(1).tupleCount(memoryTable.recordCount()).source(memoryTable.ascendingIterator
+                            (Long.MAX_VALUE)).build();
 
             tableWriterTask.run();
 

@@ -107,7 +107,7 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
             Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
             logFile.append(recordMemory.directBuffer());
 
-            if (fsync){
+            if (fsync) {
                 logFile.sync();
             }
         } finally {

@@ -37,7 +37,7 @@ public class TableReader implements Iterable<Tuple> {
     public Tuple get(Key key) {
         Tuple closestTuple = null;
 
-        state.tables().startIteration();
+        state.tables().readLock();
 
         try {
             for (Table table : state.tables()) {
@@ -52,7 +52,7 @@ public class TableReader implements Iterable<Tuple> {
                 }
             }
         } finally {
-            state.tables().finishIteration();
+            state.tables().readUnlock();
         }
 
         return closestTuple;

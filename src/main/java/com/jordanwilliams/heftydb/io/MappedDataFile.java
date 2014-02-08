@@ -58,7 +58,7 @@ public class MappedDataFile implements DataFile {
         ByteBuffer duplicateBuffer = mappedBuffer.duplicate();
         duplicateBuffer.position((int) position);
 
-        for (int i = 0; i < bufferToRead.capacity(); i++){
+        for (int i = 0; i < bufferToRead.capacity(); i++) {
             bufferToRead.put(duplicateBuffer.get());
         }
 

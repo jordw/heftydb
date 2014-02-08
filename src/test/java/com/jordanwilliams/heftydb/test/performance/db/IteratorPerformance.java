@@ -58,7 +58,7 @@ public class IteratorPerformance {
         //Scan
         Iterator<Record> iterator = db.ascendingIterator(Snapshot.MAX);
 
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Timer.Context watch = scanTimer.time();
             iterator.next();
             watch.stop();

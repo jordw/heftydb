@@ -20,6 +20,6 @@ import java.io.IOException;
 
 public interface Compactor {
 
-    public void compact() throws IOException ;
+    public void compact() throws IOException;
 
 }

@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PerformanceHelper {
 
-    public static ConsoleReporter consoleReporter(MetricRegistry metrics){
+    public static ConsoleReporter consoleReporter(MetricRegistry metrics) {
         return ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo(TimeUnit
                 .SECONDS).build();
     }
