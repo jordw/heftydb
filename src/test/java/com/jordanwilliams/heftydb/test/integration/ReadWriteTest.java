@@ -32,11 +32,12 @@ public class ReadWriteTest extends ParameterizedIntegrationTest {
 
     public ReadWriteTest(List<Tuple> tuples, Config config) throws IOException {
         super(tuples, config);
-        writeRecords();
     }
 
     @Test
     public void readWriteTest() throws Exception {
+        writeRecords();
+
         db = HeftyDB.open(config);
 
         for (Tuple tuple : TupleGenerator.latest(tuples, Long.MAX_VALUE)) {

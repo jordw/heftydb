@@ -24,8 +24,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 @ThreadSafe
@@ -39,8 +37,6 @@ public class ChannelDataFile implements DataFile {
         }
     };
 
-    private static final Set<String> openFiles = new HashSet<String>();
-
     private final Path path;
     private final FileChannel channel;
     private final AtomicLong appendPosition = new AtomicLong();
@@ -48,7 +44,6 @@ public class ChannelDataFile implements DataFile {
     private ChannelDataFile(Path path, FileChannel fileChannel) {
         this.path = path;
         this.channel = fileChannel;
-        openFiles.add(path.toString());
     }
 
     @Override
@@ -118,10 +113,11 @@ public class ChannelDataFile implements DataFile {
     }
 
     @Override
-    public void close() throws IOException {
-        sync();
-        channel.close();
-        openFiles.remove(path.toString());
+    public synchronized void close() throws IOException {
+        if (channel.isOpen()){
+            sync();
+            channel.close();
+        }
     }
 
     @Override

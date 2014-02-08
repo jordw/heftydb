@@ -57,12 +57,16 @@ public class BloomFilter implements Offheap {
         }
 
         private static int hashFunctionCount(long approxElementCount, long bitCount) {
+            if (approxElementCount == 0){
+                return 1;
+            }
+
             return Math.max(1, (int) Math.round(bitCount / approxElementCount * Math.log(2)));
         }
 
         private static long bitCount(long approxElementCount, double falsePositiveProbability) {
-            if (falsePositiveProbability == 0) {
-                falsePositiveProbability = Double.MIN_VALUE;
+            if (approxElementCount == 0) {
+                int x = 1;
             }
             return (long) (-approxElementCount * Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2)));
         }

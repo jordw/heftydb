@@ -47,6 +47,7 @@ public class DataFileTest extends FileTest {
     @Test
     public void concurrencyTest() throws Exception {
         final int threadCount = 32;
+        final int iterationCount = 1000;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         final DataFile dataFile = ChannelDataFile.open(testFile);
         final AtomicInteger counter = new AtomicInteger();
@@ -55,7 +56,7 @@ public class DataFileTest extends FileTest {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < 1000; i++){
+                    for (int i = 0; i < iterationCount; i++){
                         try {
                             dataFile.appendInt(counter.getAndIncrement());
                         } catch (IOException e){
@@ -70,9 +71,9 @@ public class DataFileTest extends FileTest {
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
         int fileOffset = 0;
-        int[] readValues = new int[threadCount * 1000];
+        int[] readValues = new int[threadCount * iterationCount];
 
-        for (int i = 0; i < threadCount * 1000; i++){
+        for (int i = 0; i < threadCount * iterationCount; i++){
             int read = dataFile.readInt(fileOffset);
             readValues[read] += 1;
             fileOffset += Sizes.INT_SIZE;

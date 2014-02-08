@@ -50,7 +50,7 @@ public class TableWriter {
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
-    public Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
+    public synchronized Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
         if (memoryTable == null || memoryTable.size() >= state.config().memoryTableSize()) {
             rotateMemoryTable();
         }
