@@ -37,16 +37,22 @@ public class TableReader implements Iterable<Tuple> {
     public Tuple get(Key key) {
         Tuple closestTuple = null;
 
-        for (Table table : state.tables()) {
-            if (table.mightContain(key)) {
-                Tuple tableTuple = table.get(key);
+        state.tables().startIteration();
 
-                if (tableTuple != null) {
-                    if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
-                        closestTuple = tableTuple;
+        try {
+            for (Table table : state.tables()) {
+                if (table.mightContain(key)) {
+                    Tuple tableTuple = table.get(key);
+
+                    if (tableTuple != null) {
+                        if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
+                            closestTuple = tableTuple;
+                        }
                     }
                 }
             }
+        } finally {
+            state.tables().finishIteration();
         }
 
         return closestTuple;

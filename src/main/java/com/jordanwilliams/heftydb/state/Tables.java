@@ -21,47 +21,12 @@ import com.jordanwilliams.heftydb.table.Table;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NavigableSet;
-import java.util.NoSuchElementException;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Tables implements Iterable<Table> {
-
-    private class ReadLockIterator implements Iterator<Table> {
-
-        private final Iterator<Table> delegate;
-
-        public ReadLockIterator(Iterator<Table> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean hasNext() {
-            boolean hasNext = delegate.hasNext();
-            if (!hasNext) {
-                tableLock.readLock().unlock();
-            }
-
-            return hasNext;
-        }
-
-        @Override
-        public Table next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-
-            return delegate.next();
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
 
     private final AtomicLong currentTableId = new AtomicLong();
     private final NavigableSet<Table> tables = new TreeSet<Table>();
@@ -80,22 +45,12 @@ public class Tables implements Iterable<Table> {
         return currentTableId.get();
     }
 
-    public Iterator<Table> all() {
+    public void startIteration(){
         tableLock.readLock().lock();
-        return new ReadLockIterator(tables.iterator());
     }
 
-    public Iterator<Table> persistent() {
-        tableLock.readLock().lock();
-        SortedSet<Table> tableSnapshot = new TreeSet<Table>();
-
-        for (Table table : tables) {
-            if (table.isPersistent()) {
-                tableSnapshot.add(table);
-            }
-        }
-
-        return new ReadLockIterator(tableSnapshot.iterator());
+    public void finishIteration(){
+        tableLock.readLock().unlock();
     }
 
     public void add(Table toAdd) {
@@ -132,6 +87,6 @@ public class Tables implements Iterable<Table> {
 
     @Override
     public Iterator<Table> iterator() {
-        return all();
+        return tables.iterator();
     }
 }

@@ -45,13 +45,18 @@ public class FullCompactor implements Compactor {
         List<Iterator<Tuple>> iterators = new ArrayList<Iterator<Tuple>>();
         long tupleCount = 0;
 
-        Iterator<Table> persistentTables = state.tables().persistent();
+        state.tables().startIteration();
 
-        while (persistentTables.hasNext()){
-            Table table = persistentTables.next();
-            toRemove.add(table);
-            iterators.add(table.ascendingIterator(Long.MAX_VALUE));
-            tupleCount += table.recordCount();
+        try {
+            for (Table table : state.tables()){
+                if (table.isPersistent()){
+                    toRemove.add(table);
+                    iterators.add(table.ascendingIterator(Long.MAX_VALUE));
+                    tupleCount += table.recordCount();
+                }
+            }
+        } finally {
+            state.tables().finishIteration();
         }
 
         Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
