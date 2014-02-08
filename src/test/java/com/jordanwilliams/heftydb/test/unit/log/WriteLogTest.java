@@ -40,7 +40,7 @@ public class WriteLogTest extends ParameterizedRecordTest {
         WriteLog log = WriteLog.open(1, paths);
 
         for (Tuple tuple : tuples) {
-            log.append(tuple);
+            log.append(tuple, false);
         }
 
         Iterator<Tuple> logIterator = log.iterator();

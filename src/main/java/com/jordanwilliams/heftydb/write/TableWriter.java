@@ -50,7 +50,7 @@ public class TableWriter {
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
-    public Snapshot write(ByteBuffer key, ByteBuffer value) throws IOException {
+    public Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
         if (memoryTable == null || memoryTable.size() >= state.config().memoryTableSize()) {
             rotateMemoryTable();
         }
@@ -64,7 +64,7 @@ public class TableWriter {
         Value recordValue = new Value(value);
         Tuple tuple = new Tuple(recordKey, recordValue);
 
-        writeLog.append(tuple);
+        writeLog.append(tuple, fsync);
         memoryTable.put(tuple);
 
         return new Snapshot(nextSnapshotId);

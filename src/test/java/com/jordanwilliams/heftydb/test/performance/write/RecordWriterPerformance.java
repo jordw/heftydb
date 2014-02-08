@@ -30,7 +30,7 @@ import com.jordanwilliams.heftydb.write.TableWriter;
 
 public class RecordWriterPerformance {
 
-    private static final int RECORD_COUNT = 1 * 1000000;
+    private static final int RECORD_COUNT = 5 * 1000000;
 
     public static void main(String[] args) throws Exception {
         MetricRegistry metrics = new MetricRegistry();
@@ -47,7 +47,7 @@ public class RecordWriterPerformance {
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
             Timer.Context watch = timer.time();
-            tableWriter.write(ByteBuffers.fromString(i + ""), value.data());
+            tableWriter.write(ByteBuffers.fromString(i + ""), value.data(), false);
             watch.stop();
         }
 

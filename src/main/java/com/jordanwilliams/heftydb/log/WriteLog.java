@@ -30,7 +30,7 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-public class WriteLog implements Iterable<Tuple> {
+public class WriteLog implements Iterable<Tuple>, AutoCloseable {
 
     private class LogIterator implements Iterator<Tuple> {
 
@@ -99,13 +99,17 @@ public class WriteLog implements Iterable<Tuple> {
         this.logFile = logFile;
     }
 
-    public void append(Tuple tuple) throws IOException {
-        Memory recordMemory = Memory.allocate(Tuple.SERIALIZER.size(tuple));
+    public void append(Tuple tuple, boolean fsync) throws IOException {
+        Memory recordMemory = Memory.allocate(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE);
 
         try {
+            recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE);
             Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
-            logFile.appendInt(recordMemory.size());
             logFile.append(recordMemory.directBuffer());
+
+            if (fsync){
+                logFile.sync();
+            }
         } finally {
             recordMemory.release();
         }
@@ -115,6 +119,7 @@ public class WriteLog implements Iterable<Tuple> {
         return tableId;
     }
 
+    @Override
     public void close() throws IOException {
         logFile.close();
     }

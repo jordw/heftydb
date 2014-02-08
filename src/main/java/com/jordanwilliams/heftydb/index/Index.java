@@ -22,12 +22,14 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class Index {
+
+    private static final int ROOT_INDEX_BLOCK_OFFSET = 8;
+    private static final int ROOT_INDEX_BLOCK_SIZE_OFFSET = 12;
 
     private final long tableId;
     private final DataFile indexFile;
@@ -38,8 +40,8 @@ public class Index {
         this.tableId = tableId;
         this.indexFile = indexFile;
         this.cache = cache;
-        long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - Sizes.LONG_SIZE);
-        int rootIndexBlockSize = indexFile.readInt(indexFile.size() - Sizes.LONG_SIZE - Sizes.INT_SIZE);
+        long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
+        int rootIndexBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset, rootIndexBlockSize);
     }
 

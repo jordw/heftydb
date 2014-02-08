@@ -81,29 +81,21 @@ public class Tables implements Iterable<Table> {
     }
 
     public Iterator<Table> all() {
-        try {
-            tableLock.readLock().lock();
-            return new ReadLockIterator(tables.iterator());
-        } finally {
-            tableLock.readLock().unlock();
-        }
+        tableLock.readLock().lock();
+        return new ReadLockIterator(tables.iterator());
     }
 
     public Iterator<Table> persistent() {
-        try {
-            tableLock.readLock().lock();
-            SortedSet<Table> tableSnapshot = new TreeSet<Table>();
+        tableLock.readLock().lock();
+        SortedSet<Table> tableSnapshot = new TreeSet<Table>();
 
-            for (Table table : tables) {
-                if (table.isPersistent()) {
-                    tableSnapshot.add(table);
-                }
+        for (Table table : tables) {
+            if (table.isPersistent()) {
+                tableSnapshot.add(table);
             }
-
-            return new ReadLockIterator(tableSnapshot.iterator());
-        } finally {
-            tableLock.readLock().unlock();
         }
+
+        return new ReadLockIterator(tableSnapshot.iterator());
     }
 
     public void add(Table toAdd) {

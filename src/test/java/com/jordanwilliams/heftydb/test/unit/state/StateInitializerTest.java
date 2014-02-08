@@ -64,7 +64,7 @@ public class StateInitializerTest extends RecordTest {
         WriteLog log = WriteLog.open(2, paths);
         List<Tuple> moreTestTuples = generateMoreTestRecords(101);
         for (Tuple tuple : moreTestTuples) {
-            log.append(tuple);
+            log.append(tuple, false);
         }
 
         State state = new StateInitializer(config).initialize();

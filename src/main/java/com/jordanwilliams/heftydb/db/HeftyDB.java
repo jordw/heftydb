@@ -42,7 +42,11 @@ public class HeftyDB {
     }
 
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
-        return tableWriter.write(key, value);
+        return tableWriter.write(key, value, false);
+    }
+
+    public Snapshot put(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
+        return tableWriter.write(key, value, fsync);
     }
 
     public Record get(ByteBuffer key) throws IOException {
