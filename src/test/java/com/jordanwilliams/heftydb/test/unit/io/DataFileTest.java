@@ -18,9 +18,11 @@ package com.jordanwilliams.heftydb.test.unit.io;
 
 
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
+import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.MappedDataFile;
 import com.jordanwilliams.heftydb.test.base.FileTest;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
+import com.jordanwilliams.heftydb.util.Sizes;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,6 +31,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DataFileTest extends FileTest {
 
@@ -36,6 +42,46 @@ public class DataFileTest extends FileTest {
     private static final ByteBuffer MORE_TEST_BYTES = ByteBuffer.wrap("Test data is very interesting".getBytes());
 
     private final Path testFile = TestFileHelper.TEMP_PATH.resolve("testfile");
+
+
+    @Test
+    public void concurrencyTest() throws Exception {
+        final int threadCount = 32;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        final DataFile dataFile = ChannelDataFile.open(testFile);
+        final AtomicInteger counter = new AtomicInteger();
+
+        for (int i = 0; i < threadCount; i++){
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 1000; i++){
+                        try {
+                            dataFile.appendInt(counter.getAndIncrement());
+                        } catch (IOException e){
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
+        }
+
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
+
+        int fileOffset = 0;
+        int[] readValues = new int[threadCount * 1000];
+
+        for (int i = 0; i < threadCount * 1000; i++){
+            int read = dataFile.readInt(fileOffset);
+            readValues[read] += 1;
+            fileOffset += Sizes.INT_SIZE;
+        }
+
+        for (int i = 0; i < readValues.length; i++){
+            Assert.assertEquals("All values appear once", 1, readValues[i]);
+        }
+    }
 
     @Test
     public void mutableDataFileTest() throws IOException {
