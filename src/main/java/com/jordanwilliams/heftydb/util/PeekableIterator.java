@@ -16,35 +16,7 @@
 
 package com.jordanwilliams.heftydb.util;
 
-import java.util.Iterator;
-
 public interface PeekableIterator<T> {
-
-    public static class Wrapper<T> implements PeekableIterator<T> {
-
-        private final Iterator<T> delegate;
-        private T current;
-
-        public Wrapper(Iterator<T> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public T current() {
-            return current;
-        }
-
-        @Override
-        public boolean advance() {
-            if (!delegate.hasNext()) {
-                return false;
-            }
-
-            current = delegate.next();
-
-            return true;
-        }
-    }
 
     public T current();
 

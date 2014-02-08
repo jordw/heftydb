@@ -84,7 +84,7 @@ public class TableWriter {
         }
     }
 
-    private synchronized void rotateMemoryTable() throws IOException {
+    private void rotateMemoryTable() throws IOException {
         if (memoryTable != null) {
             writeLog.close();
             writeMemoryTable(memoryTable);

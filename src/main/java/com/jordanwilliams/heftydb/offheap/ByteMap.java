@@ -350,10 +350,6 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
         int entryOffset = entryOffset(bufferKeyIndex);
 
-        if (entryOffset > directBuffer.capacity() || entryOffset < 0) {
-            int x = 1;
-        }
-
         int keySize = directBuffer.getInt(entryOffset);
         entryOffset += Sizes.INT_SIZE;
 

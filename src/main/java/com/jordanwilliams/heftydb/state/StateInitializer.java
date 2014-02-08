@@ -70,7 +70,7 @@ public class StateInitializer {
         Set<Long> tempIds = paths.tempTableFileIds();
 
         for (Long id : tempIds) {
-            Files.deleteIfExists(paths.tablePath(id));
+            Files.deleteIfExists(paths.tempPath(id));
             Files.deleteIfExists(paths.indexPath(id));
             Files.deleteIfExists(paths.filterPath(id));
         }

@@ -27,13 +27,6 @@ public class ByteBuffers {
         return ByteBuffer.wrap(string.getBytes(Charset.defaultCharset()));
     }
 
-    public static ByteBuffer fromInt(int value) {
-        ByteBuffer intBuffer = ByteBuffer.allocate(Sizes.INT_SIZE);
-        intBuffer.putInt(value);
-        intBuffer.rewind();
-        return intBuffer;
-    }
-
     public static String toString(ByteBuffer byteBuffer) {
         byte[] bytes = new byte[byteBuffer.capacity()];
 

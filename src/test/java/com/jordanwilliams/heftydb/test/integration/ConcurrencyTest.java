@@ -94,6 +94,7 @@ public class ConcurrencyTest extends ParameterizedIntegrationTest {
                             }
                         }
 
+                        db.compact();
                     } catch (IOException e){
                         throw new RuntimeException(e);
                     }
