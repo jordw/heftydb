@@ -85,10 +85,10 @@ public class StateInitializer {
             log.close();
 
             FileTableWriter.Task tableWriterTask = new FileTableWriter.Task.Builder().tableId(id).config(config)
-                    .paths(paths).level(1).tupleCount(memoryTable.recordCount()).source(memoryTable.ascendingIterator
+                    .paths(paths).level(1).tupleCount(memoryTable.tupleCount()).source(memoryTable.ascendingIterator
                             (Long.MAX_VALUE)).build();
 
-            tableWriterTask.run();
+            tableWriterTask.call();
 
             Files.deleteIfExists(paths.logPath(id));
         }

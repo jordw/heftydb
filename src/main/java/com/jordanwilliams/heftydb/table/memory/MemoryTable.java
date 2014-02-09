@@ -86,7 +86,7 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public long recordCount() {
+    public long tupleCount() {
         return recordCount.get();
     }
 

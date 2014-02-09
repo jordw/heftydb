@@ -98,7 +98,7 @@ public class TableReader implements Iterable<Tuple> {
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
     }
 
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         for (Table table : state.tables()) {
             table.close();
         }

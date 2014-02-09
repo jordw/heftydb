@@ -124,7 +124,7 @@ public class FileTableTest extends ParameterizedRecordTest {
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
                 tuples.size(), null);
 
-        writerTask.run();
+        writerTask.call();
 
         return FileTable.open(1, paths, new TupleBlock.Cache(), new IndexBlock.Cache());
     }

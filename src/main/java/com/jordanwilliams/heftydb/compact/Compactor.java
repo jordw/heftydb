@@ -16,10 +16,47 @@
 
 package com.jordanwilliams.heftydb.compact;
 
-import java.io.IOException;
+import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.state.Tables;
 
-public interface Compactor {
+import java.util.concurrent.Future;
 
-    public void compact() throws IOException;
+public class Compactor {
 
+    private final CompactionExecutor compactionExecutor;
+    private final CompactionPlanner compactionPlanner;
+    private Future<?> compactionFuture;
+
+    public Compactor(State state, CompactionPlanner compactionPlanner) {
+        this.compactionExecutor = new CompactionExecutor(state);
+        this.compactionPlanner = compactionPlanner;
+
+        state.tables().onChange(new Tables.ChangeHandler() {
+            @Override
+            public void trigger() {
+                evaluateCompaction();
+            }
+        });
+    }
+
+    public synchronized void evaluateCompaction(){
+        if (compactionPlanner.shouldCompact()){
+           scheduleCompaction();
+        }
+    }
+
+    public synchronized void scheduleCompaction(){
+       if (compactionFuture != null && !compactionFuture.isDone()){
+           return;
+       }
+
+       //compactionFuture = compactionExecutor.schedule(compactionPlanner.planCompaction());
+    }
+
+    @Override
+    public String toString() {
+        return "Compactor{" +
+                "compactionPlanner=" + compactionPlanner +
+                '}';
+    }
 }

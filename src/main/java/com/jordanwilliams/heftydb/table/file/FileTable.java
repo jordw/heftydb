@@ -303,7 +303,7 @@ public class FileTable implements Table {
     }
 
     @Override
-    public long recordCount() {
+    public long tupleCount() {
         return trailer.recordCount();
     }
 

@@ -98,7 +98,7 @@ public class TableWriter {
 
     private void writeMemoryTable(final Table tableToWrite) {
         FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, state.paths(), state.config(),
-                tableToWrite.ascendingIterator(Long.MAX_VALUE), tableToWrite.recordCount(),
+                tableToWrite.ascendingIterator(Long.MAX_VALUE), tableToWrite.tupleCount(),
                 new FileTableWriter.Task.Callback() {
             @Override
             public void finish() {
@@ -112,6 +112,6 @@ public class TableWriter {
             }
         });
 
-        task.run();
+        tableExecutor.submit(task);
     }
 }

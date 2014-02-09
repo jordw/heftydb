@@ -37,7 +37,7 @@ public interface Table extends Iterable<Tuple>, Comparable<Table> {
 
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId);
 
-    public long recordCount();
+    public long tupleCount();
 
     public long size();
 

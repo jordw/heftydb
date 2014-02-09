@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.compact.Compactor;
-import com.jordanwilliams.heftydb.compact.FullCompactor;
+import com.jordanwilliams.heftydb.compact.FullCompactionPlanner;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.read.TableReader;
 import com.jordanwilliams.heftydb.state.Config;
@@ -31,14 +31,16 @@ import java.util.Iterator;
 
 public class HeftyDB {
 
+    private final State state;
     private final TableWriter tableWriter;
     private final TableReader tableReader;
     private final Compactor compactor;
 
     private HeftyDB(State state) {
+        this.state = state;
         this.tableWriter = new TableWriter(state);
         this.tableReader = new TableReader(state);
-        this.compactor = new FullCompactor(state);
+        this.compactor = new Compactor(state, new FullCompactionPlanner(state));
     }
 
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
@@ -50,7 +52,7 @@ public class HeftyDB {
     }
 
     public Record get(ByteBuffer key) throws IOException {
-        return new Record(tableReader.get(new Key(key, Long.MAX_VALUE)));
+        return new Record(tableReader.get(new Key(key, state.snapshots().currentId())));
     }
 
     public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
@@ -79,7 +81,7 @@ public class HeftyDB {
     }
 
     public synchronized void compact() throws IOException {
-        compactor.compact();
+        compactor.scheduleCompaction();
     }
 
     public static HeftyDB open(Config config) throws IOException {

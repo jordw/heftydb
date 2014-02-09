@@ -17,28 +17,38 @@
 package com.jordanwilliams.heftydb.test.endurance;
 
 import com.jordanwilliams.heftydb.db.HeftyDB;
+import com.jordanwilliams.heftydb.db.Record;
+import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
+import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.StopWatch;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
+import com.jordanwilliams.heftydb.util.ByteBuffers;
 
+import java.util.Iterator;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class EnduranceTest {
 
     private static final int THREAD_COUNT = 16;
-    private static final int RUNTIME_MINUTES = 1;
+    private static final int RUNTIME_MINUTES = 15;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
         TestFileHelper.cleanUpTestFiles();
 
         final AtomicLong maxSnapshotId = new AtomicLong();
-        final AtomicLong maxKey = new AtomicLong();
+        final AtomicInteger maxKey = new AtomicInteger();
         final AtomicBoolean finished = new AtomicBoolean();
+
+        final KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
+        final Random random = new Random(System.nanoTime());
 
         final ExecutorService writeExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
         final ExecutorService readExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
@@ -56,7 +66,19 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            Thread.sleep(1000);
+                            for (int i = 0; i < 10; i++){
+                                String nextKey = Long.toString(maxKey.incrementAndGet());
+                                Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
+                                        keyValueGenerator.testValue(100));
+
+                                long currentMaxSnapshotId = maxSnapshotId.get();
+
+                                if (maxSnapshot.id() > currentMaxSnapshotId){
+                                    maxSnapshotId.compareAndSet(currentMaxSnapshotId, maxSnapshot.id());
+                                }
+                            }
+
+                            Thread.sleep(10);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -73,7 +95,12 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            Thread.sleep(1000);
+                            for (int i = 0; i < 20; i++){
+                                String nextKey = Long.toString(random.nextInt(maxKey.get()));
+                                db.get(ByteBuffers.fromString(nextKey));
+                            }
+
+                            Thread.sleep(10);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -90,7 +117,17 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            Thread.sleep(1000);
+                            Iterator<Record> scanIterator = db.ascendingIterator(new Snapshot(maxSnapshotId.get()));
+                            long maxSnapshotId = 0;
+
+                            for (int i = 0; i < 10; i++){
+                                if (scanIterator.hasNext()){
+                                    Record record = scanIterator.next();
+                                    maxSnapshotId = Math.max(maxSnapshotId, record.snapshot().id());
+                                }
+
+                                Thread.sleep(10);
+                            }
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);

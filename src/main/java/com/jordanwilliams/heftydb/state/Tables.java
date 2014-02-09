@@ -18,8 +18,10 @@ package com.jordanwilliams.heftydb.state;
 
 import com.jordanwilliams.heftydb.table.Table;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,13 +30,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Tables implements Iterable<Table> {
 
+    public interface ChangeHandler {
+        public void trigger();
+    }
+
     private final AtomicLong currentTableId = new AtomicLong();
     private final NavigableSet<Table> tables = new TreeSet<Table>();
     private final ReadWriteLock tableLock = new ReentrantReadWriteLock();
+    private final List<ChangeHandler> changeHandlers = new ArrayList<ChangeHandler>();
 
     public Tables(Collection<Table> initialTables) {
         this.tables.addAll(initialTables);
         this.currentTableId.set(tables.isEmpty() ? 0 : tables.last().id());
+    }
+
+    public void onChange(ChangeHandler changeHandler){
+        changeHandlers.add(changeHandler);
     }
 
     public long nextId() {
@@ -57,6 +68,7 @@ public class Tables implements Iterable<Table> {
         try {
             tableLock.writeLock().lock();
             tables.add(toAdd);
+            notifyChanged();
         } finally {
             tableLock.writeLock().unlock();
         }
@@ -66,6 +78,7 @@ public class Tables implements Iterable<Table> {
         try {
             tableLock.writeLock().lock();
             tables.remove(toRemove);
+            notifyChanged();
         } finally {
             tableLock.writeLock().unlock();
         }
@@ -76,6 +89,7 @@ public class Tables implements Iterable<Table> {
             tableLock.writeLock().lock();
             tables.remove(toRemove);
             tables.add(toAdd);
+            notifyChanged();
         } finally {
             tableLock.writeLock().unlock();
         }
@@ -88,5 +102,11 @@ public class Tables implements Iterable<Table> {
     @Override
     public Iterator<Table> iterator() {
         return tables.iterator();
+    }
+
+    private void notifyChanged(){
+        for (ChangeHandler changeHandler : changeHandlers){
+            changeHandler.trigger();
+        }
     }
 }

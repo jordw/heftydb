@@ -29,10 +29,11 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 
 public class FileTableWriter {
 
-    public static class Task implements Runnable {
+    public static class Task implements Callable<Void> {
 
         public static class Builder {
 
@@ -90,31 +91,31 @@ public class FileTableWriter {
 
         private final long tableId;
         private final int level;
-        private final Iterator<Tuple> records;
-        private final long recordCount;
+        private final Iterator<Tuple> tuples;
+        private final long tupleCount;
         private final Paths paths;
         private final Config config;
         private final Callback callback;
 
-        public Task(long tableId, int level, Paths paths, Config config, Iterator<Tuple> records, long recordCount,
+        public Task(long tableId, int level, Paths paths, Config config, Iterator<Tuple> tuples, long tupleCount,
                     Callback callback) {
             this.tableId = tableId;
             this.level = level;
             this.paths = paths;
             this.config = config;
-            this.records = records;
-            this.recordCount = recordCount;
+            this.tuples = tuples;
+            this.tupleCount = tupleCount;
             this.callback = callback;
         }
 
         @Override
-        public void run() {
+        public Void call() {
             try {
-                FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, recordCount,
+                FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
                         config.indexBlockSize(), config.fileTableBlockSize(), level);
 
-                while (records.hasNext()) {
-                    tableWriter.write(records.next());
+                while (tuples.hasNext()) {
+                    tableWriter.write(tuples.next());
                 }
 
                 tableWriter.finish();
@@ -124,6 +125,8 @@ public class FileTableWriter {
                 if (callback != null) {
                     callback.finish();
                 }
+
+                return null;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
