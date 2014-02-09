@@ -41,7 +41,7 @@ public class ConfigGenerator {
         return new Config() {
             @Override
             public int memoryTableSize() {
-                return 4096000;
+                return 8192000;
             }
 
             @Override
