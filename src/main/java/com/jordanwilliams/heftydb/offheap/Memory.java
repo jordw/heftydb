@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
-    private static final int PAGE_SIZE = 4096;
     private static final Allocator allocator = Allocator.allocator;
     private static final Constructor directBufferConstructor;
 
@@ -101,10 +100,6 @@ public class Memory {
 
     public static Memory allocate(int size, int align) {
         return allocate(pageAlignedSize(size, align));
-    }
-
-    public static Memory allocatePageAligned(int size) {
-        return allocate(pageAlignedSize(size, PAGE_SIZE));
     }
 
     private static ByteBuffer rawDirectBuffer(long address, int size) {

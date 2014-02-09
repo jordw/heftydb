@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.read;
+package com.jordanwilliams.heftydb.aggregate;
 
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;

@@ -19,11 +19,11 @@ package com.jordanwilliams.heftydb.db;
 import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.compact.FullCompactionPlanner;
 import com.jordanwilliams.heftydb.data.Key;
-import com.jordanwilliams.heftydb.read.TableReader;
+import com.jordanwilliams.heftydb.aggregate.TableReader;
 import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.StateInitializer;
-import com.jordanwilliams.heftydb.write.TableWriter;
+import com.jordanwilliams.heftydb.aggregate.TableWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

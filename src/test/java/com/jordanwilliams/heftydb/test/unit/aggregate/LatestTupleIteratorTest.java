@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.read;
+package com.jordanwilliams.heftydb.test.unit.aggregate;
 
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
-import com.jordanwilliams.heftydb.read.LatestTupleIterator;
+import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import org.junit.Assert;
 import org.junit.Test;

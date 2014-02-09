@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.compact;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.read.MergingIterator;
+import com.jordanwilliams.heftydb.aggregate.MergingIterator;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;

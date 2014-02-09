@@ -25,7 +25,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.read.LatestTupleIterator;
+import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.Sizes;

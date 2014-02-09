@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
 
 public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
-    private static final int PAGE_SIZE = 4096;
+    private static final int PAGE_SIZE = 1024;
 
     public static class Entry {
 
