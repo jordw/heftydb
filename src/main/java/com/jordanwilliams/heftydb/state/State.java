@@ -27,6 +27,7 @@ public class State {
     private final Config config;
     private final Paths paths;
     private final Caches caches;
+    private final Metrics metrics;
 
     public State(Collection<Table> tables, Config config, Paths paths, Caches caches, long currentSnapshotId) {
         this.snapshots = new Snapshots(currentSnapshotId);
@@ -34,6 +35,7 @@ public class State {
         this.config = config;
         this.paths = paths;
         this.caches = caches;
+        this.metrics = new Metrics(config);
     }
 
     public Paths paths() {

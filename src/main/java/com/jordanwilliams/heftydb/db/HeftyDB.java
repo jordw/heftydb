@@ -35,7 +35,7 @@ public class HeftyDB {
     private final TableReader tableReader;
     private final Compactor compactor;
 
-    public HeftyDB(State state) {
+    private HeftyDB(State state) {
         this.tableWriter = new TableWriter(state);
         this.tableReader = new TableReader(state);
         this.compactor = new FullCompactor(state);

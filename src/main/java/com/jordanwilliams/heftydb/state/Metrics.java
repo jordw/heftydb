@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.db;
+package com.jordanwilliams.heftydb.state;
 
-import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -28,16 +27,11 @@ public class Metrics {
 
     private final MetricRegistry metrics = new MetricRegistry();
     private final JmxReporter jmxReporter;
-    private final ConsoleReporter consoleReporter;
 
     public Metrics(Config config) {
         this.jmxReporter = JmxReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo
                 (TimeUnit.SECONDS).inDomain(config.tableDirectory().toString()).build();
-        this.consoleReporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS)
-                .convertRatesTo(TimeUnit.SECONDS).build();
-
         jmxReporter.start();
-        consoleReporter.start(30, TimeUnit.SECONDS);
     }
 
     public void register(String name, Metric metric) {

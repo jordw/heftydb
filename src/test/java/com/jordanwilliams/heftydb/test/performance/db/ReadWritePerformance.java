@@ -32,7 +32,7 @@ import java.util.Random;
 
 public class ReadWritePerformance {
 
-    private static final int RECORD_COUNT = 5 * 1000000;
+    private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
         MetricRegistry metrics = new MetricRegistry();
