@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.unit.io;
 
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.io.MappedDataFile;
 import com.jordanwilliams.heftydb.test.base.FileTest;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -28,9 +27,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -120,28 +117,5 @@ public class DataFileTest extends FileTest {
         Assert.assertEquals("Values match", 8, file.readLong(4));
         Assert.assertEquals("Values match", 4, file.readInt(12));
         Assert.assertEquals("Values match", 8, file.readLong(16));
-    }
-
-    @Test
-    public void mappedDataFileTest() throws IOException {
-        TEST_BYTES.rewind();
-        MORE_TEST_BYTES.rewind();
-
-        FileChannel channel = FileChannel.open(testFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
-        channel.write(TEST_BYTES);
-        channel.write(MORE_TEST_BYTES);
-        channel.close();
-
-        MappedDataFile file = MappedDataFile.open(testFile);
-
-        ByteBuffer readBuffer = ByteBuffer.allocate(TEST_BYTES.capacity());
-        file.read(readBuffer, 0);
-        readBuffer.flip();
-
-        TEST_BYTES.rewind();
-
-        Assert.assertEquals("Read bytes", TEST_BYTES, readBuffer);
-        Assert.assertEquals("File size", TEST_BYTES.capacity() + MORE_TEST_BYTES.capacity(), file.size());
     }
 }
