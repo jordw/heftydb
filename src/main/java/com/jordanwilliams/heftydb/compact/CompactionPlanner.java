@@ -20,5 +20,5 @@ public interface CompactionPlanner {
 
     public CompactionPlan planCompaction();
 
-    public boolean shouldCompact();
+    public boolean needsCompaction();
 }

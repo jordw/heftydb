@@ -32,17 +32,23 @@ public class FullCompactionPlanner implements CompactionPlanner {
     public CompactionPlan planCompaction() {
         CompactionTask.Builder taskBuilder = new CompactionTask.Builder(level++);
 
-        for (Table table : state.tables()){
-            if (table.isPersistent()){
-                taskBuilder.add(table);
+        state.tables().readLock();
+
+        try {
+            for (Table table : state.tables()){
+                if (table.isPersistent()){
+                    taskBuilder.add(table);
+                }
             }
+        } finally {
+            state.tables().readUnlock();
         }
 
         return new CompactionPlan(taskBuilder.build());
     }
 
     @Override
-    public boolean shouldCompact() {
+    public boolean needsCompaction() {
         int count = 0;
 
         for (Table table : state.tables()){
@@ -51,6 +57,6 @@ public class FullCompactionPlanner implements CompactionPlanner {
             }
         }
 
-        return count > 1;
+        return count > 10;
     }
 }

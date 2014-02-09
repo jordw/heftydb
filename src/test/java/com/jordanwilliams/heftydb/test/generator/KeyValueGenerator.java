@@ -20,29 +20,36 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 public class KeyValueGenerator {
 
+    private static final int MAX_CACHED_KEYS = 1024;
+
     private final Random rand = new Random(System.nanoTime());
-    private final Map<Integer, ByteBuffer> testKeys = new HashMap<Integer, ByteBuffer>();
+    private final List<ByteBuffer> testKeys = new ArrayList<ByteBuffer>();
     private final Map<Integer, ByteBuffer> testValues = new HashMap<Integer, ByteBuffer>();
 
-    public ByteBuffer testKey(int size, int reuseWeight) {
+    public synchronized ByteBuffer testKey(int size, int reuseWeight) {
         int next = rand.nextInt(100);
 
-        if (next <= reuseWeight && reuseWeight != 0) {
-            if (!testKeys.containsKey(next)) {
-                testKeys.put(next, randomKey(size));
+        if (next <= reuseWeight && reuseWeight != 0 && testKeys.size() > 0) {
+            ByteBuffer existing = testKeys.get(rand.nextInt(testKeys.size()));
+            ByteBuffer reusedKey = existing.duplicate();
+            reusedKey.rewind();
+            return reusedKey;
+        } else {
+            ByteBuffer random = randomKey(size);
+
+            if (testKeys.size() < MAX_CACHED_KEYS){
+                testKeys.add(random);
             }
 
-            ByteBuffer testKey = testKeys.get(size).duplicate();
-            testKey.rewind();
-            return testKey;
-        } else {
-            return randomKey(size);
+            return random.duplicate();
         }
     }
 
@@ -50,7 +57,7 @@ public class KeyValueGenerator {
         return testKey(16, reuseWeight);
     }
 
-    public ByteBuffer testValue(int size) {
+    public synchronized ByteBuffer testValue(int size) {
         if (!testValues.containsKey(size)) {
             testValues.put(size, randomValue(size));
         }

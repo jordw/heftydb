@@ -103,7 +103,7 @@ public class Compactor {
     }
 
     public synchronized void evaluateCompaction(){
-        if (compactionPlanner.shouldCompact()){
+        if (compactionPlanner.needsCompaction()){
            scheduleCompaction();
         }
     }

@@ -112,12 +112,21 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
                 //Key
                 memoryBuffer.putInt(key.size());
-                memoryBuffer.put(key.data());
+
+                ByteBuffer keyData = key.data();
+                for (int i = 0; i < key.size(); i++){
+                    memoryBuffer.put(keyData.get(i));
+                }
+
                 memoryBuffer.putLong(key.snapshotId());
 
                 //Value
                 memoryBuffer.putInt(value.size());
-                memoryBuffer.put(value.data());
+
+                ByteBuffer valueData = value.data();
+                for (int i = 0; i < value.size(); i++){
+                    memoryBuffer.put(valueData.get(i));
+                }
 
                 key.data().rewind();
                 value.data().rewind();
