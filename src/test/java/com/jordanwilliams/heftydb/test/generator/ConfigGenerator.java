@@ -41,12 +41,12 @@ public class ConfigGenerator {
         return new Config() {
             @Override
             public int memoryTableSize() {
-                return 32768000;
+                return 4096000;
             }
 
             @Override
             public int fileTableBlockSize() {
-                return 32768;
+                return 4096;
             }
 
             @Override

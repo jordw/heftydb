@@ -88,7 +88,7 @@ public class StateInitializer {
                     .paths(paths).level(1).tupleCount(memoryTable.tupleCount()).source(memoryTable.ascendingIterator
                             (Long.MAX_VALUE)).build();
 
-            tableWriterTask.call();
+            tableWriterTask.run();
 
             Files.deleteIfExists(paths.logPath(id));
         }

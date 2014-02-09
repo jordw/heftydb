@@ -46,7 +46,7 @@ public class StateInitializerTest extends RecordTest {
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
                 tuples.size(), null);
-        writerTask.call();
+        writerTask.run();
 
         State state = new StateInitializer(config).initialize();
         Assert.assertEquals("Should be 1 table", 1, state.tables().count());
@@ -59,7 +59,7 @@ public class StateInitializerTest extends RecordTest {
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
                 tuples.size(), null);
-        writerTask.call();
+        writerTask.run();
 
         WriteLog log = WriteLog.open(2, paths);
         List<Tuple> moreTestTuples = generateMoreTestRecords(101);

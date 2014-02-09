@@ -16,19 +16,82 @@
 
 package com.jordanwilliams.heftydb.compact;
 
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.read.MergingIterator;
 import com.jordanwilliams.heftydb.state.State;
 import com.jordanwilliams.heftydb.state.Tables;
+import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.table.file.FileTable;
+import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Compactor {
 
-    private final CompactionExecutor compactionExecutor;
+    private class Task implements Runnable {
+
+        private final CompactionTask compactionTask;
+
+        private Task(CompactionTask compactionTask) {
+            this.compactionTask = compactionTask;
+        }
+
+        @Override
+        public void run() {
+            try {
+                List<Iterator<Tuple>> iterators = new ArrayList<Iterator<Tuple>>();
+                long tupleCount = 0;
+                long nextTableId = state.tables().nextId();
+
+                for (Table table : compactionTask.tables()){
+                    iterators.add(table.ascendingIterator(Long.MAX_VALUE));
+                    tupleCount += table.tupleCount();
+                }
+
+                Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
+
+                FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config(state.config
+                        ()).paths(state.paths()).level(compactionTask.level()).tupleCount(tupleCount).source(mergedIterator)
+                        .build();
+
+                writerTask.run();
+
+                state.tables().add(FileTable.open(nextTableId, state.paths(), state.caches().recordBlockCache(),
+                        state.caches().indexBlockCache()));
+
+                removeObsoleteTables(compactionTask.tables());
+            } catch (IOException e){
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void removeObsoleteTables(List<Table> toRemove) throws IOException {
+            for (Table table : toRemove) {
+                state.tables().remove(table);
+                Files.deleteIfExists(state.paths().tablePath(table.id()));
+                Files.deleteIfExists(state.paths().indexPath(table.id()));
+                Files.deleteIfExists(state.paths().filterPath(table.id()));
+            }
+        }
+    }
+
+    private final State state;
+    private final ExecutorService compactionExecutor;
     private final CompactionPlanner compactionPlanner;
-    private Future<?> compactionFuture;
+    private final AtomicBoolean compactionRunning = new AtomicBoolean();
+
 
     public Compactor(State state, CompactionPlanner compactionPlanner) {
-        this.compactionExecutor = new CompactionExecutor(state);
+        this.state = state;
+        this.compactionExecutor = Executors.newFixedThreadPool(state.config().tableCompactionThreads());
         this.compactionPlanner = compactionPlanner;
 
         state.tables().onChange(new Tables.ChangeHandler() {
@@ -46,11 +109,34 @@ public class Compactor {
     }
 
     public synchronized void scheduleCompaction(){
-       if (compactionFuture != null && !compactionFuture.isDone()){
-           return;
-       }
+        if (compactionRunning.get()){
+            return;
+        }
 
-       //compactionFuture = compactionExecutor.schedule(compactionPlanner.planCompaction());
+        compactionRunning.set(true);
+
+        compactionExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                CompactionPlan compactionPlan = compactionPlanner.planCompaction();
+                List<Future<?>> taskFutures = new ArrayList<Future<?>>();
+
+                for (CompactionTask task : compactionPlan){
+                    taskFutures.add(compactionExecutor.submit(new Task(task)));
+                }
+
+                for (Future<?> taskFuture : taskFutures){
+                    try {
+                        taskFuture.get();
+                    } catch (Exception e){
+                        compactionRunning.set(false);
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                compactionRunning.set(false);
+            }
+        });
     }
 
     @Override

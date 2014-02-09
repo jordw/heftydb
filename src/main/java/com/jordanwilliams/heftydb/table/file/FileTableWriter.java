@@ -29,11 +29,10 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
-import java.util.concurrent.Callable;
 
 public class FileTableWriter {
 
-    public static class Task implements Callable<Void> {
+    public static class Task implements Runnable {
 
         public static class Builder {
 
@@ -109,7 +108,7 @@ public class FileTableWriter {
         }
 
         @Override
-        public Void call() {
+        public void run() {
             try {
                 FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
                         config.indexBlockSize(), config.fileTableBlockSize(), level);
@@ -125,8 +124,6 @@ public class FileTableWriter {
                 if (callback != null) {
                     callback.finish();
                 }
-
-                return null;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

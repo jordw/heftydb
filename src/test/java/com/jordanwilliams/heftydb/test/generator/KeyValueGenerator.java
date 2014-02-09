@@ -30,19 +30,6 @@ public class KeyValueGenerator {
     private final Map<Integer, ByteBuffer> testKeys = new HashMap<Integer, ByteBuffer>();
     private final Map<Integer, ByteBuffer> testValues = new HashMap<Integer, ByteBuffer>();
 
-    private ByteBuffer[] preComputedKeys;
-    private int preComputedKeySize;
-    private int preComputedKeysUsed = 0;
-
-    public void precomputeKeys(int preComputedKeySize, int preComputedKeyCount) {
-        this.preComputedKeys = new ByteBuffer[preComputedKeyCount];
-        this.preComputedKeySize = preComputedKeySize;
-
-        for (int i = 0; i < preComputedKeyCount; i++) {
-            preComputedKeys[i] = ByteBuffer.wrap(RandomStringUtils.randomAlphanumeric(preComputedKeySize).getBytes());
-        }
-    }
-
     public ByteBuffer testKey(int size, int reuseWeight) {
         int next = rand.nextInt(100);
 
@@ -51,7 +38,9 @@ public class KeyValueGenerator {
                 testKeys.put(next, randomKey(size));
             }
 
-            return testKeys.get(next);
+            ByteBuffer testKey = testKeys.get(size).duplicate();
+            testKey.rewind();
+            return testKey;
         } else {
             return randomKey(size);
         }
@@ -66,17 +55,12 @@ public class KeyValueGenerator {
             testValues.put(size, randomValue(size));
         }
 
-        return testValues.get(size);
+        ByteBuffer testValue = testValues.get(size).duplicate();
+        testValue.rewind();
+        return testValue;
     }
 
     private ByteBuffer randomKey(int size) {
-        //See if we can use a precomputed random key
-        if (size == preComputedKeySize && preComputedKeysUsed < preComputedKeys.length) {
-            ByteBuffer preComputed = preComputedKeys[preComputedKeysUsed];
-            preComputedKeysUsed++;
-            return preComputed;
-        }
-
         return ByteBuffer.wrap(RandomStringUtils.randomAlphanumeric(size).getBytes());
     }
 
