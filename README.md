@@ -17,13 +17,17 @@ HeftyDB is a sorted key-value library for the JVM. It was designed with the foll
 Supports gets and puts by key as well as ascending and descending iteration from any key.
 
 ###Log Structured Merge Trees
-All write operations are sequential, and are limited by the sequential IO performance of the underlying disk.
+All write operations are sequential, and are limited by the sequential IO performance of the underlying disk. Tables
+are written with a full B+tree index for memory efficiency, even at very large table sizes.
 
 ###Snapshotted multi-version concurrency control
 Reads and range scans never block writes
 
 ###Off-heap data structures
 Operations in the critical read and write paths are implemented using off-heap memory wherever possible to reduce GC pressure and memory overhead.
+
+###Multi-threaded table writes and compactions
+Make use of multiple CPU cores.
 
 ###Pluggable Compaction Strategies
 It's easy to provide custom compaction behavior tailored to specific work loads.
