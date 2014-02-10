@@ -33,9 +33,7 @@ try {
     DB testDB = HeftyDB.open(new Config.Builder().directory(directory).build());
 
     Snapshot snapshot = db.put(someByteBufferKey, someByteBufferValue);
-
     Record record = db.get(someByteBufferKey, snapshot);
-
     Iterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
 
     while (ascendingIterator.hasNext()){
@@ -43,7 +41,6 @@ try {
     }
 
     testDB.compact();
-
     testDB.close();
 
 } catch (IOException e){
