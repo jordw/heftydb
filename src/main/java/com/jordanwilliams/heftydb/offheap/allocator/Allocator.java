@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.offheap;
+package com.jordanwilliams.heftydb.offheap.allocator;
 
 public interface Allocator {
 

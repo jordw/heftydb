@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 
-import com.jordanwilliams.heftydb.offheap.UnsafeAllocator;
+import com.jordanwilliams.heftydb.offheap.allocator.UnsafeAllocator;
 import org.junit.Assert;
 import org.junit.Test;
 

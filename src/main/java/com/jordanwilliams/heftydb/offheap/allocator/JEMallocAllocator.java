@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013. Jordan Williams
+ * Copyright (c) 2014. Jordan Williams
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,27 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.offheap;
+package com.jordanwilliams.heftydb.offheap.allocator;
 
+import com.sun.jna.Native;
 
-import sun.misc.Unsafe;
+public class JEMallocAllocator implements Allocator {
 
-import java.lang.reflect.Field;
+    private static native long malloc(long size);
 
-public class UnsafeAllocator implements Allocator {
-
-    public static final Unsafe unsafe;
+    private static native void free(long address);
 
     static {
-        try {
-            Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = (sun.misc.Unsafe) field.get(null);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
+        Native.register("jemalloc");
     }
 
     @Override
-    public long allocate(long size) {
-        return unsafe.allocateMemory(size);
+    public long allocate(long bytes) {
+        return malloc(bytes);
     }
 
     @Override
     public void release(long address) {
-        unsafe.freeMemory(address);
+        free(address);
     }
 }

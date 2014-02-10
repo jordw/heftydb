@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
+import com.jordanwilliams.heftydb.offheap.allocator.Allocator;
+
 import java.lang.reflect.Constructor;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
