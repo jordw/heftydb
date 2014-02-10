@@ -30,22 +30,33 @@ It's easy to provide custom compaction behavior suitable to specific work loads.
 
 ```java
 try {
+    //Open a HeftyDB in a directory
     DB testDB = HeftyDB.open(new Config.Builder().directory(directory).build());
 
+    //Write a key
     Snapshot snapshot = db.put(someByteBufferKey, someByteBufferValue);
+
+    //Read a key at a particular snapshot
     Record record = db.get(someByteBufferKey, snapshot);
 
+    //Get an ascending iterator of keys greater than or equal
+    //to the provided key at the provided snapshot
     Iterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
     while (ascendingIterator.hasNext()){
         Record next = ascendingIterator.next();
     }
 
+    //Get a descending iterator of keys greater than or equal
+    //to the provided key at the provided snapshot
     Iterator<Record> ascendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
     while (ascendingIterator.hasNext()){
         Record next = ascendingIterator.next();
     }
 
+    //Compact the database
     testDB.compact();
+
+    //Close the database
     testDB.close();
 } catch (IOException e){
     Logger.error(e);
