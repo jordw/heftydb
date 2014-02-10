@@ -34,15 +34,19 @@ try {
 
     Snapshot snapshot = db.put(someByteBufferKey, someByteBufferValue);
     Record record = db.get(someByteBufferKey, snapshot);
-    Iterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
 
+    Iterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
+    while (ascendingIterator.hasNext()){
+        Record next = ascendingIterator.next();
+    }
+
+    Iterator<Record> ascendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
     while (ascendingIterator.hasNext()){
         Record next = ascendingIterator.next();
     }
 
     testDB.compact();
     testDB.close();
-
 } catch (IOException e){
     Logger.error(e);
 }
