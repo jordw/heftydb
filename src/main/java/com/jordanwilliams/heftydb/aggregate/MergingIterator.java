@@ -88,17 +88,14 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
-        //Still have a previously fetched data
         if (!next.isEmpty()) {
             return true;
         }
 
-        //All iterators are exhausted
         if (iteratorHeap.isEmpty()) {
             return false;
         }
 
-        //Fetch new records
         ComparableIterator<T> nextIterator = iteratorHeap.poll();
         T nextCandidate = nextIterator.current();
 
@@ -106,12 +103,10 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
             next.add(nextCandidate);
         }
 
-        //Put the iterator back on the heap if it's not exhausted
         if (nextIterator.advance()) {
             iteratorHeap.add(nextIterator);
         }
 
-        //If we still don't have any new records, then the underlying iterators are exhausted
         if (next.isEmpty()) {
             return false;
         }
