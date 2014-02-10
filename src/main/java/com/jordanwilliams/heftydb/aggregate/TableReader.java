@@ -61,8 +61,14 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : tables) {
-            tableIterators.add(table.ascendingIterator(snapshotId));
+        tables.readLock();
+
+        try {
+            for (Table table : tables) {
+                tableIterators.add(table.ascendingIterator(snapshotId));
+            }
+        } finally {
+            tables.readUnlock();;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -71,8 +77,14 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : tables) {
-            tableIterators.add(table.descendingIterator(snapshotId));
+        tables.readLock();
+
+        try {
+            for (Table table : tables) {
+                tableIterators.add(table.descendingIterator(snapshotId));
+            }
+        } finally {
+            tables.readUnlock();;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
@@ -81,8 +93,14 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : tables) {
-            tableIterators.add(table.ascendingIterator(key, snapshotId));
+        tables.readLock();
+
+        try {
+            for (Table table : tables) {
+                tableIterators.add(table.ascendingIterator(key, snapshotId));
+            }
+        } finally {
+            tables.readUnlock();;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -91,8 +109,14 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : tables) {
-            tableIterators.add(table.descendingIterator(key, snapshotId));
+        tables.readLock();
+
+        try {
+            for (Table table : tables) {
+                tableIterators.add(table.descendingIterator(key, snapshotId));
+            }
+        } finally {
+            tables.readUnlock();;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));

@@ -16,12 +16,16 @@
 
 package com.jordanwilliams.heftydb.db;
 
+import com.jordanwilliams.heftydb.state.Metrics;
+
 import java.io.IOException;
 
 public class HeftyDB {
 
     public static DB open(Config config) throws IOException {
         DBState state = new DBInitializer(config).initialize();
-        return new StandardDB(state.config(), state.paths(), state.tables(), state.snapshots(), state.caches());
+        Metrics metrics = new Metrics(config);
+        return new InstrumentedDB(metrics, new StandardDB(state.config(), state.paths(), state.tables(),
+                state.snapshots(), state.caches()));
     }
 }

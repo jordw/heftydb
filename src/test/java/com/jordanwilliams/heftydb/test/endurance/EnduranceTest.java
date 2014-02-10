@@ -58,7 +58,7 @@ public class EnduranceTest {
         final DB db = HeftyDB.open(ConfigGenerator.defaultConfig());
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            writeExecutor.submit(new Runnable() {
+            writeExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -87,7 +87,7 @@ public class EnduranceTest {
                 }
             });
 
-            readExecutor.submit(new Runnable() {
+            readExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -109,7 +109,7 @@ public class EnduranceTest {
                 }
             });
 
-            scanExecutor.submit(new Runnable() {
+            scanExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {

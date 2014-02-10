@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.aggregate.TableReader;
 import com.jordanwilliams.heftydb.aggregate.TableWriter;
 import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
@@ -55,12 +56,14 @@ class StandardDB implements DB {
 
     @Override
     public Record get(ByteBuffer key) throws IOException {
-        return new Record(tableReader.get(new Key(key, snapshots.currentId())));
+        Tuple tuple = tableReader.get(new Key(key, snapshots.currentId()));
+        return tuple == null ? null : new Record(tuple);
     }
 
     @Override
     public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return new Record(tableReader.get(new Key(key, snapshot.id())));
+        Tuple tuple = tableReader.get(new Key(key, snapshot.id()));
+        return tuple == null ? null : new Record(tuple);
     }
 
     @Override

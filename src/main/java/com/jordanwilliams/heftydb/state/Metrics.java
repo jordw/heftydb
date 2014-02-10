@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.state;
 
-import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.jordanwilliams.heftydb.db.Config;
@@ -26,12 +26,12 @@ import java.util.concurrent.TimeUnit;
 public class Metrics {
 
     private final MetricRegistry metrics = new MetricRegistry();
-    private final JmxReporter jmxReporter;
+    private final ConsoleReporter consoleReporter;
 
     public Metrics(Config config) {
-        this.jmxReporter = JmxReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo
-                (TimeUnit.SECONDS).inDomain(config.tableDirectory().toString()).build();
-        jmxReporter.start();
+        this.consoleReporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS)
+                .convertRatesTo(TimeUnit.SECONDS).build();
+        consoleReporter.start(30, TimeUnit.SECONDS);
     }
 
     public void register(String name, Metric metric) {
