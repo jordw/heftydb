@@ -19,16 +19,16 @@ All write operations are sequential, and are limited by the sequential IO perfor
 are written with a full B+tree index for memory efficiency, even at very large table sizes.
 
 ###Snapshotted multi-version concurrency control
-Reads and range scans never block writes
+Reads and range scans never block writes.
 
 ###Off-heap data structures
 Operations in the critical read and write paths are implemented using off-heap memory wherever possible to reduce GC pressure and memory overhead.
 
-###Multi-threaded table writes and compactions
-Make use of multiple CPU cores.
+###Multi-threaded compactions
+Make use of multiple CPU cores for table writes and table compactions
 
-###Pluggable Compaction Strategies
-It's easy to provide custom compaction behavior tailored to specific work loads.
+###Pluggable compaction strategies
+Provide custom compaction behavior tailored to specific work loads.
 
 ##Example Usage
 
