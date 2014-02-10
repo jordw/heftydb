@@ -1,5 +1,3 @@
-#HeftyDB
-
 <img src="http://i.imgur.com/qPcZ7qp.jpg" />
 
 *"You put your data in it."*
