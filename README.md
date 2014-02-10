@@ -34,10 +34,10 @@ try {
     DB testDB = HeftyDB.open(new Config.Builder().directory(directory).build());
 
     //Write a key
-    Snapshot snapshot = db.put(someByteBufferKey, someByteBufferValue);
+    Snapshot snapshot = testDB.put(someByteBufferKey, someByteBufferValue);
 
     //Read a key at a particular snapshot
-    Record record = db.get(someByteBufferKey, snapshot);
+    Record record = testDB.get(someByteBufferKey, snapshot);
 
     //Get an ascending iterator of keys greater than or equal
     //to the provided key at the provided snapshot
