@@ -45,7 +45,7 @@ public class KeyValueGenerator {
         } else {
             ByteBuffer random = randomKey(size);
 
-            if (testKeys.size() < MAX_CACHED_KEYS){
+            if (testKeys.size() < MAX_CACHED_KEYS) {
                 testKeys.add(random);
             }
 

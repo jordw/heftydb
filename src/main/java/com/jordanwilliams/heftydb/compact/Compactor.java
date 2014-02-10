@@ -55,29 +55,23 @@ public class Compactor {
                 long tupleCount = 0;
                 long nextTableId = tables.nextId();
 
-                for (Table table : compactionTask.tables()){
+                for (Table table : compactionTask.tables()) {
                     iterators.add(table.ascendingIterator(Long.MAX_VALUE));
                     tupleCount += table.tupleCount();
                 }
 
                 Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
 
-                FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder()
-                        .tableId(nextTableId)
-                        .config(config)
-                        .paths(paths)
-                        .level(compactionTask.level())
-                        .tupleCount(tupleCount)
-                        .source(mergedIterator)
-                        .build();
+                FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config
+                        (config).paths(paths).level(compactionTask.level()).tupleCount(tupleCount).source
+                        (mergedIterator).build();
 
                 writerTask.run();
 
-                tables.add(FileTable.open(nextTableId, paths, caches.recordBlockCache(),
-                        caches.indexBlockCache()));
+                tables.add(FileTable.open(nextTableId, paths, caches.recordBlockCache(), caches.indexBlockCache()));
 
                 removeObsoleteTables(compactionTask.tables());
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -106,10 +100,9 @@ public class Compactor {
         this.paths = paths;
         this.tables = tables;
         this.caches = caches;
-        this.compactionExecutor =  new ThreadPoolExecutor(config.tableWriterThreads(),
-                config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
-                new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
-                new ThreadPoolExecutor.CallerRunsPolicy());
+        this.compactionExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
+                config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>
+                (config.tableCompactionThreads()), new ThreadPoolExecutor.CallerRunsPolicy());
         this.compactionPlanner = compactionStrategy.initialize(tables);
 
         tables.onChange(new Tables.ChangeHandler() {
@@ -120,14 +113,14 @@ public class Compactor {
         });
     }
 
-    public synchronized void evaluateCompaction(){
-        if (compactionPlanner.needsCompaction()){
-           scheduleCompaction();
+    public synchronized void evaluateCompaction() {
+        if (compactionPlanner.needsCompaction()) {
+            scheduleCompaction();
         }
     }
 
-    public synchronized void scheduleCompaction(){
-        if (compactionRunning.get()){
+    public synchronized void scheduleCompaction() {
+        if (compactionRunning.get()) {
             return;
         }
 
@@ -139,14 +132,14 @@ public class Compactor {
                 CompactionPlan compactionPlan = compactionPlanner.planCompaction();
                 List<Future<?>> taskFutures = new ArrayList<Future<?>>();
 
-                for (CompactionTask task : compactionPlan){
+                for (CompactionTask task : compactionPlan) {
                     taskFutures.add(compactionExecutor.submit(new Task(task)));
                 }
 
-                for (Future<?> taskFuture : taskFutures){
+                for (Future<?> taskFuture : taskFutures) {
                     try {
                         taskFuture.get();
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         compactionRunning.set(false);
                         throw new RuntimeException(e);
                     }

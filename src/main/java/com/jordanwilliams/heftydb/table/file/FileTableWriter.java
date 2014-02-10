@@ -17,11 +17,11 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;

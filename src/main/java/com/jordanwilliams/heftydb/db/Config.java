@@ -51,7 +51,7 @@ public class Config {
             return this;
         }
 
-        public Builder compactionStrategy(CompactionStrategy compactionStrategy){
+        public Builder compactionStrategy(CompactionStrategy compactionStrategy) {
             this.compactionStrategy = compactionStrategy;
             return this;
         }
@@ -76,7 +76,7 @@ public class Config {
             return this;
         }
 
-        public Builder directory(Path directory){
+        public Builder directory(Path directory) {
             this.tableDirectory = directory;
             this.logDirectory = directory;
             return this;
@@ -92,9 +92,10 @@ public class Config {
             return this;
         }
 
-        public Config build(){
-            return new Config(compactionStrategy, memoryTableSize, tableBlockSize, indexBlockSize, tableWriterThreads,
-                    tableCompactionThreads, tableCacheSize, indexCacheSize, tableDirectory, logDirectory);
+        public Config build() {
+            return new Config(compactionStrategy, memoryTableSize, tableBlockSize, indexBlockSize,
+                    tableWriterThreads, tableCompactionThreads, tableCacheSize, indexCacheSize, tableDirectory,
+                    logDirectory);
         }
     }
 
@@ -110,8 +111,8 @@ public class Config {
     private final Path logDirectory;
 
     public Config(CompactionStrategy compactionStrategy, int memoryTableSize, int tableBlockSize, int indexBlockSize,
-                  int tableWriterThreads, int
-            tableCompactionThreads, long tableCacheSize, long indexCacheSize, Path tableDirectory, Path logDirectory) {
+                  int tableWriterThreads, int tableCompactionThreads, long tableCacheSize, long indexCacheSize,
+                  Path tableDirectory, Path logDirectory) {
         this.compactionStrategy = compactionStrategy;
         this.memoryTableSize = memoryTableSize;
         this.tableBlockSize = tableBlockSize;
@@ -124,19 +125,19 @@ public class Config {
         this.logDirectory = logDirectory;
     }
 
-    public CompactionStrategy compactionStrategy(){
+    public CompactionStrategy compactionStrategy() {
         return compactionStrategy;
     }
 
-    public int memoryTableSize(){
+    public int memoryTableSize() {
         return memoryTableSize;
     }
 
-    public int tableBlockSize(){
+    public int tableBlockSize() {
         return tableBlockSize;
     }
 
-    public int indexBlockSize(){
+    public int indexBlockSize() {
         return indexBlockSize;
     }
 
@@ -144,7 +145,7 @@ public class Config {
         return tableWriterThreads;
     }
 
-    public int tableCompactionThreads(){
+    public int tableCompactionThreads() {
         return tableCompactionThreads;
     }
 

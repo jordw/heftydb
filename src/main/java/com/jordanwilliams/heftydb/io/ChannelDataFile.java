@@ -114,7 +114,7 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public synchronized void close() throws IOException {
-        if (channel.isOpen()){
+        if (channel.isOpen()) {
             sync();
             channel.close();
         }

@@ -28,7 +28,7 @@ public class CompactionPlan implements Iterable<CompactionTask> {
         this.tasks = tasks;
     }
 
-    public CompactionPlan(CompactionTask... tasks){
+    public CompactionPlan(CompactionTask... tasks) {
         this(Arrays.asList(tasks));
     }
 

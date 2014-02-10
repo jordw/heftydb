@@ -17,10 +17,10 @@
 package com.jordanwilliams.heftydb.test.unit.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.db.DBInitializer;
-import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.db.DBInitializer;
 import com.jordanwilliams.heftydb.db.DBState;
+import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.RecordTest;

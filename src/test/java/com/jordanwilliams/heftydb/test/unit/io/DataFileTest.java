@@ -49,14 +49,14 @@ public class DataFileTest extends FileTest {
         final DataFile dataFile = ChannelDataFile.open(testFile);
         final AtomicInteger counter = new AtomicInteger();
 
-        for (int i = 0; i < threadCount; i++){
+        for (int i = 0; i < threadCount; i++) {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    for (int i = 0; i < iterationCount; i++){
+                    for (int i = 0; i < iterationCount; i++) {
                         try {
                             dataFile.appendInt(counter.getAndIncrement());
-                        } catch (IOException e){
+                        } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -70,13 +70,13 @@ public class DataFileTest extends FileTest {
         int fileOffset = 0;
         int[] readValues = new int[threadCount * iterationCount];
 
-        for (int i = 0; i < threadCount * iterationCount; i++){
+        for (int i = 0; i < threadCount * iterationCount; i++) {
             int read = dataFile.readInt(fileOffset);
             readValues[read] += 1;
             fileOffset += Sizes.INT_SIZE;
         }
 
-        for (int i = 0; i < readValues.length; i++){
+        for (int i = 0; i < readValues.length; i++) {
             Assert.assertEquals("All values appear once", 1, readValues[i]);
         }
     }

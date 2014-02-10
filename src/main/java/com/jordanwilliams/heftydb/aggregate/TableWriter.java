@@ -56,9 +56,8 @@ public class TableWriter {
         this.tables = tables;
         this.snapshots = snapshots;
         this.caches = caches;
-        this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
-                config.tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
-                new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
+        this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(), config.tableWriterThreads(),
+                Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
@@ -115,8 +114,8 @@ public class TableWriter {
             @Override
             public void finish() {
                 try {
-                    tables.swap(FileTable.open(tableToWrite.id(), paths,
-                            caches.recordBlockCache(), caches.indexBlockCache()), tableToWrite);
+                    tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
+                            caches.indexBlockCache()), tableToWrite);
                     Files.deleteIfExists(paths.logPath(tableToWrite.id()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);

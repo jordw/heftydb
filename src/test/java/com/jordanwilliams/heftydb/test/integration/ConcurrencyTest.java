@@ -50,7 +50,7 @@ public class ConcurrencyTest extends ParameterizedIntegrationTest {
         final ConcurrentLinkedQueue<Tuple> writtenQueue = new ConcurrentLinkedQueue<Tuple>();
         final ConcurrentLinkedQueue<Snapshot> snapshotQueue = new ConcurrentLinkedQueue<Snapshot>();
 
-        for (int i = 0; i < THREAD_COUNT; i++){
+        for (int i = 0; i < THREAD_COUNT; i++) {
             writeExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
@@ -59,7 +59,7 @@ public class ConcurrencyTest extends ParameterizedIntegrationTest {
                             db.put(tuple.key().data(), tuple.value().data());
                             writtenQueue.add(tuple);
                         }
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -71,10 +71,10 @@ public class ConcurrencyTest extends ParameterizedIntegrationTest {
                     try {
                         Tuple next = writtenQueue.poll();
 
-                        if (next != null){
+                        if (next != null) {
                             db.get(next.key().data());
                         }
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -86,16 +86,16 @@ public class ConcurrencyTest extends ParameterizedIntegrationTest {
                     try {
                         Snapshot next = snapshotQueue.poll();
 
-                        if (next != null){
+                        if (next != null) {
                             Iterator<Record> dbIterator = db.ascendingIterator(next);
 
-                            while (dbIterator.hasNext()){
+                            while (dbIterator.hasNext()) {
                                 dbIterator.next();
                             }
                         }
 
                         db.compact();
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -112,7 +112,7 @@ public class ConcurrencyTest extends ParameterizedIntegrationTest {
 
         Iterator<Record> dbIterator = db.ascendingIterator(Snapshot.MAX);
 
-        while (dbIterator.hasNext()){
+        while (dbIterator.hasNext()) {
             Assert.assertNotNull("Records can be iterated without error", dbIterator.next());
         }
 

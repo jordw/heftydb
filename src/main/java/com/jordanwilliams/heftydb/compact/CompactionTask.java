@@ -32,11 +32,11 @@ public class CompactionTask {
             this.level = level;
         }
 
-        public void add(Table table){
+        public void add(Table table) {
             tables.add(table);
         }
 
-        public CompactionTask build(){
+        public CompactionTask build() {
             return new CompactionTask(tables, level);
         }
     }

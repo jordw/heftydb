@@ -44,7 +44,7 @@ public class Tables implements Iterable<Table> {
         this.currentTableId.set(tables.isEmpty() ? 0 : tables.last().id());
     }
 
-    public void onChange(ChangeHandler changeHandler){
+    public void onChange(ChangeHandler changeHandler) {
         changeHandlers.add(changeHandler);
     }
 
@@ -104,8 +104,8 @@ public class Tables implements Iterable<Table> {
         return tables.iterator();
     }
 
-    private void notifyChanged(){
-        for (ChangeHandler changeHandler : changeHandlers){
+    private void notifyChanged() {
+        for (ChangeHandler changeHandler : changeHandlers) {
             changeHandler.trigger();
         }
     }

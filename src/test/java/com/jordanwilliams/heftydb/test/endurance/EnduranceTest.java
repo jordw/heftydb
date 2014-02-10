@@ -57,24 +57,24 @@ public class EnduranceTest {
 
         final DB db = HeftyDB.open(ConfigGenerator.defaultConfig());
 
-        for (int i = 0; i < THREAD_COUNT; i++){
+        for (int i = 0; i < THREAD_COUNT; i++) {
             writeExecutor.submit(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        while (true){
-                            if (finished.get()){
+                        while (true) {
+                            if (finished.get()) {
                                 return;
                             }
 
-                            for (int i = 0; i < 10; i++){
+                            for (int i = 0; i < 10; i++) {
                                 String nextKey = Long.toString(maxKey.incrementAndGet());
                                 Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
                                         keyValueGenerator.testValue(100));
 
                                 long currentMaxSnapshotId = maxSnapshotId.get();
 
-                                if (maxSnapshot.id() > currentMaxSnapshotId){
+                                if (maxSnapshot.id() > currentMaxSnapshotId) {
                                     maxSnapshotId.compareAndSet(currentMaxSnapshotId, maxSnapshot.id());
                                 }
                             }
@@ -91,12 +91,12 @@ public class EnduranceTest {
                 @Override
                 public void run() {
                     try {
-                        while (true){
-                            if (finished.get()){
+                        while (true) {
+                            if (finished.get()) {
                                 return;
                             }
 
-                            for (int i = 0; i < 20; i++){
+                            for (int i = 0; i < 20; i++) {
                                 String nextKey = Long.toString(random.nextInt(maxKey.get()));
                                 db.get(ByteBuffers.fromString(nextKey));
                             }
@@ -113,16 +113,16 @@ public class EnduranceTest {
                 @Override
                 public void run() {
                     try {
-                        while (true){
-                            if (finished.get()){
+                        while (true) {
+                            if (finished.get()) {
                                 return;
                             }
 
                             Iterator<Record> scanIterator = db.ascendingIterator(new Snapshot(maxSnapshotId.get()));
                             long maxSnapshotId = 0;
 
-                            for (int i = 0; i < 10; i++){
-                                if (scanIterator.hasNext()){
+                            for (int i = 0; i < 10; i++) {
+                                if (scanIterator.hasNext()) {
                                     Record record = scanIterator.next();
                                     maxSnapshotId = Math.max(maxSnapshotId, record.snapshot().id());
                                 }
@@ -139,7 +139,7 @@ public class EnduranceTest {
 
         StopWatch watch = StopWatch.start();
 
-        while (watch.elapsedMinutes() < RUNTIME_MINUTES){
+        while (watch.elapsedMinutes() < RUNTIME_MINUTES) {
             Thread.sleep(1000);
         }
 

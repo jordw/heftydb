@@ -57,7 +57,7 @@ public class BloomFilter implements Offheap {
         }
 
         private static int hashFunctionCount(long approxElementCount, long bitCount) {
-            if (approxElementCount == 0){
+            if (approxElementCount == 0) {
                 return 1;
             }
 

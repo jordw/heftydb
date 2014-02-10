@@ -18,9 +18,9 @@ package com.jordanwilliams.heftydb.test.generator;
 
 import com.jordanwilliams.heftydb.compact.CompactionStrategies;
 import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.state.Caches;
-import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
@@ -44,15 +44,9 @@ public class ConfigGenerator {
     public static Config testConfig() {
         Config.Builder builder = new Config.Builder();
 
-        return builder
-               .compactionStrategy(CompactionStrategies.NULL_COMPACTION_STRATEGY)
-               .memoryTableSize(16384)
-               .tableBlockSize(4096)
-               .indexBlockSize(4096)
-               .tableCacheSize(1024000)
-               .indexCacheSize(1024000)
-               .tableDirectory(TestFileHelper.TEMP_PATH)
-               .build();
+        return builder.compactionStrategy(CompactionStrategies.NULL_COMPACTION_STRATEGY).memoryTableSize(16384)
+                .tableBlockSize(4096).indexBlockSize(4096).tableCacheSize(1024000).indexCacheSize(1024000)
+                .tableDirectory(TestFileHelper.TEMP_PATH).build();
     }
 
     public static DBState testState() {

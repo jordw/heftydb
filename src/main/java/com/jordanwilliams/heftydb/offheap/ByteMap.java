@@ -114,7 +114,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 memoryBuffer.putInt(key.size());
 
                 ByteBuffer keyData = key.data();
-                for (int i = 0; i < key.size(); i++){
+                for (int i = 0; i < key.size(); i++) {
                     memoryBuffer.put(keyData.get(i));
                 }
 
@@ -124,7 +124,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 memoryBuffer.putInt(value.size());
 
                 ByteBuffer valueData = value.data();
-                for (int i = 0; i < value.size(); i++){
+                for (int i = 0; i < value.size(); i++) {
                     memoryBuffer.put(valueData.get(i));
                 }
 
