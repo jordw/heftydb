@@ -28,7 +28,7 @@ Operations in the critical read and write paths are implemented using off-heap m
 Make use of multiple CPU cores for table writes and table compactions
 
 ###Pluggable compaction strategies
-Provide custom compaction behavior tailored to specific work loads.
+Provide custom compaction behavior tailored to specific workloads.
 
 ##Example Usage
 
