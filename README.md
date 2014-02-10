@@ -77,7 +77,7 @@ but is a decent workload.
 
 ~25% CPU on a 2013 Haswell Retina MBP
 
-<pre>
+```
 -- Timers ----------------------------------------------------------------------
 heftydb.read
              count = 2429774
@@ -128,7 +128,7 @@ heftydb.write
               99% <= 0.77 milliseconds
             99.9% <= 4.51 milliseconds
 
-</pre>
+```
 
 More coming soon.
 
