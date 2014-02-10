@@ -17,11 +17,9 @@
 package com.jordanwilliams.heftydb.data;
 
 import com.jordanwilliams.heftydb.util.ByteBuffers;
-import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
 
-@Immutable
 public class Value implements Comparable<Value> {
 
     public static Value TOMBSTONE_VALUE = new Value(ByteBuffers.EMPTY_BUFFER);

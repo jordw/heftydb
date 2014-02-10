@@ -17,7 +17,6 @@
 package com.jordanwilliams.heftydb.io;
 
 import com.jordanwilliams.heftydb.util.Sizes;
-import net.jcip.annotations.ThreadSafe;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicLong;
 
-@ThreadSafe
 public class ChannelDataFile implements DataFile {
 
     private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>() {

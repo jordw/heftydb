@@ -16,9 +16,6 @@
 
 package com.jordanwilliams.heftydb.test.helper;
 
-import net.jcip.annotations.ThreadSafe;
-
-@ThreadSafe
 public final class StopWatch {
 
     private final long startTime;

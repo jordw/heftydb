@@ -16,11 +16,8 @@
 
 package com.jordanwilliams.heftydb.data;
 
-import net.jcip.annotations.Immutable;
-
 import java.nio.ByteBuffer;
 
-@Immutable
 public class Key implements Comparable<Key> {
 
     private final ByteBuffer data;

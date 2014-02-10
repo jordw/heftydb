@@ -18,11 +18,9 @@ package com.jordanwilliams.heftydb.data;
 
 import com.jordanwilliams.heftydb.util.Serializer;
 import com.jordanwilliams.heftydb.util.Sizes;
-import net.jcip.annotations.Immutable;
 
 import java.nio.ByteBuffer;
 
-@Immutable
 public class Tuple implements Comparable<Tuple> {
 
     public static Serializer<Tuple> SERIALIZER = new Serializer<Tuple>() {
