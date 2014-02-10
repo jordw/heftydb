@@ -49,7 +49,7 @@ try {
     //Get a descending iterator of keys greater than or equal
     //to the provided key at the provided snapshot
     Iterator<Record> descendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
-    while (ascendingIterator.hasNext()){
+    while (descendingIterator.hasNext()){
         Record next = descendingIterator.next();
     }
 
