@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.compact;
+package com.jordanwilliams.heftydb.compact.planner;
 
+import com.jordanwilliams.heftydb.compact.CompactionPlan;
+import com.jordanwilliams.heftydb.compact.CompactionTask;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 

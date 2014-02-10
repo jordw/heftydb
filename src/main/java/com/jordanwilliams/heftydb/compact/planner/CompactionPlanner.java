@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.compact;
+package com.jordanwilliams.heftydb.compact.planner;
+
+import com.jordanwilliams.heftydb.compact.CompactionPlan;
 
 public interface CompactionPlanner {
 

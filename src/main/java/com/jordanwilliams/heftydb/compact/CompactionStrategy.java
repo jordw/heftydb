@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.compact;
 
+import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.state.Tables;
 
 public interface CompactionStrategy {

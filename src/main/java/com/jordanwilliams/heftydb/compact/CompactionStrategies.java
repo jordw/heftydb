@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.compact;
 
+import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
+import com.jordanwilliams.heftydb.compact.planner.FullCompactionPlanner;
 import com.jordanwilliams.heftydb.state.Tables;
 
 import java.util.Collections;
