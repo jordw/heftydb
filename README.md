@@ -71,8 +71,9 @@ try {
 
 ### "Moderate" Endurance Test
 
-Concurrent reads, writes, and range scans with 16 threads dedicated to each task. Each thread does a small number of
-operations and then yields. This test is designed to run under a profiler with out being too slow,
+Concurrent reads, writes, and range scans with 16 concurrent threads dedicated to each task. Each thread does a small
+number of
+operations and then yields. This test is designed to run under a profiler without taxing the machine too much,
 but is a decent workload.
 
 ~25% CPU on a 2013 Haswell Retina MBP
