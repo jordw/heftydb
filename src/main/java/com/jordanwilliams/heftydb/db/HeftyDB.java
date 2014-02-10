@@ -26,6 +26,6 @@ public class HeftyDB {
         DBState state = new DBInitializer(config).initialize();
         Metrics metrics = new Metrics(config);
         return new InstrumentedDB(metrics, new StandardDB(state.config(), state.paths(), state.tables(),
-                state.snapshots(), state.caches()));
+                state.snapshots(), state.caches(), metrics));
     }
 }

@@ -22,6 +22,7 @@ import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -37,7 +38,7 @@ class StandardDB implements DB {
     private final Compactor compactor;
     private final Snapshots snapshots;
 
-    StandardDB(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches) {
+    StandardDB(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches, Metrics metrics) {
         this.snapshots = snapshots;
         this.tableWriter = new TableWriter(config, paths, tables, snapshots, caches);
         this.tableReader = new TableReader(tables);

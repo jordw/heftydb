@@ -113,22 +113,22 @@ public class EnduranceTest {
                 @Override
                 public void run() {
                     try {
+                        Iterator<Record> scanIterator = db.ascendingIterator(new Snapshot(maxSnapshotId.get()));
+                        long maxSnapshotId = 0;
+
                         while (true) {
                             if (finished.get()) {
                                 return;
                             }
-
-                            Iterator<Record> scanIterator = db.ascendingIterator(new Snapshot(maxSnapshotId.get()));
-                            long maxSnapshotId = 0;
 
                             for (int i = 0; i < 10; i++) {
                                 if (scanIterator.hasNext()) {
                                     Record record = scanIterator.next();
                                     maxSnapshotId = Math.max(maxSnapshotId, record.snapshot().id());
                                 }
-
-                                Thread.sleep(10);
                             }
+
+                            Thread.sleep(10);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
