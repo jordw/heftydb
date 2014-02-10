@@ -79,7 +79,6 @@ but is a decent workload.
 ~25% CPU on a 2013 Haswell Retina MBP
 
 ```
--- Timers ----------------------------------------------------------------------
 heftydb.read
              count = 2429774
          mean rate = 27003.13 calls/second
