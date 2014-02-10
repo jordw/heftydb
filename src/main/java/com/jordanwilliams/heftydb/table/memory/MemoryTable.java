@@ -123,18 +123,4 @@ public class MemoryTable implements MutableTable {
     public int compareTo(Table o) {
         return Long.compare(id, o.id());
     }
-
-    private void advanceMaxSnapshotId(long newSnapshotId) {
-        while (true) {
-            long currentMaxSnapshotId = maxSnapshotId.get();
-
-            if (newSnapshotId < currentMaxSnapshotId) {
-                break;
-            }
-
-            if (maxSnapshotId.compareAndSet(currentMaxSnapshotId, newSnapshotId)) {
-                break;
-            }
-        }
-    }
 }

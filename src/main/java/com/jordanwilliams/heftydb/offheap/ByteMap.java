@@ -280,29 +280,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     @Override
     public Iterator<Entry> iterator() {
-        return new Iterator<Entry>() {
-
-            int currentEntryIndex = 0;
-
-            @Override
-            public boolean hasNext() {
-                return currentEntryIndex < entryCount;
-            }
-
-            @Override
-            public Entry next() {
-                if (currentEntryIndex >= entryCount) {
-                    throw new NoSuchElementException();
-                }
-
-                return getEntry(currentEntryIndex++);
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new AscendingIterator(0);
     }
 
     @Override
@@ -322,7 +300,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     private Entry getEntry(int index) {
         if (index < 0 || index >= entryCount) {
-            throw new IndexOutOfBoundsException("Index: " + index + " Max: " + (entryCount - 1));
+            throw new IndexOutOfBoundsException("Requested Index: " + index + " Max: " + (entryCount - 1));
         }
 
         int entryOffset = entryOffset(index);

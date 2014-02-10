@@ -51,16 +51,16 @@ public class Compactor {
         @Override
         public void run() {
             try {
-                List<Iterator<Tuple>> iterators = new ArrayList<Iterator<Tuple>>();
+                List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
                 long tupleCount = 0;
                 long nextTableId = tables.nextId();
 
                 for (Table table : compactionTask.tables()) {
-                    iterators.add(table.ascendingIterator(Long.MAX_VALUE));
+                    tableIterators.add(table.ascendingIterator(Long.MAX_VALUE));
                     tupleCount += table.tupleCount();
                 }
 
-                Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
+                Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(tableIterators);
 
                 FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config
                         (config).paths(paths).level(compactionTask.level()).tupleCount(tupleCount).source
