@@ -17,9 +17,9 @@
 package com.jordanwilliams.heftydb.test.integration;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.db.Record;
-import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.base.ParameterizedIntegrationTest;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.helper.CompareHelper;

@@ -16,76 +16,12 @@
 
 package com.jordanwilliams.heftydb.db;
 
-import com.jordanwilliams.heftydb.compact.Compactor;
-import com.jordanwilliams.heftydb.compact.FullCompactionPlanner;
-import com.jordanwilliams.heftydb.data.Key;
-import com.jordanwilliams.heftydb.aggregate.TableReader;
-import com.jordanwilliams.heftydb.state.Config;
-import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.state.StateInitializer;
-import com.jordanwilliams.heftydb.aggregate.TableWriter;
-
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Iterator;
 
 public class HeftyDB {
 
-    private final State state;
-    private final TableWriter tableWriter;
-    private final TableReader tableReader;
-    private final Compactor compactor;
-
-    private HeftyDB(State state) {
-        this.state = state;
-        this.tableWriter = new TableWriter(state);
-        this.tableReader = new TableReader(state);
-        this.compactor = new Compactor(state, new FullCompactionPlanner(state));
-    }
-
-    public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
-        return tableWriter.write(key, value, false);
-    }
-
-    public Snapshot put(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
-        return tableWriter.write(key, value, fsync);
-    }
-
-    public Record get(ByteBuffer key) throws IOException {
-        return new Record(tableReader.get(new Key(key, state.snapshots().currentId())));
-    }
-
-    public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return new Record(tableReader.get(new Key(key, snapshot.id())));
-    }
-
-    public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
-        return new Record.TupleIterator(tableReader.ascendingIterator(snapshot.id()));
-    }
-
-    public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return new Record.TupleIterator(tableReader.ascendingIterator(new Key(key, snapshot.id()), snapshot.id()));
-    }
-
-    public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
-        return new Record.TupleIterator(tableReader.descendingIterator(snapshot.id()));
-    }
-
-    public Iterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
-        return new Record.TupleIterator(tableReader.descendingIterator(new Key(key, snapshot.id()), snapshot.id()));
-    }
-
-    public synchronized void close() throws IOException {
-        tableWriter.close();
-        tableReader.close();
-    }
-
-    public synchronized void compact() throws IOException {
-        compactor.scheduleCompaction();
-    }
-
-    public static HeftyDB open(Config config) throws IOException {
-        State state = new StateInitializer(config).initialize();
-        return new HeftyDB(state);
+    public static DB open(Config config) throws IOException {
+        DBState state = new DBInitializer(config).initialize();
+        return new StandardDB(state.config(), state.paths(), state.tables(), state.snapshots(), state.caches());
     }
 }

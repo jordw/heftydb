@@ -20,10 +20,11 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.db.DB;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.db.Record;
 import com.jordanwilliams.heftydb.db.Snapshot;
-import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
@@ -45,10 +46,10 @@ public class IteratorPerformance {
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
-        Config config = ConfigGenerator.perfConfig();
+        Config config = ConfigGenerator.defaultConfig();
 
         //Write
-        final HeftyDB db = HeftyDB.open(config);
+        final DB db = HeftyDB.open(config);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();

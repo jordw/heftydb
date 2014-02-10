@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013. Jordan Williams
+ * Copyright (c) 2014. Jordan Williams
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,11 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.state;
+package com.jordanwilliams.heftydb.compact;
 
-import java.nio.file.Path;
+import com.jordanwilliams.heftydb.state.Tables;
 
-public interface Config {
+public interface CompactionStrategy {
 
-    public int memoryTableSize();
-
-    public int fileTableBlockSize();
-
-    public int indexBlockSize();
-
-    public int tableWriterThreads();
-
-    public int tableCompactionThreads();
-
-    public long tableCacheSize();
-
-    public long indexCacheSize();
-
-    public Path tableDirectory();
-
-    public Path logDirectory();
+    public CompactionPlanner initialize(Tables tables);
 }

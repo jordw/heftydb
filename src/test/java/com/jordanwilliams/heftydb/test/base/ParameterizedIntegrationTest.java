@@ -17,8 +17,9 @@
 package com.jordanwilliams.heftydb.test.base;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.db.DB;
 import com.jordanwilliams.heftydb.db.HeftyDB;
-import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
@@ -90,7 +91,7 @@ public abstract class ParameterizedIntegrationTest {
         return testParams;
     }
 
-    protected HeftyDB db;
+    protected DB db;
     protected final List<Tuple> tuples;
     protected final Config config;
 

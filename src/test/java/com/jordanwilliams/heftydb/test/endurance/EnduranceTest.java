@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.test.endurance;
 
+import com.jordanwilliams.heftydb.db.DB;
 import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.db.Record;
 import com.jordanwilliams.heftydb.db.Snapshot;
@@ -54,7 +55,7 @@ public class EnduranceTest {
         final ExecutorService readExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
         final ExecutorService scanExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
 
-        final HeftyDB db = HeftyDB.open(ConfigGenerator.perfConfig());
+        final DB db = HeftyDB.open(ConfigGenerator.defaultConfig());
 
         for (int i = 0; i < THREAD_COUNT; i++){
             writeExecutor.submit(new Runnable() {

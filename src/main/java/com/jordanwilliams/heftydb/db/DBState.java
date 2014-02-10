@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.state;
+package com.jordanwilliams.heftydb.db;
 
+import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.state.Snapshots;
+import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.Collection;
 
-public class State {
+public class DBState {
 
     private final Tables tables;
     private final Snapshots snapshots;
@@ -29,7 +34,7 @@ public class State {
     private final Caches caches;
     private final Metrics metrics;
 
-    public State(Collection<Table> tables, Config config, Paths paths, Caches caches, long currentSnapshotId) {
+    public DBState(Collection<Table> tables, Config config, Paths paths, Caches caches, long currentSnapshotId) {
         this.snapshots = new Snapshots(currentSnapshotId);
         this.tables = new Tables(tables);
         this.config = config;

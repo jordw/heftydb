@@ -20,7 +20,7 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Value;
-import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
@@ -41,8 +41,9 @@ public class RecordWriterPerformance {
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
-        State state = ConfigGenerator.perfState();
-        TableWriter tableWriter = new TableWriter(state);
+        DBState state = ConfigGenerator.perfState();
+        TableWriter tableWriter = new TableWriter(state.config(), state.paths(), state.tables(), state.snapshots(),
+                state.caches());
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();

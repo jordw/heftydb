@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.aggregate;
 
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 
 import java.io.IOException;
@@ -28,19 +28,19 @@ import java.util.List;
 
 public class TableReader implements Iterable<Tuple> {
 
-    private final State state;
+    private final Tables tables;
 
-    public TableReader(State state) {
-        this.state = state;
+    public TableReader(Tables tables) {
+        this.tables = tables;
     }
 
     public Tuple get(Key key) {
         Tuple closestTuple = null;
 
-        state.tables().readLock();
+        tables.readLock();
 
         try {
-            for (Table table : state.tables()) {
+            for (Table table : tables) {
                 if (table.mightContain(key)) {
                     Tuple tableTuple = table.get(key);
 
@@ -52,7 +52,7 @@ public class TableReader implements Iterable<Tuple> {
                 }
             }
         } finally {
-            state.tables().readUnlock();
+            tables.readUnlock();
         }
 
         return closestTuple;
@@ -61,7 +61,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()) {
+        for (Table table : tables) {
             tableIterators.add(table.ascendingIterator(snapshotId));
         }
 
@@ -71,7 +71,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()) {
+        for (Table table : tables) {
             tableIterators.add(table.descendingIterator(snapshotId));
         }
 
@@ -81,7 +81,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()) {
+        for (Table table : tables) {
             tableIterators.add(table.ascendingIterator(key, snapshotId));
         }
 
@@ -91,7 +91,7 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        for (Table table : state.tables()) {
+        for (Table table : tables) {
             tableIterators.add(table.descendingIterator(key, snapshotId));
         }
 
@@ -99,8 +99,14 @@ public class TableReader implements Iterable<Tuple> {
     }
 
     public synchronized void close() throws IOException {
-        for (Table table : state.tables()) {
-            table.close();
+        tables.readLock();
+
+        try {
+            for (Table table : tables) {
+                table.close();
+            }
+        } finally {
+            tables.readUnlock();
         }
     }
 

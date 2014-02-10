@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.state.Config;
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -111,7 +111,7 @@ public class FileTableWriter {
         public void run() {
             try {
                 FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
-                        config.indexBlockSize(), config.fileTableBlockSize(), level);
+                        config.indexBlockSize(), config.tableBlockSize(), level);
 
                 while (tuples.hasNext()) {
                     tableWriter.write(tuples.next());

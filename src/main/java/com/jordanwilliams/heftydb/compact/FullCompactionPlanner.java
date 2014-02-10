@@ -16,32 +16,32 @@
 
 package com.jordanwilliams.heftydb.compact;
 
-import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 
 public class FullCompactionPlanner implements CompactionPlanner {
 
-    private final State state;
+    private final Tables tables;
     private int level = 1;
 
-    public FullCompactionPlanner(State state) {
-        this.state = state;
+    public FullCompactionPlanner(Tables tables) {
+        this.tables = tables;
     }
 
     @Override
     public CompactionPlan planCompaction() {
         CompactionTask.Builder taskBuilder = new CompactionTask.Builder(level++);
 
-        state.tables().readLock();
+        tables.readLock();
 
         try {
-            for (Table table : state.tables()){
+            for (Table table : tables){
                 if (table.isPersistent()){
                     taskBuilder.add(table);
                 }
             }
         } finally {
-            state.tables().readUnlock();
+            tables.readUnlock();
         }
 
         return new CompactionPlan(taskBuilder.build());
@@ -51,7 +51,7 @@ public class FullCompactionPlanner implements CompactionPlanner {
     public boolean needsCompaction() {
         int count = 0;
 
-        for (Table table : state.tables()){
+        for (Table table : tables){
             if (table.isPersistent()){
                 count++;
             }

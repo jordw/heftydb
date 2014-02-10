@@ -16,9 +16,11 @@
 
 package com.jordanwilliams.heftydb.compact;
 
-import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.aggregate.MergingIterator;
-import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
@@ -30,8 +32,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Compactor {
@@ -49,7 +53,7 @@ public class Compactor {
             try {
                 List<Iterator<Tuple>> iterators = new ArrayList<Iterator<Tuple>>();
                 long tupleCount = 0;
-                long nextTableId = state.tables().nextId();
+                long nextTableId = tables.nextId();
 
                 for (Table table : compactionTask.tables()){
                     iterators.add(table.ascendingIterator(Long.MAX_VALUE));
@@ -58,14 +62,19 @@ public class Compactor {
 
                 Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(iterators);
 
-                FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config(state.config
-                        ()).paths(state.paths()).level(compactionTask.level()).tupleCount(tupleCount).source(mergedIterator)
+                FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder()
+                        .tableId(nextTableId)
+                        .config(config)
+                        .paths(paths)
+                        .level(compactionTask.level())
+                        .tupleCount(tupleCount)
+                        .source(mergedIterator)
                         .build();
 
                 writerTask.run();
 
-                state.tables().add(FileTable.open(nextTableId, state.paths(), state.caches().recordBlockCache(),
-                        state.caches().indexBlockCache()));
+                tables.add(FileTable.open(nextTableId, paths, caches.recordBlockCache(),
+                        caches.indexBlockCache()));
 
                 removeObsoleteTables(compactionTask.tables());
             } catch (IOException e){
@@ -75,26 +84,35 @@ public class Compactor {
 
         private void removeObsoleteTables(List<Table> toRemove) throws IOException {
             for (Table table : toRemove) {
-                state.tables().remove(table);
-                Files.deleteIfExists(state.paths().tablePath(table.id()));
-                Files.deleteIfExists(state.paths().indexPath(table.id()));
-                Files.deleteIfExists(state.paths().filterPath(table.id()));
+                tables.remove(table);
+                Files.deleteIfExists(paths.tablePath(table.id()));
+                Files.deleteIfExists(paths.indexPath(table.id()));
+                Files.deleteIfExists(paths.filterPath(table.id()));
             }
         }
     }
 
-    private final State state;
+    private final Config config;
+    private final Paths paths;
+    private final Tables tables;
+    private final Caches caches;
     private final ExecutorService compactionExecutor;
     private final CompactionPlanner compactionPlanner;
     private final AtomicBoolean compactionRunning = new AtomicBoolean();
 
 
-    public Compactor(State state, CompactionPlanner compactionPlanner) {
-        this.state = state;
-        this.compactionExecutor = Executors.newFixedThreadPool(state.config().tableCompactionThreads());
-        this.compactionPlanner = compactionPlanner;
+    public Compactor(Config config, Paths paths, Tables tables, Caches caches, CompactionStrategy compactionStrategy) {
+        this.config = config;
+        this.paths = paths;
+        this.tables = tables;
+        this.caches = caches;
+        this.compactionExecutor =  new ThreadPoolExecutor(config.tableWriterThreads(),
+                config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
+                new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+        this.compactionPlanner = compactionStrategy.initialize(tables);
 
-        state.tables().onChange(new Tables.ChangeHandler() {
+        tables.onChange(new Tables.ChangeHandler() {
             @Override
             public void trigger() {
                 evaluateCompaction();
@@ -137,6 +155,10 @@ public class Compactor {
                 compactionRunning.set(false);
             }
         });
+    }
+
+    public void close() throws IOException {
+        compactionExecutor.shutdownNow();
     }
 
     @Override

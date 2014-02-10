@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.state;
+package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.log.WriteLog;
+import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
@@ -32,25 +34,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class StateInitializer {
+public class DBInitializer {
 
     private final Config config;
     private final Paths paths;
     private final Caches caches;
     private long maxSnapshotId;
 
-    public StateInitializer(Config config) {
+    public DBInitializer(Config config) {
         this.config = config;
         this.paths = new Paths(config.tableDirectory(), config.logDirectory());
         this.caches = new Caches(new TupleBlock.Cache(config.tableCacheSize()),
                 new IndexBlock.Cache(config.indexCacheSize()));
     }
 
-    public State initialize() throws IOException {
+    public DBState initialize() throws IOException {
         deleteTempTables();
         writeTablesFromLogs();
         List<Table> tables = loadTables();
-        return new State(tables, config, paths, caches, maxSnapshotId);
+        return new DBState(tables, config, paths, caches, maxSnapshotId);
     }
 
     private List<Table> loadTables() throws IOException {

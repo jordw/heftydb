@@ -19,9 +19,13 @@ package com.jordanwilliams.heftydb.aggregate;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.log.WriteLog;
-import com.jordanwilliams.heftydb.state.State;
+import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.state.Snapshots;
+import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
@@ -36,26 +40,34 @@ import java.util.concurrent.TimeUnit;
 
 public class TableWriter {
 
-    private final State state;
+    private final Config config;
+    private final Snapshots snapshots;
     private final ThreadPoolExecutor tableExecutor;
+    private final Tables tables;
+    private final Paths paths;
+    private final Caches caches;
 
     private MemoryTable memoryTable;
     private WriteLog writeLog;
 
-    public TableWriter(State state) {
-        this.state = state;
-        this.tableExecutor = new ThreadPoolExecutor(state.config().tableWriterThreads(),
-                state.config().tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
-                new LinkedBlockingQueue<Runnable>(state.config().tableWriterThreads()),
+    public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches) {
+        this.config = config;
+        this.paths = paths;
+        this.tables = tables;
+        this.snapshots = snapshots;
+        this.caches = caches;
+        this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
+                config.tableWriterThreads(), Long.MAX_VALUE, TimeUnit.DAYS,
+                new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     public synchronized Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
-        if (memoryTable == null || memoryTable.size() >= state.config().memoryTableSize()) {
+        if (memoryTable == null || memoryTable.size() >= config.memoryTableSize()) {
             rotateMemoryTable();
         }
 
-        long nextSnapshotId = state.snapshots().nextId();
+        long nextSnapshotId = snapshots.nextId();
 
         key.rewind();
         value.rewind();
@@ -90,22 +102,22 @@ public class TableWriter {
             writeMemoryTable(memoryTable);
         }
 
-        long nextTableId = state.tables().nextId();
+        long nextTableId = tables.nextId();
         memoryTable = new MemoryTable(nextTableId);
-        writeLog = WriteLog.open(nextTableId, state.paths());
-        state.tables().add(memoryTable);
+        writeLog = WriteLog.open(nextTableId, paths);
+        tables.add(memoryTable);
     }
 
     private void writeMemoryTable(final Table tableToWrite) {
-        FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, state.paths(), state.config(),
+        FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, paths, config,
                 tableToWrite.ascendingIterator(Long.MAX_VALUE), tableToWrite.tupleCount(),
                 new FileTableWriter.Task.Callback() {
             @Override
             public void finish() {
                 try {
-                    state.tables().swap(FileTable.open(tableToWrite.id(), state.paths(),
-                            state.caches().recordBlockCache(), state.caches().indexBlockCache()), tableToWrite);
-                    Files.deleteIfExists(state.paths().logPath(tableToWrite.id()));
+                    tables.swap(FileTable.open(tableToWrite.id(), paths,
+                            caches.recordBlockCache(), caches.indexBlockCache()), tableToWrite);
+                    Files.deleteIfExists(paths.logPath(tableToWrite.id()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

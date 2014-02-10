@@ -20,8 +20,9 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.db.DB;
 import com.jordanwilliams.heftydb.db.HeftyDB;
-import com.jordanwilliams.heftydb.state.Config;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
@@ -46,10 +47,10 @@ public class ReadWritePerformance {
         Value value = new Value(keyValueGenerator.testValue(100));
         Random random = new Random(System.nanoTime());
 
-        Config config = ConfigGenerator.perfConfig();
+        Config config = ConfigGenerator.defaultConfig();
 
         //Write
-        HeftyDB db = HeftyDB.open(config);
+        DB db = HeftyDB.open(config);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();

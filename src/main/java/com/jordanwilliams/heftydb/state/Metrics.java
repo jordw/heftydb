@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.state;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
-import com.jordanwilliams.heftydb.state.Config;
+import com.jordanwilliams.heftydb.db.Config;
 
 import java.util.concurrent.TimeUnit;
 

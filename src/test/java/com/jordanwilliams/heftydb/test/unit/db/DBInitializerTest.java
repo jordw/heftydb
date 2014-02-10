@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.state;
+package com.jordanwilliams.heftydb.test.unit.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.DBInitializer;
 import com.jordanwilliams.heftydb.log.WriteLog;
-import com.jordanwilliams.heftydb.state.Config;
+import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.state.Paths;
-import com.jordanwilliams.heftydb.state.State;
-import com.jordanwilliams.heftydb.state.StateInitializer;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
@@ -30,12 +30,12 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class StateInitializerTest extends RecordTest {
+public class DBInitializerTest extends RecordTest {
 
     @Test
     public void defaultStateTest() throws Exception {
         Config config = ConfigGenerator.testConfig();
-        State state = new StateInitializer(config).initialize();
+        DBState state = new DBInitializer(config).initialize();
         Assert.assertTrue("No tables", state.tables().count() == 0);
         Assert.assertEquals("No Max Snapshot Id", 0, state.snapshots().currentId());
     }
@@ -48,7 +48,7 @@ public class StateInitializerTest extends RecordTest {
                 tuples.size(), null);
         writerTask.run();
 
-        State state = new StateInitializer(config).initialize();
+        DBState state = new DBInitializer(config).initialize();
         Assert.assertEquals("Should be 1 table", 1, state.tables().count());
         Assert.assertEquals("Should be 100 as the max snapshot id", 100, state.snapshots().currentId());
     }
@@ -67,7 +67,7 @@ public class StateInitializerTest extends RecordTest {
             log.append(tuple, false);
         }
 
-        State state = new StateInitializer(config).initialize();
+        DBState state = new DBInitializer(config).initialize();
         Assert.assertEquals("Should be 2 tables", 2, state.tables().count());
         Assert.assertEquals("Should be 100 as the max snapshot id", 200, state.snapshots().currentId());
     }
