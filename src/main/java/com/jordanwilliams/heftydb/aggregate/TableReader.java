@@ -68,7 +68,8 @@ public class TableReader implements Iterable<Tuple> {
                 tableIterators.add(table.ascendingIterator(snapshotId));
             }
         } finally {
-            tables.readUnlock();;
+            tables.readUnlock();
+            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -84,7 +85,8 @@ public class TableReader implements Iterable<Tuple> {
                 tableIterators.add(table.descendingIterator(snapshotId));
             }
         } finally {
-            tables.readUnlock();;
+            tables.readUnlock();
+            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
@@ -100,7 +102,8 @@ public class TableReader implements Iterable<Tuple> {
                 tableIterators.add(table.ascendingIterator(key, snapshotId));
             }
         } finally {
-            tables.readUnlock();;
+            tables.readUnlock();
+            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -116,7 +119,8 @@ public class TableReader implements Iterable<Tuple> {
                 tableIterators.add(table.descendingIterator(key, snapshotId));
             }
         } finally {
-            tables.readUnlock();;
+            tables.readUnlock();
+            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));

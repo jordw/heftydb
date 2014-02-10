@@ -86,7 +86,6 @@ public class Index {
             indexMemory.release();
             throw e;
         }
-
     }
 
     public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
