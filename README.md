@@ -24,7 +24,7 @@ Reads and range scans never block writes
 Operations in the critical read and write paths are implemented using off-heap memory wherever possible to reduce GC pressure and memory overhead.
 
 ###Pluggable Compaction Strategies
-It's easy to provide custom compaction behavior suitable to specific work loads.
+It's easy to provide custom compaction behavior tailored to specific work loads.
 
 ##Example Usage
 
