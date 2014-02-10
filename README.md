@@ -1,5 +1,7 @@
 #HeftyDB
 
+<img src="http://i.imgur.com/qPcZ7qp.jpg" />
+
 *"You put your data in it."*
 
 HeftyDB is a sorted key-value library for the JVM. It was designed with the following goals in mind:
