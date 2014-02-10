@@ -4,12 +4,10 @@
 
 HeftyDB is a sorted key-value library for the JVM. It was designed with the following goals in mind:
 
-1. Be as fast and memory efficient as is feasible on the JVM.*
+1. Be as fast and memory efficient as is feasible on the JVM.
 2. Provide a stable base on which to build new and interesting distributed storage systems. 
 3. Provide detailed metrics about what is going on at every level of the stack.
 4. Have clean, understandable code that others with no database background can easily understand.
-
-* Benchmarks forthcoming
 
 ##Features
 
@@ -68,6 +66,10 @@ try {
     Logger.error(e);
 }
 ```
+
+##Benchmarks
+
+Coming soon.
 
 
 
