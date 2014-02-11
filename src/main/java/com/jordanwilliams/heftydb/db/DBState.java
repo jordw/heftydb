@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.db;
 
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
