@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.aggregate;
 
+import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
@@ -23,6 +24,7 @@ import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -46,16 +48,20 @@ public class TableWriter {
     private final Tables tables;
     private final Paths paths;
     private final Caches caches;
+    private final Metrics metrics;
 
     private MemoryTable memoryTable;
     private WriteLog writeLog;
 
-    public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches) {
+    public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches,
+                       Metrics metrics) {
         this.config = config;
         this.paths = paths;
         this.tables = tables;
         this.snapshots = snapshots;
         this.caches = caches;
+        this.metrics = metrics;
+
         this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(), config.tableWriterThreads(),
                 Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
                 new ThreadPoolExecutor.CallerRunsPolicy());
@@ -108,7 +114,7 @@ public class TableWriter {
     }
 
     private void writeMemoryTable(final Table tableToWrite) {
-        FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, paths, config,
+        final FileTableWriter.Task task = new FileTableWriter.Task(tableToWrite.id(), 1, paths, config,
                 tableToWrite.ascendingIterator(Long.MAX_VALUE), tableToWrite.tupleCount(),
                 new FileTableWriter.Task.Callback() {
             @Override
@@ -123,6 +129,15 @@ public class TableWriter {
             }
         });
 
-        tableExecutor.execute(task);
+        tableExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                Timer.Context watch = metrics.timer("write.memoryTableSerialize").time();
+                task.run();
+                watch.stop();
+            }
+        });
+
+        metrics.histogram("write.concurrentMemoryTableSerializers").update(tableExecutor.getActiveCount());
     }
 }

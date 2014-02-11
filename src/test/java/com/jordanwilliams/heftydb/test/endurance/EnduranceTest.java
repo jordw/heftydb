@@ -67,7 +67,7 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            for (int i = 0; i < 10; i++) {
+                            for (int i = 0; i < 2; i++) {
                                 String nextKey = Long.toString(maxKey.incrementAndGet());
                                 Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
                                         keyValueGenerator.testValue(100));
@@ -96,7 +96,7 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            for (int i = 0; i < 20; i++) {
+                            for (int i = 0; i < 5; i++) {
                                 String nextKey = Long.toString(random.nextInt(maxKey.get()));
                                 db.get(ByteBuffers.fromString(nextKey));
                             }
@@ -121,7 +121,7 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            for (int i = 0; i < 10; i++) {
+                            for (int i = 0; i < 5; i++) {
                                 if (scanIterator.hasNext()) {
                                     Record record = scanIterator.next();
                                     maxSnapshotId = Math.max(maxSnapshotId, record.snapshot().id());

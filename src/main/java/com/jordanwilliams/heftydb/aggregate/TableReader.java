@@ -16,8 +16,11 @@
 
 package com.jordanwilliams.heftydb.aggregate;
 
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 
@@ -29,9 +32,13 @@ import java.util.List;
 public class TableReader implements Iterable<Tuple> {
 
     private final Tables tables;
+    private final Metrics metrics;
 
-    public TableReader(Tables tables) {
+    private final Histogram tablesConsultedRead = new Histogram(new UniformReservoir());
+
+    public TableReader(Tables tables, Metrics metrics) {
         this.tables = tables;
+        this.metrics = metrics;
     }
 
     public Tuple get(Key key) {
@@ -39,10 +46,13 @@ public class TableReader implements Iterable<Tuple> {
 
         tables.readLock();
 
+        int tablesConsulted = 0;
+
         try {
             for (Table table : tables) {
                 if (table.mightContain(key)) {
                     Tuple tableTuple = table.get(key);
+                    tablesConsulted++;
 
                     if (tableTuple != null) {
                         if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
@@ -54,6 +64,8 @@ public class TableReader implements Iterable<Tuple> {
         } finally {
             tables.readUnlock();
         }
+
+        metrics.histogram("read.tablesConsulted").update(tablesConsulted);
 
         return closestTuple;
     }
@@ -69,7 +81,6 @@ public class TableReader implements Iterable<Tuple> {
             }
         } finally {
             tables.readUnlock();
-            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -86,7 +97,6 @@ public class TableReader implements Iterable<Tuple> {
             }
         } finally {
             tables.readUnlock();
-            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
@@ -103,7 +113,6 @@ public class TableReader implements Iterable<Tuple> {
             }
         } finally {
             tables.readUnlock();
-            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -120,7 +129,6 @@ public class TableReader implements Iterable<Tuple> {
             }
         } finally {
             tables.readUnlock();
-            ;
         }
 
         return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));

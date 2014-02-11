@@ -44,7 +44,7 @@ public class HeftyDB implements DB {
 
         @Override
         public boolean hasNext() {
-            Timer.Context watch = scanTimer.time();
+            Timer.Context watch = metrics.timer("scan").time();
             boolean hasNext = delegate.hasNext();
             watch.stop();
             return hasNext;
@@ -61,29 +61,23 @@ public class HeftyDB implements DB {
         }
     }
 
-    private final Timer readTimer = new Timer();
-    private final Timer writeTimer = new Timer();
-    private final Timer scanTimer = new Timer();
-
     private final TableWriter tableWriter;
     private final TableReader tableReader;
     private final Compactor compactor;
     private final Snapshots snapshots;
+    private final Metrics metrics;
 
     private HeftyDB(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches, Metrics metrics) {
         this.snapshots = snapshots;
-        this.tableWriter = new TableWriter(config, paths, tables, snapshots, caches);
-        this.tableReader = new TableReader(tables);
+        this.tableWriter = new TableWriter(config, paths, tables, snapshots, caches, metrics);
+        this.tableReader = new TableReader(tables, metrics);
         this.compactor = new Compactor(config, paths, tables, caches, config.compactionStrategy());
-
-        metrics.register("heftydb.write", writeTimer);
-        metrics.register("heftydb.read", readTimer);
-        metrics.register("heftydb.scan", scanTimer);
+        this.metrics = metrics;
     }
 
     @Override
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
-        Timer.Context watch = writeTimer.time();
+        Timer.Context watch = metrics.timer("write").time();
         Snapshot snapshot = tableWriter.write(key, value, false);
         watch.stop();
         return snapshot;
@@ -91,7 +85,7 @@ public class HeftyDB implements DB {
 
     @Override
     public Snapshot put(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
-        Timer.Context watch = writeTimer.time();
+        Timer.Context watch = metrics.timer("write").time();
         Snapshot snapshot = tableWriter.write(key, value, fsync);
         watch.stop();
         return snapshot;
@@ -99,7 +93,7 @@ public class HeftyDB implements DB {
 
     @Override
     public Record get(ByteBuffer key) throws IOException {
-        Timer.Context watch = readTimer.time();
+        Timer.Context watch = metrics.timer("read").time();
         Tuple tuple = tableReader.get(new Key(key, snapshots.currentId()));
         watch.stop();
         return tuple == null ? null : new Record(tuple);
@@ -107,7 +101,7 @@ public class HeftyDB implements DB {
 
     @Override
     public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
-        Timer.Context watch = readTimer.time();
+        Timer.Context watch = metrics.timer("read").time();
         Tuple tuple = tableReader.get(new Key(key, snapshot.id()));
         watch.stop();
         return tuple == null ? null : new Record(tuple);
@@ -149,8 +143,7 @@ public class HeftyDB implements DB {
 
     public static DB open(Config config) throws IOException {
         DBState state = new DBInitializer(config).initialize();
-        Metrics metrics = new Metrics(config);
         return new HeftyDB(state.config(), state.paths(), state.tables(),
-                state.snapshots(), state.caches(), metrics);
+                state.snapshots(), state.caches(), new Metrics(config));
     }
 }

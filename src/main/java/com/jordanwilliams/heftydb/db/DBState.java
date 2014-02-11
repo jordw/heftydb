@@ -16,9 +16,7 @@
 
 package com.jordanwilliams.heftydb.db;
 
-import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.state.Caches;
-import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -33,7 +31,6 @@ public class DBState {
     private final Config config;
     private final Paths paths;
     private final Caches caches;
-    private final Metrics metrics;
 
     public DBState(Collection<Table> tables, Config config, Paths paths, Caches caches, long currentSnapshotId) {
         this.snapshots = new Snapshots(currentSnapshotId);
@@ -41,7 +38,6 @@ public class DBState {
         this.config = config;
         this.paths = paths;
         this.caches = caches;
-        this.metrics = new Metrics(config);
     }
 
     public Paths paths() {

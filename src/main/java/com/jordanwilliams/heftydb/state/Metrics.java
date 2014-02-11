@@ -17,13 +17,18 @@
 package com.jordanwilliams.heftydb.state;
 
 import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.Metric;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.db.Config;
 
 import java.util.concurrent.TimeUnit;
 
 public class Metrics {
+
+    private static final String METRIC_PREFIX = "heftydb.";
 
     private final MetricRegistry metrics = new MetricRegistry();
     private final ConsoleReporter consoleReporter;
@@ -32,9 +37,37 @@ public class Metrics {
         this.consoleReporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS)
                 .convertRatesTo(TimeUnit.SECONDS).build();
         consoleReporter.start(30, TimeUnit.SECONDS);
+
+        initMetrics();
     }
 
-    public void register(String name, Metric metric) {
-        metrics.register(name, metric);
+    public Counter counter(String name){
+        return metrics.counter(metricName(name));
+    }
+
+    public Histogram histogram(String name){
+        return metrics.histogram(metricName(name));
+    }
+
+    public Timer timer(String name){
+        return metrics.timer(metricName(name));
+    }
+
+    private void initMetrics(){
+        //Main DB Metrics
+        metrics.register(metricName("write"), new Timer());
+        metrics.register(metricName("read"), new Timer());
+        metrics.register(metricName("scan"), new Timer());
+
+        //Write
+        metrics.register(metricName("write.concurrentMemoryTableSerializers"), new Histogram(new UniformReservoir()));
+        metrics.register(metricName("write.memoryTableSerialize"), new Timer());
+
+        //Read
+        metrics.register(metricName("read.tablesConsulted"), new Histogram(new UniformReservoir()));
+    }
+
+    private static String metricName(String name){
+        return METRIC_PREFIX + name;
     }
 }
