@@ -24,7 +24,7 @@ import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.NavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MemoryTable implements MutableTable {
 
     private final long id;
-    private final ConcurrentNavigableMap<Key, Tuple> records = new ConcurrentSkipListMap<Key, Tuple>();
+    private final NavigableMap<Key, Tuple> records = new ConcurrentSkipListMap<Key, Tuple>();
     private final AtomicLong maxSnapshotId = new AtomicLong();
     private final AtomicInteger recordCount = new AtomicInteger();
     private final AtomicInteger size = new AtomicInteger();
