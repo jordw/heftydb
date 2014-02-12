@@ -25,7 +25,7 @@ public class Config {
 
     public static class Builder {
 
-        private CompactionStrategy compactionStrategy = CompactionStrategies.FULL_COMPACTION_STRATEGY;
+        private CompactionStrategy compactionStrategy = CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY;
         private int memoryTableSize = 4096000;
         private int tableBlockSize = 32768;
         private int indexBlockSize = 32768;

@@ -17,17 +17,17 @@
 package com.jordanwilliams.heftydb.compact;
 
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
-import com.jordanwilliams.heftydb.compact.planner.FullCompactionPlanner;
+import com.jordanwilliams.heftydb.compact.planner.SizeTieredCompactionPlanner;
 import com.jordanwilliams.heftydb.state.Tables;
 
 import java.util.Collections;
 
 public enum CompactionStrategies implements CompactionStrategy {
 
-    FULL_COMPACTION_STRATEGY {
+    SIZE_TIERED_COMPACTION_STRATEGY {
         @Override
         public CompactionPlanner initialize(Tables tables) {
-            return new FullCompactionPlanner(tables);
+            return new SizeTieredCompactionPlanner(tables);
         }
     },
 
