@@ -59,6 +59,6 @@ public class FullCompactionPlanner implements CompactionPlanner {
             }
         }
 
-        return count > 10;
+        return count > 4;
     }
 }

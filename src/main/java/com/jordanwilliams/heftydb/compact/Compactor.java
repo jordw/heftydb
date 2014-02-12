@@ -53,7 +53,7 @@ public class Compactor {
         @Override
         public void run() {
             try {
-                Timer.Context watch = metrics.timer("compactor.compactionTaskExecution").time();
+                Timer.Context watch = metrics.timer("compactor.taskExecution").time();
                 List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
                 long tupleCount = 0;
                 long nextTableId = tables.nextId();
@@ -144,7 +144,7 @@ public class Compactor {
                     taskFutures.add(compactionExecutor.submit(new Task(task)));
                 }
 
-                metrics.histogram("compactor.concurrentCompactionTasks").update(compactionExecutor.getActiveCount());
+                metrics.histogram("compactor.concurrentTasks").update(compactionExecutor.getActiveCount());
 
                 for (Future<?> taskFuture : taskFutures) {
                     try {
