@@ -64,16 +64,16 @@ public class Metrics {
 
     private void initMetrics() {
         //Main DB Metrics
-        metrics.register(metricName("write"), new Timer());
+        metrics.register(metricName("write"), new Timer(new UniformReservoir()));
         metrics.register(metricName("write.rate"), new Meter());
-        metrics.register(metricName("read"), new Timer());
+        metrics.register(metricName("read"), new Timer(new UniformReservoir()));
         metrics.register(metricName("read.rate"), new Meter());
-        metrics.register(metricName("scan"), new Timer());
+        metrics.register(metricName("scan"), new Timer(new UniformReservoir()));
         metrics.register(metricName("scan.rate"), new Meter());
 
         //Write
         metrics.register(metricName("write.concurrentMemoryTableSerializers"), new Histogram(new UniformReservoir()));
-        metrics.register(metricName("write.memoryTableSerialize"), new Timer());
+        metrics.register(metricName("write.memoryTableSerialize"), new Timer(new UniformReservoir()));
 
         //Read
         metrics.register(metricName("read.tablesConsulted"), new Histogram(new UniformReservoir()));
@@ -88,7 +88,7 @@ public class Metrics {
 
         //Compactor
         metrics.register(metricName("compactor.concurrentTasks"), new Histogram(new UniformReservoir()));
-        metrics.register(metricName("compactor.taskExecution"), new Timer());
+        metrics.register(metricName("compactor.taskExecution"), new Timer(new UniformReservoir()));
         metrics.register(metricName("compactor.rate"), new Meter());
     }
 
