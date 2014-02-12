@@ -40,6 +40,8 @@ public class EnduranceTest {
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 30;
     private static final int LOAD_LEVEL = 10;
+    private static final int VALUE_SIZE = 100;
+    private static final int THREAD_SLEEP_TIME = 10;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -71,7 +73,7 @@ public class EnduranceTest {
                             for (int i = 0; i < LOAD_LEVEL; i++) {
                                 String nextKey = Long.toString(maxKey.incrementAndGet());
                                 Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
-                                        keyValueGenerator.testValue(100));
+                                        keyValueGenerator.testValue(VALUE_SIZE));
 
                                 long currentMaxSnapshotId = maxSnapshotId.get();
 
@@ -80,7 +82,7 @@ public class EnduranceTest {
                                 }
                             }
 
-                            Thread.sleep(10);
+                            Thread.sleep(THREAD_SLEEP_TIME);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -102,7 +104,7 @@ public class EnduranceTest {
                                 db.get(ByteBuffers.fromString(nextKey));
                             }
 
-                            Thread.sleep(10);
+                            Thread.sleep(THREAD_SLEEP_TIME);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -131,7 +133,7 @@ public class EnduranceTest {
                                 }
                             }
 
-                            Thread.sleep(10);
+                            Thread.sleep(THREAD_SLEEP_TIME);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
