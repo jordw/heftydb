@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
 
 public class TableBloomFilterWriter {
 
-    private static final double FALSE_POSITIVE_PROBABILITY = 0.01;
+    private static final double FALSE_POSITIVE_PROBABILITY = 0.001;
 
     private final BloomFilter.Builder filterBuilder;
     private final DataFile filterFile;
