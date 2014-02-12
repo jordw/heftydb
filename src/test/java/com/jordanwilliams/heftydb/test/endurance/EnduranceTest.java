@@ -39,6 +39,7 @@ public class EnduranceTest {
 
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 30;
+    private static final int LOAD_LEVEL = 10;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -67,7 +68,7 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            for (int i = 0; i < 10; i++) {
+                            for (int i = 0; i < LOAD_LEVEL; i++) {
                                 String nextKey = Long.toString(maxKey.incrementAndGet());
                                 Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
                                         keyValueGenerator.testValue(100));
@@ -96,7 +97,7 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            for (int i = 0; i < 10; i++) {
+                            for (int i = 0; i < LOAD_LEVEL; i++) {
                                 String nextKey = Long.toString(random.nextInt(maxKey.get()));
                                 db.get(ByteBuffers.fromString(nextKey));
                             }
@@ -121,7 +122,7 @@ public class EnduranceTest {
                                 return;
                             }
 
-                            for (int i = 0; i < 10; i++) {
+                            for (int i = 0; i < LOAD_LEVEL; i++) {
                                 if (scanIterator.hasNext()) {
                                     Record record = scanIterator.next();
                                     maxScanSnapshotId = Math.max(maxScanSnapshotId, record.snapshot().id());
