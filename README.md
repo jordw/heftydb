@@ -130,8 +130,6 @@ heftydb.write
 
 ```
 
-More coming soon.
-
 
 
 
