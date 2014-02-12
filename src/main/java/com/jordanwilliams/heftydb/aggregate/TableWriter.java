@@ -23,8 +23,8 @@ import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.log.WriteLog;
-import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.metrics.Metrics;
+import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -53,8 +53,7 @@ public class TableWriter {
     private MemoryTable memoryTable;
     private WriteLog writeLog;
 
-    public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches,
-                       Metrics metrics) {
+    public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches, Metrics metrics) {
         this.config = config;
         this.paths = paths;
         this.tables = tables;

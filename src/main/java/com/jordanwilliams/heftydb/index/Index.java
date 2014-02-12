@@ -19,9 +19,9 @@ package com.jordanwilliams.heftydb.index;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class Index {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
         int searchLevels = 1;
 
-        if (currentIndexRecord != null && currentIndexRecord.isLeaf()){
+        if (currentIndexRecord != null && currentIndexRecord.isLeaf()) {
             metrics.hitGauge("index.cacheHitRate").hit();
         }
 

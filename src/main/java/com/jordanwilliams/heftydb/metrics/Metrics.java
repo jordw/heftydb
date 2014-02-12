@@ -42,27 +42,27 @@ public class Metrics {
         initMetrics();
     }
 
-    public Counter counter(String name){
+    public Counter counter(String name) {
         return metrics.counter(metricName(name));
     }
 
-    public Meter meter(String name){
+    public Meter meter(String name) {
         return metrics.meter(metricName(name));
     }
 
-    public CacheHitGauge hitGauge(String name){
+    public CacheHitGauge hitGauge(String name) {
         return (CacheHitGauge) metrics.getGauges().get(metricName(name));
     }
 
-    public Histogram histogram(String name){
+    public Histogram histogram(String name) {
         return metrics.histogram(metricName(name));
     }
 
-    public Timer timer(String name){
+    public Timer timer(String name) {
         return metrics.timer(metricName(name));
     }
 
-    private void initMetrics(){
+    private void initMetrics() {
         //Main DB Metrics
         metrics.register(metricName("write"), new Timer());
         metrics.register(metricName("write.rate"), new Meter());
@@ -92,7 +92,7 @@ public class Metrics {
         metrics.register(metricName("compactor.rate"), new Meter());
     }
 
-    private static String metricName(String name){
+    private static String metricName(String name) {
         return METRIC_PREFIX + name;
     }
 }

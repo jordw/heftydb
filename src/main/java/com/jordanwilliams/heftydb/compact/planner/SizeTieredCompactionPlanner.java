@@ -42,8 +42,8 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
         SortedMap<Integer, List<Table>> leveledTables = leveledTables();
         List<CompactionTask> compactionTasks = new ArrayList<CompactionTask>();
 
-        for (Map.Entry<Integer, List<Table>> entry : leveledTables.entrySet()){
-            if (entry.getValue().size() >= MAX_LEVEL_TABLES){
+        for (Map.Entry<Integer, List<Table>> entry : leveledTables.entrySet()) {
+            if (entry.getValue().size() >= MAX_LEVEL_TABLES) {
                 compactionTasks.add(new CompactionTask(entry.getValue(), entry.getKey() + 1));
             }
         }
@@ -55,8 +55,8 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
     public boolean needsCompaction() {
         SortedMap<Integer, List<Table>> leveledTables = leveledTables();
 
-        for (Map.Entry<Integer, List<Table>> entry : leveledTables.entrySet()){
-            if (entry.getValue().size() >= MAX_LEVEL_TABLES){
+        for (Map.Entry<Integer, List<Table>> entry : leveledTables.entrySet()) {
+            if (entry.getValue().size() >= MAX_LEVEL_TABLES) {
                 return true;
             }
         }
@@ -64,7 +64,7 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
         return false;
     }
 
-    private SortedMap<Integer, List<Table>> leveledTables(){
+    private SortedMap<Integer, List<Table>> leveledTables() {
         SortedMap<Integer, List<Table>> tableMap = new TreeMap<Integer, List<Table>>();
 
         tables.readLock();
@@ -74,7 +74,7 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
                 if (table.isPersistent()) {
                     List<Table> levelTables = tableMap.get(table.level());
 
-                    if (levelTables == null){
+                    if (levelTables == null) {
                         levelTables = new ArrayList<Table>();
                         tableMap.put(table.level(), levelTables);
                     }

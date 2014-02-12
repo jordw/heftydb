@@ -22,8 +22,8 @@ import com.jordanwilliams.heftydb.aggregate.TableWriter;
 import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.metrics.Metrics;
+import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -139,11 +139,11 @@ public class HeftyDB implements DB {
         return snapshot;
     }
 
-    private Record read(ByteBuffer key, long snapshotId){
+    private Record read(ByteBuffer key, long snapshotId) {
         Timer.Context watch = metrics.timer("read").time();
         Tuple tuple = tableReader.get(new Key(key, snapshotId));
         watch.stop();
-        if (tuple != null){
+        if (tuple != null) {
             metrics.meter("read.rate").mark(tuple.size());
         }
         return tuple == null ? null : new Record(tuple);
@@ -152,7 +152,6 @@ public class HeftyDB implements DB {
     public static DB open(Config config) throws IOException {
         Metrics metrics = new Metrics(config);
         DBState state = new DBInitializer(config, metrics).initialize();
-        return new HeftyDB(state.config(), state.paths(), state.tables(),
-                state.snapshots(), state.caches(), metrics);
+        return new HeftyDB(state.config(), state.paths(), state.tables(), state.snapshots(), state.caches(), metrics);
     }
 }

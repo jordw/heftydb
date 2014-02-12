@@ -24,9 +24,9 @@ import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -223,7 +223,8 @@ public class FileTable implements Table {
     private final DataFile tableFile;
     private final Metrics metrics;
 
-    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile, TableTrailer trailer, TupleBlock.Cache recordCache, Metrics metrics) throws IOException {
+    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
+                      TableTrailer trailer, TupleBlock.Cache recordCache, Metrics metrics) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;

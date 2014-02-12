@@ -24,16 +24,16 @@ public class CacheHitGauge extends RatioGauge {
     private final Meter hits = new Meter();
     private final Meter misses = new Meter();
 
-    public void hit(){
+    public void hit() {
         hits.mark();
     }
 
-    public void miss(){
+    public void miss() {
         misses.mark();
     }
 
-    public void sample(boolean success){
-        if (success){
+    public void sample(boolean success) {
+        if (success) {
             hit();
         } else {
             miss();
@@ -42,7 +42,6 @@ public class CacheHitGauge extends RatioGauge {
 
     @Override
     public Ratio getRatio() {
-        return Ratio.of(hits.getFiveMinuteRate(),
-                misses.getFiveMinuteRate() + hits.getFiveMinuteRate());
+        return Ratio.of(hits.getFiveMinuteRate(), misses.getFiveMinuteRate() + hits.getFiveMinuteRate());
     }
 }
