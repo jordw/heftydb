@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
@@ -39,10 +40,12 @@ public class DBInitializer {
     private final Config config;
     private final Paths paths;
     private final Caches caches;
+    private final Metrics metrics;
     private long maxSnapshotId;
 
-    public DBInitializer(Config config) {
+    public DBInitializer(Config config, Metrics metrics) {
         this.config = config;
+        this.metrics = metrics;
         this.paths = new Paths(config.tableDirectory(), config.logDirectory());
         this.caches = new Caches(new TupleBlock.Cache(config.tableCacheSize()),
                 new IndexBlock.Cache(config.indexCacheSize()));
@@ -60,7 +63,7 @@ public class DBInitializer {
         Set<Long> tableIds = paths.tableFileIds();
 
         for (Long id : tableIds) {
-            Table table = FileTable.open(id, paths, caches.recordBlockCache(), caches.indexBlockCache());
+            Table table = FileTable.open(id, paths, caches.recordBlockCache(), caches.indexBlockCache(), metrics);
             maxSnapshotId = Math.max(table.maxSnapshotId(), maxSnapshotId);
             tables.add(table);
         }

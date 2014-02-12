@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.state.Caches;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
@@ -69,7 +70,8 @@ public class Compactor {
 
                 writerTask.run();
 
-                tables.add(FileTable.open(nextTableId, paths, caches.recordBlockCache(), caches.indexBlockCache()));
+                tables.add(FileTable.open(nextTableId, paths, caches.recordBlockCache(), caches.indexBlockCache(),
+                        metrics));
 
                 removeObsoleteTables(compactionTask.tables());
             } catch (IOException e) {
@@ -93,14 +95,17 @@ public class Compactor {
     private final Caches caches;
     private final ExecutorService compactionExecutor;
     private final CompactionPlanner compactionPlanner;
+    private final Metrics metrics;
     private final AtomicBoolean compactionRunning = new AtomicBoolean();
 
 
-    public Compactor(Config config, Paths paths, Tables tables, Caches caches, CompactionStrategy compactionStrategy) {
+    public Compactor(Config config, Paths paths, Tables tables, Caches caches, CompactionStrategy compactionStrategy,
+                     Metrics metrics) {
         this.config = config;
         this.paths = paths;
         this.tables = tables;
         this.caches = caches;
+        this.metrics = metrics;
         this.compactionExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
                 config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>
                 (config.tableCompactionThreads()), new ThreadPoolExecutor.CallerRunsPolicy());

@@ -17,10 +17,12 @@
 package com.jordanwilliams.heftydb.test.unit.index;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
@@ -56,6 +58,7 @@ public class IndexTest extends ParameterizedRecordTest {
 
     private Index createIndex() throws IOException {
         Paths paths = ConfigGenerator.testPaths();
+        Config config = ConfigGenerator.testConfig();
         IndexWriter indexWriter = IndexWriter.open(1, paths, 512);
 
         int count = 0;
@@ -69,6 +72,6 @@ public class IndexTest extends ParameterizedRecordTest {
 
         indexWriter.finish();
 
-        return Index.open(1, paths, new IndexBlock.Cache());
+        return Index.open(1, paths, new IndexBlock.Cache(), new Metrics(config));
     }
 }

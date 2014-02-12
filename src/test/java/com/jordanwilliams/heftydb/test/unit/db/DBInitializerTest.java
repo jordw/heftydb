@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DBInitializer;
 import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.log.WriteLog;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.RecordTest;
@@ -35,7 +36,7 @@ public class DBInitializerTest extends RecordTest {
     @Test
     public void defaultStateTest() throws Exception {
         Config config = ConfigGenerator.testConfig();
-        DBState state = new DBInitializer(config).initialize();
+        DBState state = new DBInitializer(config, new Metrics(config)).initialize();
         Assert.assertTrue("No tables", state.tables().count() == 0);
         Assert.assertEquals("No Max Snapshot Id", 0, state.snapshots().currentId());
     }
@@ -48,7 +49,7 @@ public class DBInitializerTest extends RecordTest {
                 tuples.size(), null);
         writerTask.run();
 
-        DBState state = new DBInitializer(config).initialize();
+        DBState state = new DBInitializer(config, new Metrics(config)).initialize();
         Assert.assertEquals("Should be 1 table", 1, state.tables().count());
         Assert.assertEquals("Should be 100 as the max snapshot id", 100, state.snapshots().currentId());
     }
@@ -67,7 +68,7 @@ public class DBInitializerTest extends RecordTest {
             log.append(tuple, false);
         }
 
-        DBState state = new DBInitializer(config).initialize();
+        DBState state = new DBInitializer(config, new Metrics(config)).initialize();
         Assert.assertEquals("Should be 2 tables", 2, state.tables().count());
         Assert.assertEquals("Should be 100 as the max snapshot id", 200, state.snapshots().currentId());
     }

@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -35,11 +36,13 @@ public class Index {
     private final DataFile indexFile;
     private final IndexBlock rootIndexBlock;
     private final IndexBlock.Cache cache;
+    private final Metrics metrics;
 
-    private Index(long tableId, DataFile indexFile, IndexBlock.Cache cache) throws IOException {
+    private Index(long tableId, DataFile indexFile, IndexBlock.Cache cache, Metrics metrics) throws IOException {
         this.tableId = tableId;
         this.indexFile = indexFile;
         this.cache = cache;
+        this.metrics = metrics;
         long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
         int rootIndexBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
         this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset, rootIndexBlockSize);
@@ -88,8 +91,8 @@ public class Index {
         }
     }
 
-    public static Index open(long tableId, Paths paths, IndexBlock.Cache cache) throws IOException {
+    public static Index open(long tableId, Paths paths, IndexBlock.Cache cache, Metrics metrics) throws IOException {
         DataFile indexFile = ChannelDataFile.open(paths.indexPath(tableId));
-        return new Index(tableId, indexFile, cache);
+        return new Index(tableId, indexFile, cache, metrics);
     }
 }

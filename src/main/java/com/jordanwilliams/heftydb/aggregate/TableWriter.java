@@ -121,7 +121,7 @@ public class TableWriter {
             public void finish() {
                 try {
                     tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
-                            caches.indexBlockCache()), tableToWrite);
+                            caches.indexBlockCache(), metrics), tableToWrite);
                     Files.deleteIfExists(paths.logPath(tableToWrite.id()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);

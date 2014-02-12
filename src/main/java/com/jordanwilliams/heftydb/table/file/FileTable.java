@@ -26,6 +26,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -220,15 +221,16 @@ public class FileTable implements Table {
     private final TableTrailer trailer;
     private final TupleBlock.Cache recordCache;
     private final DataFile tableFile;
+    private final Metrics metrics;
 
-    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
-                      TableTrailer trailer, TupleBlock.Cache recordCache) throws IOException {
+    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile, TableTrailer trailer, TupleBlock.Cache recordCache, Metrics metrics) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
         this.index = index;
         this.tableBloomFilter = tableBloomFilter;
         this.tableFile = tableFile;
         this.trailer = trailer;
+        this.metrics = metrics;
         this.fileSize = tableFile.size();
     }
 
@@ -391,11 +393,11 @@ public class FileTable implements Table {
     }
 
     public static FileTable open(long tableId, Paths paths, TupleBlock.Cache recordCache,
-                                 IndexBlock.Cache indexCache) throws IOException {
-        Index index = Index.open(tableId, paths, indexCache);
+                                 IndexBlock.Cache indexCache, Metrics metrics) throws IOException {
+        Index index = Index.open(tableId, paths, indexCache, metrics);
         TableBloomFilter tableBloomFilter = TableBloomFilter.read(tableId, paths);
         DataFile tableFile = ChannelDataFile.open(paths.tablePath(tableId));
         TableTrailer trailer = TableTrailer.read(tableFile);
-        return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache);
+        return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache, metrics);
     }
 }

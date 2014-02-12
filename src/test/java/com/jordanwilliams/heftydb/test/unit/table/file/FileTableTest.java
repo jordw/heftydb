@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
@@ -126,6 +127,6 @@ public class FileTableTest extends ParameterizedRecordTest {
 
         writerTask.run();
 
-        return FileTable.open(1, paths, new TupleBlock.Cache(), new IndexBlock.Cache());
+        return FileTable.open(1, paths, new TupleBlock.Cache(), new IndexBlock.Cache(), new Metrics(config));
     }
 }

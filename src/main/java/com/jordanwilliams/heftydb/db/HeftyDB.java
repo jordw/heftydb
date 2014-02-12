@@ -71,7 +71,7 @@ public class HeftyDB implements DB {
         this.snapshots = snapshots;
         this.tableWriter = new TableWriter(config, paths, tables, snapshots, caches, metrics);
         this.tableReader = new TableReader(tables, metrics);
-        this.compactor = new Compactor(config, paths, tables, caches, config.compactionStrategy());
+        this.compactor = new Compactor(config, paths, tables, caches, config.compactionStrategy(), metrics);
         this.metrics = metrics;
     }
 
@@ -142,8 +142,9 @@ public class HeftyDB implements DB {
     }
 
     public static DB open(Config config) throws IOException {
-        DBState state = new DBInitializer(config).initialize();
+        Metrics metrics = new Metrics(config);
+        DBState state = new DBInitializer(config, metrics).initialize();
         return new HeftyDB(state.config(), state.paths(), state.tables(),
-                state.snapshots(), state.caches(), new Metrics(config));
+                state.snapshots(), state.caches(), metrics);
     }
 }

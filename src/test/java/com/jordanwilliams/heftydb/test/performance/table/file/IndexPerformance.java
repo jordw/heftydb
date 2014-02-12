@@ -17,8 +17,10 @@
 package com.jordanwilliams.heftydb.test.performance.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
@@ -36,6 +38,7 @@ public class IndexPerformance {
         List<Tuple> tuples = generator.testRecords(1, 500000, 20, 16, 100);
 
         Paths paths = ConfigGenerator.testPaths();
+        Config config = ConfigGenerator.testConfig();
         FileTableWriter fileTableWriter = FileTableWriter.open(1, paths, 500000, 32000, 32000, 1);
         for (Tuple tuple : tuples) {
             fileTableWriter.write(tuple);
@@ -43,7 +46,7 @@ public class IndexPerformance {
 
         fileTableWriter.finish();
 
-        Index index = Index.open(1, paths, new IndexBlock.Cache(4096000));
+        Index index = Index.open(1, paths, new IndexBlock.Cache(4096000), new Metrics(config));
 
         Random random = new Random(System.nanoTime());
         int iterations = 1000000;
