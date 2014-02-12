@@ -16,12 +16,13 @@
 
 package com.jordanwilliams.heftydb.compact;
 
+import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.aggregate.MergingIterator;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
-import com.jordanwilliams.heftydb.state.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
@@ -33,7 +34,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -53,6 +53,7 @@ public class Compactor {
         @Override
         public void run() {
             try {
+                Timer.Context watch = metrics.timer("compactor.compactionTaskExecution").time();
                 List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
                 long tupleCount = 0;
                 long nextTableId = tables.nextId();
@@ -74,6 +75,7 @@ public class Compactor {
                         metrics));
 
                 removeObsoleteTables(compactionTask.tables());
+                watch.stop();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -93,7 +95,7 @@ public class Compactor {
     private final Paths paths;
     private final Tables tables;
     private final Caches caches;
-    private final ExecutorService compactionExecutor;
+    private final ThreadPoolExecutor compactionExecutor;
     private final CompactionPlanner compactionPlanner;
     private final Metrics metrics;
     private final AtomicBoolean compactionRunning = new AtomicBoolean();
@@ -141,6 +143,8 @@ public class Compactor {
                 for (CompactionTask task : compactionPlan) {
                     taskFutures.add(compactionExecutor.submit(new Task(task)));
                 }
+
+                metrics.histogram("compactor.concurrentCompactionTasks").update(compactionExecutor.getActiveCount());
 
                 for (Future<?> taskFuture : taskFutures) {
                     try {

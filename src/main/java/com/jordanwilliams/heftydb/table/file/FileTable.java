@@ -26,7 +26,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -369,6 +369,7 @@ public class FileTable implements Table {
 
     private TupleBlock getTupleBlock(long offset, int size) throws IOException {
         TupleBlock tupleBlock = recordCache.get(tableId, offset);
+        metrics.hitGauge("table.cacheHitRate").sample(tupleBlock != null);
 
         if (tupleBlock == null) {
             tupleBlock = readTupleBlock(offset, size);

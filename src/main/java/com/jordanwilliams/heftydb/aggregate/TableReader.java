@@ -20,7 +20,7 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 
@@ -53,6 +53,8 @@ public class TableReader implements Iterable<Tuple> {
                 if (table.mightContain(key)) {
                     Tuple tableTuple = table.get(key);
                     tablesConsulted++;
+
+                    metrics.hitGauge("read.bloomFilterFalsePositiveRate").sample(tableTuple == null);
 
                     if (tableTuple != null) {
                         if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {

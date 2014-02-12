@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.state;
+package com.jordanwilliams.heftydb.metrics;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
@@ -45,6 +46,14 @@ public class Metrics {
         return metrics.counter(metricName(name));
     }
 
+    public Meter meter(String name){
+        return metrics.meter(metricName(name));
+    }
+
+    public CacheHitGauge hitGauge(String name){
+        return (CacheHitGauge) metrics.getGauges().get(metricName(name));
+    }
+
     public Histogram histogram(String name){
         return metrics.histogram(metricName(name));
     }
@@ -56,8 +65,11 @@ public class Metrics {
     private void initMetrics(){
         //Main DB Metrics
         metrics.register(metricName("write"), new Timer());
+        metrics.register(metricName("write.rate"), new Meter());
         metrics.register(metricName("read"), new Timer());
+        metrics.register(metricName("read.rate"), new Meter());
         metrics.register(metricName("scan"), new Timer());
+        metrics.register(metricName("scan.rate"), new Meter());
 
         //Write
         metrics.register(metricName("write.concurrentMemoryTableSerializers"), new Histogram(new UniformReservoir()));
@@ -65,6 +77,19 @@ public class Metrics {
 
         //Read
         metrics.register(metricName("read.tablesConsulted"), new Histogram(new UniformReservoir()));
+        metrics.register(metricName("read.bloomFilterFalsePositiveRate"), new CacheHitGauge());
+
+        //FileTable
+        metrics.register(metricName("table.cacheHitRate"), new CacheHitGauge());
+
+        //Index
+        metrics.register(metricName("index.searchLevels"), new Histogram(new UniformReservoir()));
+        metrics.register(metricName("index.cacheHitRate"), new CacheHitGauge());
+
+        //Compactor
+        metrics.register(metricName("compactor.concurrentTasks"), new Histogram(new UniformReservoir()));
+        metrics.register(metricName("compactor.taskExecution"), new Timer());
+        metrics.register(metricName("compactor.rate"), new Meter());
     }
 
     private static String metricName(String name){

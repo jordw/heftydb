@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.state.Caches;
-import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;

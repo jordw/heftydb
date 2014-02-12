@@ -23,7 +23,7 @@ import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Caches;
-import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -52,7 +52,9 @@ public class HeftyDB implements DB {
 
         @Override
         public Record next() {
-            return delegate.next();
+            Record record = delegate.next();
+            metrics.meter("scan.rate").mark(record.key().capacity() + record.value().capacity());
+            return record;
         }
 
         @Override
@@ -77,34 +79,22 @@ public class HeftyDB implements DB {
 
     @Override
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException {
-        Timer.Context watch = metrics.timer("write").time();
-        Snapshot snapshot = tableWriter.write(key, value, false);
-        watch.stop();
-        return snapshot;
+        return write(key, value, false);
     }
 
     @Override
     public Snapshot put(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
-        Timer.Context watch = metrics.timer("write").time();
-        Snapshot snapshot = tableWriter.write(key, value, fsync);
-        watch.stop();
-        return snapshot;
+        return write(key, value, fsync);
     }
 
     @Override
     public Record get(ByteBuffer key) throws IOException {
-        Timer.Context watch = metrics.timer("read").time();
-        Tuple tuple = tableReader.get(new Key(key, snapshots.currentId()));
-        watch.stop();
-        return tuple == null ? null : new Record(tuple);
+        return read(key, snapshots.currentId());
     }
 
     @Override
     public Record get(ByteBuffer key, Snapshot snapshot) throws IOException {
-        Timer.Context watch = metrics.timer("read").time();
-        Tuple tuple = tableReader.get(new Key(key, snapshot.id()));
-        watch.stop();
-        return tuple == null ? null : new Record(tuple);
+        return read(key, snapshot.id());
     }
 
     @Override
@@ -139,6 +129,24 @@ public class HeftyDB implements DB {
     @Override
     public synchronized void compact() throws IOException {
         compactor.scheduleCompaction();
+    }
+
+    private Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
+        Timer.Context watch = metrics.timer("write").time();
+        Snapshot snapshot = tableWriter.write(key, value, fsync);
+        watch.stop();
+        metrics.meter("write.rate").mark(key.capacity() + value.capacity());
+        return snapshot;
+    }
+
+    private Record read(ByteBuffer key, long snapshotId){
+        Timer.Context watch = metrics.timer("read").time();
+        Tuple tuple = tableReader.get(new Key(key, snapshotId));
+        watch.stop();
+        if (tuple != null){
+            metrics.meter("read.rate").mark(tuple.size());
+        }
+        return tuple == null ? null : new Record(tuple);
     }
 
     public static DB open(Config config) throws IOException {

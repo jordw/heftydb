@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
-import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -50,12 +50,20 @@ public class Index {
 
     public IndexRecord get(Key key) throws IOException {
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
+        int searchLevels = 1;
+
+        if (currentIndexRecord != null && currentIndexRecord.isLeaf()){
+            metrics.hitGauge("index.cacheHitRate").hit();
+        }
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
             IndexBlock currentIndexBlock = getIndexBlock(currentIndexRecord.blockOffset(),
                     currentIndexRecord.blockSize());
             currentIndexRecord = currentIndexBlock.get(key);
+            searchLevels++;
         }
+
+        metrics.histogram("index.searchLevels").update(searchLevels);
 
         return currentIndexRecord;
     }
@@ -68,6 +76,7 @@ public class Index {
 
     private IndexBlock getIndexBlock(long blockOffset, int blockSize) throws IOException {
         IndexBlock indexBlock = cache.get(tableId, blockOffset);
+        metrics.hitGauge("index.cacheHitRate").sample(indexBlock != null);
 
         if (indexBlock == null) {
             indexBlock = readIndexBlock(blockOffset, blockSize);

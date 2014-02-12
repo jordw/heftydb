@@ -22,7 +22,7 @@ import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.aggregate.TableWriter;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.DBState;
-import com.jordanwilliams.heftydb.state.Metrics;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
