@@ -22,6 +22,7 @@ import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
+import com.jordanwilliams.heftydb.util.XORShiftRandom;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -34,8 +35,13 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
 
     private class LogIterator implements Iterator<Tuple> {
 
+        private final XORShiftRandom pseudoRandom;
         private final Queue<Tuple> nextTuple = new LinkedList<Tuple>();
-        private long fileOffset = 0;
+        private long fileOffset = Sizes.LONG_SIZE;
+
+        public LogIterator(){
+            this.pseudoRandom = new XORShiftRandom(WriteLog.this.seed);
+        }
 
         @Override
         public boolean hasNext() {
@@ -82,6 +88,13 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
                 ByteBuffer recordBuffer = ByteBuffer.allocate(recordSize);
                 logFile.read(recordBuffer, fileOffset);
                 fileOffset += recordSize;
+                int nextInt = logFile.readInt(fileOffset);
+                fileOffset += Sizes.INT_SIZE;
+
+                if (nextInt != pseudoRandom.nextInt()){
+                    return null;
+                }
+
                 recordBuffer.rewind();
 
                 return Tuple.SERIALIZER.deserialize(recordBuffer);
@@ -93,18 +106,23 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
 
     private final long tableId;
     private final DataFile logFile;
+    private final long seed;
+    private final XORShiftRandom pseudoRandom;
 
-    private WriteLog(long tableId, DataFile logFile) {
+    private WriteLog(long tableId, DataFile logFile) throws IOException {
         this.tableId = tableId;
         this.logFile = logFile;
+        this.seed = getSeed();
+        this.pseudoRandom = new XORShiftRandom(seed);
     }
 
     public void append(Tuple tuple, boolean fsync) throws IOException {
-        Memory recordMemory = Memory.allocate(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE);
+        Memory recordMemory = Memory.allocate(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE + Sizes.INT_SIZE);
 
         try {
-            recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE);
+            recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE - Sizes.INT_SIZE);
             Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
+            recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE, pseudoRandom.nextInt());
             logFile.append(recordMemory.directBuffer());
 
             if (fsync) {
@@ -127,6 +145,19 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
     @Override
     public Iterator<Tuple> iterator() {
         return new LogIterator();
+    }
+
+    private long getSeed() throws IOException {
+        long seed;
+
+        if (logFile.size() == 0){
+            seed = System.nanoTime();
+            logFile.appendLong(seed);
+        } else {
+            seed = logFile.readLong(0);
+        }
+
+        return seed;
     }
 
     public static WriteLog open(long tableId, Paths paths) throws IOException {
