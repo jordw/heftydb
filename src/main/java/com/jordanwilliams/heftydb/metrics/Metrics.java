@@ -37,7 +37,10 @@ public class Metrics {
     public Metrics(Config config) {
         this.consoleReporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS)
                 .convertRatesTo(TimeUnit.SECONDS).build();
-        consoleReporter.start(30, TimeUnit.SECONDS);
+
+        if (config.printMetrics()) {
+            consoleReporter.start(30, TimeUnit.SECONDS);
+        }
 
         initMetrics();
     }
