@@ -39,7 +39,7 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
         private final Queue<Tuple> nextTuple = new LinkedList<Tuple>();
         private long fileOffset = Sizes.LONG_SIZE;
 
-        public LogIterator(){
+        public LogIterator() {
             this.pseudoRandom = new XORShiftRandom(WriteLog.this.seed);
         }
 
@@ -91,7 +91,7 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
                 int nextInt = logFile.readInt(fileOffset);
                 fileOffset += Sizes.INT_SIZE;
 
-                if (nextInt != pseudoRandom.nextInt()){
+                if (nextInt != pseudoRandom.nextInt()) {
                     return null;
                 }
 
@@ -150,7 +150,7 @@ public class WriteLog implements Iterable<Tuple>, AutoCloseable {
     private long getSeed() throws IOException {
         long seed;
 
-        if (logFile.size() == 0){
+        if (logFile.size() == 0) {
             seed = System.nanoTime();
             logFile.appendLong(seed);
         } else {

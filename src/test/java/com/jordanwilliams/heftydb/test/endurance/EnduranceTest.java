@@ -39,7 +39,7 @@ public class EnduranceTest {
 
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 30;
-    private static final int LOAD_LEVEL = 10;
+    private static final int LOAD_LEVEL = 25;
     private static final int VALUE_SIZE = 100;
     private static final int THREAD_SLEEP_TIME = 10;
 

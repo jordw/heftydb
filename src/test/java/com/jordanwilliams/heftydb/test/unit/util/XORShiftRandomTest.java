@@ -27,17 +27,17 @@ public class XORShiftRandomTest {
 
 
     @Test
-    public void randomTest(){
+    public void randomTest() {
         XORShiftRandom random = new XORShiftRandom(32);
         List<Integer> generatedNumbers = new ArrayList<Integer>();
 
-        for (int i = 0; i < 128; i++){
+        for (int i = 0; i < 128; i++) {
             generatedNumbers.add(random.nextInt(1024));
         }
 
         random = new XORShiftRandom(32);
 
-        for (int number : generatedNumbers){
+        for (int number : generatedNumbers) {
             Assert.assertEquals("Generated numbers are equal", number, random.nextInt(1024));
         }
     }

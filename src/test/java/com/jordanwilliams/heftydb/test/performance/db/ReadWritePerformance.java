@@ -71,7 +71,7 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
-        db.compact();
+        db.compact().get();
 
         //Read Compacted
         for (int i = 0; i < RECORD_COUNT; i++) {
