@@ -16,23 +16,19 @@
 
 package com.jordanwilliams.heftydb.table.memory;
 
-import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.Iterator;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MemoryTable implements MutableTable {
 
     private final long id;
-    private final NavigableMap<Key, Tuple> records = new ConcurrentSkipListMap<Key, Tuple>();
+    private final SynchronizedTupleMap records = new SynchronizedTupleMap();
     private final AtomicLong maxSnapshotId = new AtomicLong();
     private final AtomicInteger recordCount = new AtomicInteger();
     private final AtomicInteger size = new AtomicInteger();
@@ -43,7 +39,7 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public void put(Tuple tuple) {
-        records.put(tuple.key(), tuple);
+        records.put(tuple.key(), tuple.value());
         recordCount.incrementAndGet();
         size.addAndGet(tuple.size());
     }
@@ -55,34 +51,32 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public boolean mightContain(Key key) {
-        Key floorKey = records.floorKey(key);
-        return floorKey != null && floorKey.data().equals(key.data());
+        return true;
     }
 
     @Override
     public Tuple get(Key key) {
-        Map.Entry<Key, Tuple> closestEntry = records.floorEntry(key);
-        return closestEntry == null ? null : closestEntry.getValue();
+        return records.get(key);
     }
 
     @Override
     public Iterator<Tuple> ascendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, records.values().iterator());
+        return records.ascendingIterator(snapshotId);
     }
 
     @Override
     public Iterator<Tuple> descendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, records.descendingMap().values().iterator());
+        return records.descendingIterator(snapshotId);
     }
 
     @Override
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, records.tailMap(key, true).values().iterator());
+        return records.ascendingIterator(key, snapshotId);
     }
 
     @Override
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, records.headMap(key, true).descendingMap().values().iterator());
+        return records.descendingIterator(key, snapshotId);
     }
 
     @Override
@@ -116,7 +110,7 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public Iterator<Tuple> iterator() {
-        return records.values().iterator();
+        return records.iterator();
     }
 
     @Override
