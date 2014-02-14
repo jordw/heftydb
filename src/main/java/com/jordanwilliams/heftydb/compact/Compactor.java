@@ -17,6 +17,7 @@
 package com.jordanwilliams.heftydb.compact;
 
 import com.codahale.metrics.Timer;
+import com.google.common.util.concurrent.Futures;
 import com.jordanwilliams.heftydb.aggregate.MergingIterator;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -127,14 +129,14 @@ public class Compactor {
         }
     }
 
-    public synchronized void scheduleCompaction() {
+    public synchronized Future<?> scheduleCompaction() {
         if (compactionRunning.get()) {
-            return;
+            return Futures.immediateFuture(null);
         }
 
         compactionRunning.set(true);
 
-        compactionExecutor.execute(new Runnable() {
+        FutureTask<?> task = new FutureTask<Object>(new Runnable() {
             @Override
             public void run() {
                 CompactionPlan compactionPlan = compactionPlanner.planCompaction();
@@ -157,7 +159,11 @@ public class Compactor {
 
                 compactionRunning.set(false);
             }
-        });
+        }, null);
+
+        compactionExecutor.execute(task);
+
+        return task;
     }
 
     public void close() throws IOException {

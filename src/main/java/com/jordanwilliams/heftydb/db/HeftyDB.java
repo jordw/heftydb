@@ -31,6 +31,7 @@ import com.jordanwilliams.heftydb.state.Tables;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.concurrent.Future;
 
 public class HeftyDB implements DB {
 
@@ -127,8 +128,8 @@ public class HeftyDB implements DB {
     }
 
     @Override
-    public synchronized void compact() throws IOException {
-        compactor.scheduleCompaction();
+    public synchronized Future<?> compact() throws IOException {
+        return compactor.scheduleCompaction();
     }
 
     private Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {

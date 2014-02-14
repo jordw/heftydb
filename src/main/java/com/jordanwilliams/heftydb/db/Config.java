@@ -33,6 +33,7 @@ public class Config {
         private int tableCompactionThreads = 4;
         private long tableCacheSize = 64000000;
         private long indexCacheSize = 64000000;
+        private boolean printMetrics = false;
         private Path tableDirectory;
         private Path logDirectory;
 
@@ -76,6 +77,11 @@ public class Config {
             return this;
         }
 
+        public Builder printMetrics(boolean printMetrics) {
+            this.printMetrics = printMetrics;
+            return this;
+        }
+
         public Builder directory(Path directory) {
             this.tableDirectory = directory;
             this.logDirectory = directory;
@@ -94,8 +100,8 @@ public class Config {
 
         public Config build() {
             return new Config(compactionStrategy, memoryTableSize, tableBlockSize, indexBlockSize,
-                    tableWriterThreads, tableCompactionThreads, tableCacheSize, indexCacheSize, tableDirectory,
-                    logDirectory);
+                    tableWriterThreads, tableCompactionThreads, tableCacheSize, indexCacheSize, printMetrics,
+                    tableDirectory, logDirectory);
         }
     }
 
@@ -107,12 +113,13 @@ public class Config {
     private final int tableCompactionThreads;
     private final long tableCacheSize;
     private final long indexCacheSize;
+    private final boolean printMetrics;
     private final Path tableDirectory;
     private final Path logDirectory;
 
     public Config(CompactionStrategy compactionStrategy, int memoryTableSize, int tableBlockSize, int indexBlockSize,
                   int tableWriterThreads, int tableCompactionThreads, long tableCacheSize, long indexCacheSize,
-                  Path tableDirectory, Path logDirectory) {
+                  boolean printMetrics, Path tableDirectory, Path logDirectory) {
         this.compactionStrategy = compactionStrategy;
         this.memoryTableSize = memoryTableSize;
         this.tableBlockSize = tableBlockSize;
@@ -121,6 +128,7 @@ public class Config {
         this.tableCompactionThreads = tableCompactionThreads;
         this.tableCacheSize = tableCacheSize;
         this.indexCacheSize = indexCacheSize;
+        this.printMetrics = printMetrics;
         this.tableDirectory = tableDirectory;
         this.logDirectory = logDirectory;
     }
@@ -155,6 +163,10 @@ public class Config {
 
     public long indexCacheSize() {
         return indexCacheSize;
+    }
+
+    public boolean printMetrics() {
+        return printMetrics;
     }
 
     public Path tableDirectory() {

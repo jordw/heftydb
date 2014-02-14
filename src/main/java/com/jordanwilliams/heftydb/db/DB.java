@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.db;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.concurrent.Future;
 
 public interface DB {
 
@@ -40,5 +41,5 @@ public interface DB {
 
     public void close() throws IOException;
 
-    public void compact() throws IOException;
+    public Future<?> compact() throws IOException;
 }
