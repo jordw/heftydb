@@ -53,8 +53,8 @@ public class RecordWriterPerformance {
             watch.stop();
         }
 
-        tableWriter.close();
         reporter.report();
+        tableWriter.close();
 
         TestFileHelper.cleanUpTestFiles();
     }

@@ -36,12 +36,6 @@ public class ReadWritePerformance {
     private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
-        MetricRegistry metrics = new MetricRegistry();
-        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
-        Timer writeTimer = metrics.timer("writes");
-        Timer readTimer = metrics.timer("reads");
-        Timer readCompactedTimer = metrics.timer("compactedReads");
-
         TestFileHelper.createTestDirectory();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
@@ -52,6 +46,10 @@ public class ReadWritePerformance {
         //Write
         DB db = HeftyDB.open(config);
 
+        MetricRegistry metrics = new MetricRegistry();
+        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
+        Timer writeTimer = metrics.timer("writes");
+
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
             Timer.Context watch = writeTimer.time();
@@ -59,7 +57,12 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
+        reporter.report();
         db.close();
+
+        metrics = new MetricRegistry();
+        reporter = PerformanceHelper.consoleReporter(metrics);
+        Timer readTimer = metrics.timer("reads");
 
         //Read
         db = HeftyDB.open(config);
@@ -71,7 +74,12 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
+        reporter.report();
         db.compact().get();
+
+        metrics = new MetricRegistry();
+        reporter = PerformanceHelper.consoleReporter(metrics);
+        Timer readCompactedTimer = metrics.timer("compactedReads");
 
         //Read Compacted
         for (int i = 0; i < RECORD_COUNT; i++) {
@@ -81,9 +89,9 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
-        db.close();
-
         reporter.report();
+
+        db.close();
 
         TestFileHelper.cleanUpTestFiles();
     }

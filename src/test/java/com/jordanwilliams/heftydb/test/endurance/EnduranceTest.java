@@ -39,7 +39,7 @@ public class EnduranceTest {
 
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 30;
-    private static final int LOAD_LEVEL = 25;
+    private static final int LOAD_LEVEL = 100;
     private static final int VALUE_SIZE = 100;
     private static final int THREAD_SLEEP_TIME = 10;
 
@@ -58,7 +58,7 @@ public class EnduranceTest {
         final ExecutorService readExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
         final ExecutorService scanExecutor = Executors.newFixedThreadPool(THREAD_COUNT);
 
-        final DB db = HeftyDB.open(ConfigGenerator.defaultConfig());
+        final DB db = HeftyDB.open(ConfigGenerator.enduranceConfig());
 
         for (int i = 0; i < THREAD_COUNT; i++) {
             writeExecutor.execute(new Runnable() {

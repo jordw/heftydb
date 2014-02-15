@@ -41,6 +41,11 @@ public class ConfigGenerator {
         return new Config.Builder().tableDirectory(TestFileHelper.TEMP_PATH).build();
     }
 
+    public static Config enduranceConfig() {
+        return new Config.Builder().tableDirectory(TestFileHelper.TEMP_PATH).printMetrics(true).indexCacheSize
+                (256000000).tableCacheSize(512000000).build();
+    }
+
     public static Config testConfig() {
         Config.Builder builder = new Config.Builder();
 
