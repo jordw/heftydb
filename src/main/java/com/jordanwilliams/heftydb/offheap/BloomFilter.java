@@ -57,16 +57,11 @@ public class BloomFilter implements Offheap {
         }
 
         private static int hashFunctionCount(long approxElementCount, long bitCount) {
-            if (approxElementCount == 0) {
-                return 1;
-            }
-
-            return Math.max(1, (int) Math.round(bitCount / approxElementCount * Math.log(2)));
+            return Math.max(1, (int) Math.round(approxElementCount / bitCount * Math.log(2)));
         }
 
         private static long bitCount(long approxElementCount, double falsePositiveProbability) {
-            return (long) Math.ceil((approxElementCount * Math.log(falsePositiveProbability)) / Math.log(1.0 / (Math
-                    .pow(2.0, Math.log(2.0)))));
+            return (long) (-approxElementCount * Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2)));
         }
 
         private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount) {

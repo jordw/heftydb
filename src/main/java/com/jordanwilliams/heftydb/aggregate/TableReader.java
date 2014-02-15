@@ -16,8 +16,6 @@
 
 package com.jordanwilliams.heftydb.aggregate;
 
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.Metrics;
@@ -33,8 +31,6 @@ public class TableReader implements Iterable<Tuple> {
 
     private final Tables tables;
     private final Metrics metrics;
-
-    private final Histogram tablesConsultedRead = new Histogram(new UniformReservoir());
 
     public TableReader(Tables tables, Metrics metrics) {
         this.tables = tables;
