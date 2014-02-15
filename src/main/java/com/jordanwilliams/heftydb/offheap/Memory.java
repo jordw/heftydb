@@ -17,21 +17,33 @@
 package com.jordanwilliams.heftydb.offheap;
 
 import com.jordanwilliams.heftydb.offheap.allocator.Allocator;
+import com.jordanwilliams.heftydb.offheap.allocator.UnsafeAllocator;
+import sun.misc.Unsafe;
 
-import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
+    private static final Unsafe unsafe = UnsafeAllocator.unsafe;
     private static final Allocator allocator = Allocator.allocator;
-    private static final Constructor directBufferConstructor;
+    private static final Class<?> directByteBufferClass;
+    private static final long addressOffset;
+    private static final long capacityOffset;
+    private static final long limitOffset;
 
     static {
         try {
-            Constructor[] constructors = Class.forName("java.nio.DirectByteBuffer").getDeclaredConstructors();
-            directBufferConstructor = constructors[0];
-            directBufferConstructor.setAccessible(true);
+            Class<?> bufferClass = Class.forName("java.nio.Buffer");
+            Field address = bufferClass.getDeclaredField("address");
+            Field capacity = bufferClass.getDeclaredField("capacity");
+            Field limit = bufferClass.getDeclaredField("limit");
+
+            addressOffset = unsafe.objectFieldOffset(address);
+            capacityOffset = unsafe.objectFieldOffset(capacity);
+            limitOffset = unsafe.objectFieldOffset(limit);
+            directByteBufferClass = Class.forName("java.nio.DirectByteBuffer");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -106,7 +118,11 @@ public class Memory {
 
     private static ByteBuffer rawDirectBuffer(long address, int size) {
         try {
-            return (ByteBuffer) directBufferConstructor.newInstance(address, size);
+            ByteBuffer newBuffer = (ByteBuffer) UnsafeAllocator.unsafe.allocateInstance(directByteBufferClass);
+            unsafe.putLong(newBuffer, addressOffset, address);
+            unsafe.putInt(newBuffer, capacityOffset, size);
+            unsafe.putInt(newBuffer, limitOffset, size);
+            return newBuffer;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
