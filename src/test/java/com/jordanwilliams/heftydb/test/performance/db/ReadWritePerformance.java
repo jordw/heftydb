@@ -41,7 +41,7 @@ public class ReadWritePerformance {
         Value value = new Value(keyValueGenerator.testValue(100));
         Random random = new Random(System.nanoTime());
 
-        Config config = ConfigGenerator.defaultConfig();
+        Config config = ConfigGenerator.enduranceConfig();
 
         //Write
         DB db = HeftyDB.open(config);
@@ -57,7 +57,7 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
-        reporter.report();
+        //reporter.report();
         db.close();
 
         metrics = new MetricRegistry();
@@ -74,7 +74,7 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
-        reporter.report();
+        //reporter.report();
         db.compact().get();
 
         metrics = new MetricRegistry();
@@ -89,7 +89,7 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
-        reporter.report();
+        //reporter.report();
 
         db.close();
 
