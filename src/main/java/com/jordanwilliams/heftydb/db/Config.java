@@ -99,7 +99,7 @@ public class Config {
             return this;
         }
 
-        public Builder maxCompactionRate(long maxCompactionRate){
+        public Builder maxCompactionRate(long maxCompactionRate) {
             this.maxCompactionRate = maxCompactionRate;
             return this;
         }
@@ -185,7 +185,7 @@ public class Config {
         return logDirectory;
     }
 
-    public long maxCompactionRate(){
+    public long maxCompactionRate() {
         return maxCompactionRate;
     }
 }

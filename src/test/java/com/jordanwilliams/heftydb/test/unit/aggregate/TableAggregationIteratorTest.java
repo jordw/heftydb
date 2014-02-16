@@ -39,7 +39,7 @@ public class TableAggregationIteratorTest {
 
     @Test
     public void changeTablesTests() throws Exception {
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             changingTablesTest();
         }
     }
@@ -49,7 +49,7 @@ public class TableAggregationIteratorTest {
         List<Tuple> iteratorTuples = new ArrayList<Tuple>();
         Iterator<Tuple> tableReaderTuples = ascendingTupleIterator(tables);
 
-        while (tableReaderTuples.hasNext()){
+        while (tableReaderTuples.hasNext()) {
             iteratorTuples.add(tableReaderTuples.next());
         }
 
@@ -61,21 +61,21 @@ public class TableAggregationIteratorTest {
         int count = 0;
         int pivot = new Random().nextInt(iteratorTuples.size());
 
-        while (tableAggregationIterator.hasNext()){
+        while (tableAggregationIterator.hasNext()) {
 
             //Mutate the set of tables halfway through
-            if (count == Math.max(pivot, 1)){
+            if (count == Math.max(pivot, 1)) {
                 Table merged = merge(tables);
 
                 List<Table> toRemove = new ArrayList<Table>();
 
-                for (Table table : tables){
+                for (Table table : tables) {
                     toRemove.add(table);
                 }
 
                 tables.add(merged);
 
-                for (Table table : toRemove){
+                for (Table table : toRemove) {
                     tables.remove(table);
                 }
             }
@@ -85,13 +85,13 @@ public class TableAggregationIteratorTest {
         }
     }
 
-    private Table merge(Tables tables){
+    private Table merge(Tables tables) {
         MemoryTable merged = new MemoryTable(255);
 
-        for (Table table : tables){
+        for (Table table : tables) {
             Iterator<Tuple> tuples = table.ascendingIterator(Long.MAX_VALUE);
 
-            while (tuples.hasNext()){
+            while (tuples.hasNext()) {
                 merged.put(tuples.next());
             }
         }
@@ -99,7 +99,7 @@ public class TableAggregationIteratorTest {
         return merged;
     }
 
-    private TableAggregationIterator.Source ascendingIteratorSource(final Tables tables){
+    private TableAggregationIterator.Source ascendingIteratorSource(final Tables tables) {
         return new TableAggregationIterator.Source() {
             @Override
             public Iterator<Tuple> refresh(Key key, long snapshotId) {

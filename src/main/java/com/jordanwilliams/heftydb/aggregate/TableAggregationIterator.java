@@ -59,7 +59,7 @@ public class TableAggregationIterator implements Iterator<Tuple> {
         refreshSource();
 
         boolean hasNext = delegate.hasNext();
-        if (!hasNext){
+        if (!hasNext) {
             tables.removeChangeHandler(tableChangeHandler);
         }
 
@@ -68,7 +68,7 @@ public class TableAggregationIterator implements Iterator<Tuple> {
 
     @Override
     public Tuple next() {
-        if (!hasNext()){
+        if (!hasNext()) {
             throw new NoSuchElementException();
         }
 
@@ -83,11 +83,11 @@ public class TableAggregationIterator implements Iterator<Tuple> {
     }
 
     private void refreshSource() {
-        if (dirtySource.get()){
+        if (dirtySource.get()) {
             this.delegate = source.refresh(lastKey, snapshotId);
 
             //Advance past the previously seen key
-            if (delegate.hasNext()){
+            if (delegate.hasNext()) {
                 delegate.next();
             }
 

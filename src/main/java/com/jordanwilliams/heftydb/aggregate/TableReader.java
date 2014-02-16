@@ -161,7 +161,7 @@ public class TableReader implements Iterable<Tuple> {
         return ascendingIterator(Long.MAX_VALUE);
     }
 
-    private TableAggregationIterator.Source ascendingIteratorSource(){
+    private TableAggregationIterator.Source ascendingIteratorSource() {
         return new TableAggregationIterator.Source() {
             @Override
             public Iterator<Tuple> refresh(Key key, long snapshotId) {
@@ -182,7 +182,7 @@ public class TableReader implements Iterable<Tuple> {
         };
     }
 
-    private TableAggregationIterator.Source descendingIteratorSource(){
+    private TableAggregationIterator.Source descendingIteratorSource() {
         return new TableAggregationIterator.Source() {
             @Override
             public Iterator<Tuple> refresh(Key key, long snapshotId) {

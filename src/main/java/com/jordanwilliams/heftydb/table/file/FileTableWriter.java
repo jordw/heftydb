@@ -83,7 +83,7 @@ public class FileTableWriter {
                 return this;
             }
 
-            public Builder maxWriteRate(long rateLimitRate){
+            public Builder maxWriteRate(long rateLimitRate) {
                 this.rateLimitRate = rateLimitRate;
                 return this;
             }
@@ -124,7 +124,8 @@ public class FileTableWriter {
                 FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
                         config.indexBlockSize(), config.tableBlockSize(), level);
 
-                TokenBucket rateBucket = TokenBuckets.newFixedIntervalRefill(rateLimitRate, rateLimitRate, 1, TimeUnit.SECONDS);
+                TokenBucket rateBucket = TokenBuckets.newFixedIntervalRefill(rateLimitRate, rateLimitRate, 1,
+                        TimeUnit.SECONDS);
 
                 while (tuples.hasNext()) {
                     Tuple tuple = tuples.next();
