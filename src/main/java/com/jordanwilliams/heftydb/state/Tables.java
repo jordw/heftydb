@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Tables implements Iterable<Table> {
 
     public interface ChangeHandler {
-        public void trigger();
+        public void changed();
     }
 
     private final AtomicLong currentTableId = new AtomicLong();
@@ -44,8 +44,12 @@ public class Tables implements Iterable<Table> {
         this.currentTableId.set(tables.isEmpty() ? 0 : tables.last().id());
     }
 
-    public void onChange(ChangeHandler changeHandler) {
+    public synchronized void addChangeHandler(ChangeHandler changeHandler) {
         changeHandlers.add(changeHandler);
+    }
+
+    public synchronized void removeChangeHandler(ChangeHandler changeHandler) {
+        changeHandlers.remove(changeHandler);
     }
 
     public long nextId() {
@@ -104,9 +108,9 @@ public class Tables implements Iterable<Table> {
         return tables.iterator();
     }
 
-    private void notifyChanged() {
+    private synchronized void notifyChanged() {
         for (ChangeHandler changeHandler : changeHandlers) {
-            changeHandler.trigger();
+            changeHandler.changed();
         }
     }
 }

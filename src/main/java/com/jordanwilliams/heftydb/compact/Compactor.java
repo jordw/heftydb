@@ -69,7 +69,7 @@ public class Compactor {
 
                 FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config
                         (config).paths(paths).level(compactionTask.level()).tupleCount(tupleCount).source
-                        (mergedIterator).build();
+                        (mergedIterator).maxWriteRate(config.maxCompactionRate()).build();
 
                 writerTask.run();
 
@@ -115,9 +115,9 @@ public class Compactor {
                 (config.tableCompactionThreads()), new ThreadPoolExecutor.CallerRunsPolicy());
         this.compactionPlanner = compactionStrategy.initialize(tables);
 
-        tables.onChange(new Tables.ChangeHandler() {
+        tables.addChangeHandler(new Tables.ChangeHandler() {
             @Override
-            public void trigger() {
+            public void changed() {
                 evaluateCompaction();
             }
         });

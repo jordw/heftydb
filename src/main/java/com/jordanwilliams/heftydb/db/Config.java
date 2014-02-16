@@ -33,6 +33,7 @@ public class Config {
         private int tableCompactionThreads = 4;
         private long tableCacheSize = 64000000;
         private long indexCacheSize = 64000000;
+        private long maxCompactionRate = 16384000;
         private boolean printMetrics = false;
         private Path tableDirectory;
         private Path logDirectory;
@@ -98,10 +99,15 @@ public class Config {
             return this;
         }
 
+        public Builder maxCompactionRate(long maxCompactionRate){
+            this.maxCompactionRate = maxCompactionRate;
+            return this;
+        }
+
         public Config build() {
             return new Config(compactionStrategy, memoryTableSize, tableBlockSize, indexBlockSize,
                     tableWriterThreads, tableCompactionThreads, tableCacheSize, indexCacheSize, printMetrics,
-                    tableDirectory, logDirectory);
+                    tableDirectory, logDirectory, maxCompactionRate);
         }
     }
 
@@ -116,10 +122,11 @@ public class Config {
     private final boolean printMetrics;
     private final Path tableDirectory;
     private final Path logDirectory;
+    private final long maxCompactionRate;
 
     public Config(CompactionStrategy compactionStrategy, int memoryTableSize, int tableBlockSize, int indexBlockSize,
                   int tableWriterThreads, int tableCompactionThreads, long tableCacheSize, long indexCacheSize,
-                  boolean printMetrics, Path tableDirectory, Path logDirectory) {
+                  boolean printMetrics, Path tableDirectory, Path logDirectory, long maxCompactionRate) {
         this.compactionStrategy = compactionStrategy;
         this.memoryTableSize = memoryTableSize;
         this.tableBlockSize = tableBlockSize;
@@ -131,6 +138,7 @@ public class Config {
         this.printMetrics = printMetrics;
         this.tableDirectory = tableDirectory;
         this.logDirectory = logDirectory;
+        this.maxCompactionRate = maxCompactionRate;
     }
 
     public CompactionStrategy compactionStrategy() {
@@ -175,5 +183,9 @@ public class Config {
 
     public Path logDirectory() {
         return logDirectory;
+    }
+
+    public long maxCompactionRate(){
+        return maxCompactionRate;
     }
 }

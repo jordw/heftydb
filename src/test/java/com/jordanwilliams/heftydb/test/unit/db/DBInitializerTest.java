@@ -46,7 +46,7 @@ public class DBInitializerTest extends RecordTest {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
-                tuples.size(), null);
+                tuples.size(), null, Integer.MAX_VALUE);
         writerTask.run();
 
         DBState state = new DBInitializer(config, new Metrics(config)).initialize();
@@ -59,7 +59,7 @@ public class DBInitializerTest extends RecordTest {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
-                tuples.size(), null);
+                tuples.size(), null, Integer.MAX_VALUE);
         writerTask.run();
 
         WriteLog log = WriteLog.open(2, paths);
