@@ -157,7 +157,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 throw new NoSuchElementException();
             }
 
-            Entry entry = getEntry(currentEntryIndex);
+            Entry entry = get(currentEntryIndex);
             currentEntryIndex++;
             return entry;
         }
@@ -187,7 +187,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 throw new NoSuchElementException();
             }
 
-            Entry entry = getEntry(currentEntryIndex);
+            Entry entry = get(currentEntryIndex);
             currentEntryIndex--;
             return entry;
         }
