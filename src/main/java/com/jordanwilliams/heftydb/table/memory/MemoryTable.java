@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class MemoryTable implements MutableTable {
 
     private final long id;
-    private final SynchronizedTupleMap records = new SynchronizedTupleMap();
+    private final SortedTupleMap records = new SkipListTupleMap();
     private final AtomicLong maxSnapshotId = new AtomicLong();
     private final AtomicInteger recordCount = new AtomicInteger();
     private final AtomicInteger size = new AtomicInteger();

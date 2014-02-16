@@ -29,7 +29,7 @@ import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class SynchronizedTupleMap implements Iterable<Tuple> {
+public class SynchronizedTupleMap implements SortedTupleMap {
 
     private class LockingIterator implements Iterator<Tuple> {
 
@@ -107,6 +107,7 @@ public class SynchronizedTupleMap implements Iterable<Tuple> {
     private final TreeMap<Key, Value> tuples = new TreeMap<Key, Value>();
     private final ReentrantLock lock = new ReentrantLock();
 
+    @Override
     public void put(Key key, Value value) {
         lock.lock();
 
@@ -117,6 +118,7 @@ public class SynchronizedTupleMap implements Iterable<Tuple> {
         }
     }
 
+    @Override
     public Tuple get(Key key) {
         lock.lock();
 
@@ -134,6 +136,7 @@ public class SynchronizedTupleMap implements Iterable<Tuple> {
         }
     }
 
+    @Override
     public Iterator<Tuple> ascendingIterator(long snapshotId) {
         lock.lock();
 
@@ -146,6 +149,7 @@ public class SynchronizedTupleMap implements Iterable<Tuple> {
         }
     }
 
+    @Override
     public Iterator<Tuple> descendingIterator(long snapshotId) {
         lock.lock();
 
@@ -158,6 +162,7 @@ public class SynchronizedTupleMap implements Iterable<Tuple> {
         }
     }
 
+    @Override
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         lock.lock();
 
@@ -170,6 +175,7 @@ public class SynchronizedTupleMap implements Iterable<Tuple> {
         }
     }
 
+    @Override
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         lock.lock();
 
