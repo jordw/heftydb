@@ -33,6 +33,7 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -276,6 +277,11 @@ public class FileTable implements Table {
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
+
+            if (indexRecord == null){
+                return Collections.emptyIterator();
+            }
+
             TupleBlock startTupleBlock = readTupleBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             Iterator<Tuple> startRecordIterator = startTupleBlock.ascendingIterator(key);
             long nextBlockOffset = indexRecord.blockOffset() + indexRecord.blockSize() + Sizes.INT_SIZE;
@@ -290,6 +296,11 @@ public class FileTable implements Table {
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
+
+            if (indexRecord == null){
+                return Collections.emptyIterator();
+            }
+
             TupleBlock startTupleBlock = readTupleBlock(indexRecord.blockOffset(), indexRecord.blockSize());
             Iterator<Tuple> startRecordIterator = startTupleBlock.descendingIterator(key);
             long nextBlockOffset = indexRecord.blockOffset() - Sizes.LONG_SIZE;

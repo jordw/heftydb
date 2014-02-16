@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.MetricRegistry;
 import com.jordanwilliams.heftydb.offheap.allocator.Allocator;
 import com.jordanwilliams.heftydb.offheap.allocator.UnsafeAllocator;
 import sun.misc.Unsafe;
@@ -33,6 +35,9 @@ public class Memory {
     private static final long capacityOffset;
     private static final long limitOffset;
 
+    private static final MetricRegistry metrics = new MetricRegistry();
+    private static final JmxReporter jmxReporter;
+
     static {
         try {
             Class<?> bufferClass = Class.forName("java.nio.Buffer");
@@ -44,6 +49,11 @@ public class Memory {
             capacityOffset = unsafe.objectFieldOffset(capacity);
             limitOffset = unsafe.objectFieldOffset(limit);
             directByteBufferClass = Class.forName("java.nio.DirectByteBuffer");
+
+            //Metrics
+            metrics.counter("offHeapMemory");
+            jmxReporter = JmxReporter.forRegistry(metrics).inDomain("HeftyDB").build();
+            jmxReporter.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -60,6 +70,8 @@ public class Memory {
         this.size = size;
         this.directBuffer = rawDirectBuffer(baseAddress, size);
         directBuffer.rewind();
+
+        metrics.counter("offHeapMemory").inc(size);
     }
 
     public ByteBuffer directBuffer() {
@@ -73,6 +85,7 @@ public class Memory {
     public void free() {
         allocator.release(baseAddress);
         baseAddress = 0;
+        metrics.counter("offHeapMemory").dec(size);
     }
 
     public int size() {
@@ -118,7 +131,7 @@ public class Memory {
 
     private static ByteBuffer rawDirectBuffer(long address, int size) {
         try {
-            ByteBuffer newBuffer = (ByteBuffer) UnsafeAllocator.unsafe.allocateInstance(directByteBufferClass);
+            ByteBuffer newBuffer = (ByteBuffer) unsafe.allocateInstance(directByteBufferClass);
             unsafe.putLong(newBuffer, addressOffset, address);
             unsafe.putInt(newBuffer, capacityOffset, size);
             unsafe.putInt(newBuffer, limitOffset, size);

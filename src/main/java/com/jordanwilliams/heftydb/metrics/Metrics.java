@@ -92,7 +92,6 @@ public class Metrics {
         //Compactor
         metrics.register(metricName("compactor.concurrentTasks"), new Histogram(new UniformReservoir()));
         metrics.register(metricName("compactor.taskExecution"), new Timer(new UniformReservoir()));
-        metrics.register(metricName("compactor.rate"), new Meter());
     }
 
     private static String metricName(String name) {
