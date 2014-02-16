@@ -37,7 +37,7 @@ public enum CompactionStrategies implements CompactionStrategy {
             return new CompactionPlanner() {
                 @Override
                 public CompactionPlan planCompaction() {
-                    return new CompactionPlan(Collections.EMPTY_LIST);
+                    return new CompactionPlan(Collections.<CompactionTask>emptyList());
                 }
 
                 @Override

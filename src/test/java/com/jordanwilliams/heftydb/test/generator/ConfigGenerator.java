@@ -22,6 +22,7 @@ import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 
@@ -54,11 +55,7 @@ public class ConfigGenerator {
                 .tableDirectory(TestFileHelper.TEMP_PATH).build();
     }
 
-    public static DBState testState() {
-        return new DBState(Collections.EMPTY_LIST, testConfig(), testPaths(), testCaches(), 1);
-    }
-
     public static DBState perfState() {
-        return new DBState(Collections.EMPTY_LIST, defaultConfig(), testPaths(), testCaches(), 1);
+        return new DBState(Collections.<Table>emptyList(), defaultConfig(), testPaths(), testCaches(), 1);
     }
 }

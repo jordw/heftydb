@@ -278,7 +278,7 @@ public class FileTable implements Table {
         try {
             IndexRecord indexRecord = index.get(key);
 
-            if (indexRecord == null){
+            if (indexRecord == null) {
                 return Collections.emptyIterator();
             }
 
@@ -297,7 +297,7 @@ public class FileTable implements Table {
         try {
             IndexRecord indexRecord = index.get(key);
 
-            if (indexRecord == null){
+            if (indexRecord == null) {
                 return Collections.emptyIterator();
             }
 
