@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Random;
 
 @RunWith(Parameterized.class)
-public abstract class ParameterizedRecordTest {
+public abstract class ParameterizedTupleTest {
 
     @BeforeClass
     public static void beforeClass() throws IOException {
@@ -89,7 +89,7 @@ public abstract class ParameterizedRecordTest {
     protected final List<Tuple> tuples;
     protected TupleGenerator tupleGenerator;
 
-    public ParameterizedRecordTest(List<Tuple> testTuples) {
+    public ParameterizedTupleTest(List<Tuple> testTuples) {
         this.tuples = testTuples;
     }
 }

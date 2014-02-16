@@ -24,14 +24,14 @@ import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
-import com.jordanwilliams.heftydb.test.base.RecordTest;
+import com.jordanwilliams.heftydb.test.base.TupleTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
-public class DBInitializerTest extends RecordTest {
+public class DBInitializerTest extends TupleTest {
 
     @Test
     public void defaultStateTest() throws Exception {

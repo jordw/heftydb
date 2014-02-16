@@ -20,14 +20,14 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.TableBloomFilter;
 import com.jordanwilliams.heftydb.table.file.TableBloomFilterWriter;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
-public class TableBloomFilterTest extends ParameterizedRecordTest {
+public class TableBloomFilterTest extends ParameterizedTupleTest {
 
     private final TableBloomFilter bloomFilter;
 

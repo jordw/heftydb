@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.index;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class IndexBlockRandomTest extends ParameterizedRecordTest {
+public class IndexBlockRandomTest extends ParameterizedTupleTest {
 
     private final IndexBlock indexBlock;
     private final List<IndexRecord> indexRecords = new ArrayList<IndexRecord>();

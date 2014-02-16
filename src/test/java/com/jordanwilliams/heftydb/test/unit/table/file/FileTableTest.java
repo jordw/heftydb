@@ -25,7 +25,7 @@ import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.table.file.TupleBlock;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 
-public class FileTableTest extends ParameterizedRecordTest {
+public class FileTableTest extends ParameterizedTupleTest {
 
     private final FileTable fileTable;
     private final Random random = new Random(System.nanoTime());

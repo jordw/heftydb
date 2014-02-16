@@ -18,14 +18,14 @@ package com.jordanwilliams.heftydb.test.unit.offheap;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class ByteMapTest extends ParameterizedRecordTest {
+public class ByteMapTest extends ParameterizedTupleTest {
 
     private final ByteMap byteMap;
 

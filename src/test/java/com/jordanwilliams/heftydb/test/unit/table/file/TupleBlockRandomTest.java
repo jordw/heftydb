@@ -18,14 +18,14 @@ package com.jordanwilliams.heftydb.test.unit.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.table.file.TupleBlock;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class TupleBlockRandomTest extends ParameterizedRecordTest {
+public class TupleBlockRandomTest extends ParameterizedTupleTest {
 
     private final TupleBlock tupleBlock;
 

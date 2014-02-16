@@ -71,14 +71,8 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        tables.readLock();
-
-        try {
-            for (Table table : tables) {
-                tableIterators.add(table.ascendingIterator(snapshotId));
-            }
-        } finally {
-            tables.readUnlock();
+        for (Table table : currentTables()) {
+            tableIterators.add(table.ascendingIterator(snapshotId));
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
@@ -90,14 +84,8 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        tables.readLock();
-
-        try {
-            for (Table table : tables) {
-                tableIterators.add(table.descendingIterator(snapshotId));
-            }
-        } finally {
-            tables.readUnlock();
+        for (Table table : currentTables()) {
+            tableIterators.add(table.descendingIterator(snapshotId));
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
@@ -109,14 +97,8 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        tables.readLock();
-
-        try {
-            for (Table table : tables) {
-                tableIterators.add(table.ascendingIterator(key, snapshotId));
-            }
-        } finally {
-            tables.readUnlock();
+        for (Table table : currentTables()) {
+            tableIterators.add(table.ascendingIterator(key, snapshotId));
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
@@ -128,14 +110,8 @@ public class TableReader implements Iterable<Tuple> {
     public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
         List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-        tables.readLock();
-
-        try {
-            for (Table table : tables) {
-                tableIterators.add(table.descendingIterator(key, snapshotId));
-            }
-        } finally {
-            tables.readUnlock();
+        for (Table table : currentTables()) {
+            tableIterators.add(table.descendingIterator(key, snapshotId));
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
@@ -167,14 +143,8 @@ public class TableReader implements Iterable<Tuple> {
             public Iterator<Tuple> refresh(Key key, long snapshotId) {
                 List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-                tables.readLock();
-
-                try {
-                    for (Table table : tables) {
-                        tableIterators.add(table.ascendingIterator(key, snapshotId));
-                    }
-                } finally {
-                    tables.readUnlock();
+                for (Table table : currentTables()) {
+                    tableIterators.add(table.ascendingIterator(key, snapshotId));
                 }
 
                 return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -188,18 +158,27 @@ public class TableReader implements Iterable<Tuple> {
             public Iterator<Tuple> refresh(Key key, long snapshotId) {
                 List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
 
-                tables.readLock();
-
-                try {
-                    for (Table table : tables) {
-                        tableIterators.add(table.descendingIterator(key, snapshotId));
-                    }
-                } finally {
-                    tables.readUnlock();
+                for (Table table : currentTables()) {
+                    tableIterators.add(table.descendingIterator(key, snapshotId));
                 }
 
                 return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
             }
         };
+    }
+
+    private List<Table> currentTables() {
+        List<Table> tableList = new ArrayList<Table>();
+
+        tables.readLock();
+
+        try {
+            for (Table table : tables) {
+                tableList.add(table);
+            }
+        } finally {
+            tables.readUnlock();
+        }
+        return tableList;
     }
 }

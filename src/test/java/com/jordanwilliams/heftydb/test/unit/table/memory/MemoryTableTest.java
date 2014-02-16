@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.test.unit.table.memory;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
-import com.jordanwilliams.heftydb.test.base.ParameterizedRecordTest;
+import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 
-public class MemoryTableTest extends ParameterizedRecordTest {
+public class MemoryTableTest extends ParameterizedTupleTest {
 
     private final MemoryTable memoryTable;
     private final Random random = new Random(System.nanoTime());

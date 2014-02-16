@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-public abstract class RecordTest {
+public abstract class TupleTest {
 
     @BeforeClass
     public static void beforeClass() throws IOException {
