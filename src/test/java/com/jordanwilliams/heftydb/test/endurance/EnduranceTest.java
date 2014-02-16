@@ -32,7 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class EnduranceTest {
@@ -48,7 +47,8 @@ public class EnduranceTest {
         TestFileHelper.cleanUpTestFiles();
 
         final AtomicLong maxSnapshotId = new AtomicLong();
-        final AtomicInteger maxKey = new AtomicInteger();
+        final AtomicLong maxKey = new AtomicLong();
+        final AtomicLong maxVisibleKey = new AtomicLong();
         final AtomicBoolean finished = new AtomicBoolean();
 
         final KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
@@ -75,6 +75,8 @@ public class EnduranceTest {
                                 Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
                                         keyValueGenerator.testValue(VALUE_SIZE));
 
+                                maxVisibleKey.incrementAndGet();
+
                                 long currentMaxSnapshotId = maxSnapshotId.get();
 
                                 if (maxSnapshot.id() > currentMaxSnapshotId) {
@@ -100,8 +102,11 @@ public class EnduranceTest {
                             }
 
                             for (int i = 0; i < LOAD_LEVEL; i++) {
-                                String nextKey = Long.toString(random.nextInt(maxKey.get()));
-                                db.get(ByteBuffers.fromString(nextKey));
+                                if (maxVisibleKey.get() > 0){
+                                    long randomKey = (long) (random.nextDouble()*(maxVisibleKey.get()));
+                                    String nextKey = Long.toString(randomKey);
+                                    db.get(ByteBuffers.fromString(nextKey));
+                                }
                             }
 
                             Thread.sleep(THREAD_SLEEP_TIME);

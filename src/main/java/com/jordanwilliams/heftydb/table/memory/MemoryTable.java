@@ -51,7 +51,7 @@ public class MemoryTable implements MutableTable {
 
     @Override
     public boolean mightContain(Key key) {
-        return true;
+        return get(key) != null;
     }
 
     @Override
