@@ -30,7 +30,7 @@ public class BitSet implements Offheap {
 
         public Builder(long bitCount, int paddingBytes) {
             this.usableBytes = memoryOffset(bitCount) + Sizes.LONG_SIZE;
-            this.memory = Memory.allocate(usableBytes + paddingBytes);
+            this.memory = Memory.allocateAndZero(usableBytes + paddingBytes);
             this.directBuffer = memory.directBuffer();
         }
 

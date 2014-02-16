@@ -125,8 +125,20 @@ public class Memory {
         return new Memory(size);
     }
 
+    public static Memory allocateAndZero(int size) {
+        Memory memory = allocate(size);
+        zeroMemory(memory);
+        return memory;
+    }
+
     public static Memory allocate(int size, int align) {
         return allocate(pageAlignedSize(size, align));
+    }
+
+    public static Memory allocateAndZero(int size, int align) {
+        Memory memory = allocate(size, align);
+        zeroMemory(memory);
+        return memory;
     }
 
     private static ByteBuffer rawDirectBuffer(long address, int size) {
@@ -149,6 +161,10 @@ public class Memory {
         }
 
         return pageCount * pageSize;
+    }
+
+    private static void zeroMemory(Memory memory){
+        unsafe.setMemory(memory.baseAddress, memory.size, (byte) 0);
     }
 
     private static char[] hexArray = "0123456789ABCDEF".toCharArray();
