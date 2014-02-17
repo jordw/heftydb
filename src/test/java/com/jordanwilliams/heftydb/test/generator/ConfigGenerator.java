@@ -44,7 +44,7 @@ public class ConfigGenerator {
 
     public static Config enduranceConfig() {
         return new Config.Builder().tableDirectory(TestFileHelper.TEMP_PATH).printMetrics(true).indexCacheSize
-                (1024000).tableCacheSize(1024000).memoryTableSize(8192000).maxCompactionRate(32768000).build();
+                (128000000).tableCacheSize(256000000).memoryTableSize(8192000).maxCompactionRate(32768000).build();
     }
 
     public static Config testConfig() {

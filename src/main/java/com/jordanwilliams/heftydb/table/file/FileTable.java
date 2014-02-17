@@ -397,6 +397,8 @@ public class FileTable implements Table {
         if (tupleBlock == null) {
             tupleBlock = readTupleBlock(offset, size);
             recordCache.put(tableId, offset, tupleBlock);
+        } else {
+            tupleBlock.memory().retain();
         }
 
         return tupleBlock;
