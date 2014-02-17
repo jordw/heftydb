@@ -94,7 +94,8 @@ public class SynchronizedTupleMap implements SortedTupleMap {
         }
 
         @Override
-        public void close() throws IOException {}
+        public void close() throws IOException {
+        }
     }
 
     private class DescendingLockingIterator extends LockingIterator {

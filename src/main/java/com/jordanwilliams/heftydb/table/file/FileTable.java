@@ -174,7 +174,7 @@ public class FileTable implements Table {
 
         @Override
         public void close() throws IOException {
-            if (tupleBlock != null && !tupleBlock.memory().isFree()){
+            if (tupleBlock != null && !tupleBlock.memory().isFree()) {
                 tupleBlock.memory().free();
             }
         }

@@ -163,7 +163,7 @@ public class Memory {
         return pageCount * pageSize;
     }
 
-    private static void zeroMemory(Memory memory){
+    private static void zeroMemory(Memory memory) {
         unsafe.setMemory(memory.baseAddress, memory.size, (byte) 0);
     }
 

@@ -33,8 +33,8 @@ public class MergingIteratorTest {
     @Test
     public void mergeTest() {
         MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(new CloseableIterator
-                .Wrapper<Integer>(Ints.asList(ARRAY1).iterator()),
-                new CloseableIterator.Wrapper<Integer>(Ints.asList(ARRAY2).iterator()));
+                .Wrapper<Integer>(Ints.asList(ARRAY1).iterator()), new CloseableIterator.Wrapper<Integer>(Ints.asList
+                (ARRAY2).iterator()));
 
         Iterator<Integer> mergedIterator = Ints.asList(MERGED_ARRAY).iterator();
 

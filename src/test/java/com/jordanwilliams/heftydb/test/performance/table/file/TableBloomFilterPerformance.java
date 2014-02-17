@@ -68,13 +68,13 @@ public class TableBloomFilterPerformance {
         double gmisses = 0;
 
         for (int i = RECORD_COUNT * 2; i > RECORD_COUNT; i--) {
-            if (tableBloomFilter.mightContain(new Key(ByteBuffers.fromString(i + ""), i))){
+            if (tableBloomFilter.mightContain(new Key(ByteBuffers.fromString(i + ""), i))) {
                 hits++;
             } else {
                 misses++;
             }
 
-            if (guavaFilter.mightContain(new Key(ByteBuffers.fromString(i + ""), i))){
+            if (guavaFilter.mightContain(new Key(ByteBuffers.fromString(i + ""), i))) {
                 ghits++;
             } else {
                 gmisses++;

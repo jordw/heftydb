@@ -145,7 +145,7 @@ public class MergingIterator<T extends Comparable> implements CloseableIterator<
 
     @Override
     public void close() throws IOException {
-        for (ComparableIterator<T> comparableIterator : iteratorHeap){
+        for (ComparableIterator<T> comparableIterator : iteratorHeap) {
             comparableIterator.close();
         }
     }

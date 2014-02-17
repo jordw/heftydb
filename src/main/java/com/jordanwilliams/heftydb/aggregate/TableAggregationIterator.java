@@ -40,7 +40,8 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
     private Key lastKey;
     private CloseableIterator<Tuple> delegate;
 
-    public TableAggregationIterator(CloseableIterator<Tuple> initialSource, long snapshotId, Tables tables, Source source) {
+    public TableAggregationIterator(CloseableIterator<Tuple> initialSource, long snapshotId, Tables tables,
+                                    Source source) {
         this.snapshotId = snapshotId;
         this.source = source;
         this.tables = tables;
@@ -100,7 +101,7 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
                 }
 
                 dirtySource.set(false);
-            } catch (IOException e){
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }

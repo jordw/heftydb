@@ -102,8 +102,8 @@ public class EnduranceTest {
                             }
 
                             for (int i = 0; i < LOAD_LEVEL; i++) {
-                                if (maxVisibleKey.get() > 0){
-                                    long randomKey = (long) (random.nextDouble()*(maxVisibleKey.get()));
+                                if (maxVisibleKey.get() > 0) {
+                                    long randomKey = (long) (random.nextDouble() * (maxVisibleKey.get()));
                                     String nextKey = Long.toString(randomKey);
                                     db.get(ByteBuffers.fromString(nextKey));
                                 }
