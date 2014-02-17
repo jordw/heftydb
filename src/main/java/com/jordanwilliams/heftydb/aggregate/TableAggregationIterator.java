@@ -31,11 +31,11 @@ public class TableAggregationIterator implements Iterator<Tuple> {
     }
 
     private final AtomicBoolean dirtySource = new AtomicBoolean();
-
     private final long snapshotId;
     private final Source source;
     private final Tables tables;
     private final Tables.ChangeHandler tableChangeHandler;
+
     private Key lastKey;
     private Iterator<Tuple> delegate;
 
