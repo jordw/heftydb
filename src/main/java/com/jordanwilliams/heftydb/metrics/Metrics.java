@@ -81,6 +81,7 @@ public class Metrics {
         //Read
         metrics.register(metricName("read.tablesConsulted"), new Histogram(new UniformReservoir()));
         metrics.register(metricName("read.bloomFilterFalsePositiveRate"), new CacheHitGauge());
+        metrics.register(metricName("read.recordNotFoundRate"), new CacheHitGauge());
 
         //FileTable
         metrics.register(metricName("table.cacheHitRate"), new CacheHitGauge());

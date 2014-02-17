@@ -64,6 +64,7 @@ public class TableReader implements Iterable<Tuple> {
         }
 
         metrics.histogram("read.tablesConsulted").update(tablesConsulted);
+        metrics.hitGauge("read.recordNotFoundRate").sample(closestTuple == null);
 
         return closestTuple;
     }
