@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -55,7 +56,8 @@ public class LatestTupleIteratorTest {
     @Test
     public void filterRecordTest() {
         Iterator<Tuple> filteredIterator = filteredTuples.iterator();
-        Iterator<Tuple> versionedIterator = new LatestTupleIterator(6, sourceTuples.iterator());
+        Iterator<Tuple> versionedIterator = new LatestTupleIterator(6, new CloseableIterator.Wrapper<Tuple>
+                (sourceTuples.iterator()));
 
         while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), filteredIterator.next());
@@ -65,7 +67,8 @@ public class LatestTupleIteratorTest {
     @Test
     public void respectSnapshotTest() {
         Iterator<Tuple> snapshotIterator = snapshotTuples.iterator();
-        Iterator<Tuple> versionedIterator = new LatestTupleIterator(4, sourceTuples.iterator());
+        Iterator<Tuple> versionedIterator = new LatestTupleIterator(4, new CloseableIterator.Wrapper<Tuple>
+                (sourceTuples.iterator()));
 
         while (versionedIterator.hasNext()) {
             Assert.assertEquals("Records match", versionedIterator.next(), snapshotIterator.next());

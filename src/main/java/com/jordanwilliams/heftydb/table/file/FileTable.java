@@ -29,6 +29,7 @@ import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
@@ -119,7 +120,7 @@ public class FileTable implements Table {
         }
     }
 
-    private class AscendingIterator implements Iterator<Tuple> {
+    private class AscendingIterator implements CloseableIterator<Tuple> {
 
         protected final Iterator<TupleBlock> recordBlockIterator;
         protected Iterator<Tuple> recordIterator;
@@ -171,9 +172,16 @@ public class FileTable implements Table {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public void close() throws IOException {
+            if (tupleBlock != null && !tupleBlock.memory().isFree()){
+                tupleBlock.memory().free();
+            }
+        }
+
         protected boolean nextRecordBlock() throws IOException {
             if (tupleBlock != null) {
-                tupleBlock.memory().release();
+                tupleBlock.memory().free();
             }
 
             if (!recordBlockIterator.hasNext()) {
@@ -201,7 +209,7 @@ public class FileTable implements Table {
         @Override
         protected boolean nextRecordBlock() throws IOException {
             if (tupleBlock != null) {
-                tupleBlock.memory().release();
+                tupleBlock.memory().free();
             }
 
             if (!recordBlockIterator.hasNext()) {
@@ -251,19 +259,22 @@ public class FileTable implements Table {
             }
 
             TupleBlock tupleBlock = getTupleBlock(indexRecord.blockOffset(), indexRecord.blockSize());
-            return tupleBlock.get(key);
+            Tuple read = tupleBlock.get(key);
+            tupleBlock.memory().release();
+
+            return read;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(long snapshotId) {
+    public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
         return new LatestTupleIterator(snapshotId, new AscendingIterator(new AscendingBlockIterator(0)));
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(long snapshotId) {
+    public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
         try {
             long startOffset = tableFile.size() - TableTrailer.SIZE - Sizes.INT_SIZE;
             return new LatestTupleIterator(snapshotId, new DescendingIterator(new DescendingBlockIterator
@@ -274,12 +285,12 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
+    public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
 
             if (indexRecord == null) {
-                return Collections.emptyIterator();
+                return new CloseableIterator.Wrapper<Tuple>(Collections.<Tuple>emptyIterator());
             }
 
             TupleBlock startTupleBlock = readTupleBlock(indexRecord.blockOffset(), indexRecord.blockSize());
@@ -293,12 +304,12 @@ public class FileTable implements Table {
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
+    public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
         try {
             IndexRecord indexRecord = index.get(key);
 
             if (indexRecord == null) {
-                return Collections.emptyIterator();
+                return new CloseableIterator.Wrapper<Tuple>(Collections.<Tuple>emptyIterator());
             }
 
             TupleBlock startTupleBlock = readTupleBlock(indexRecord.blockOffset(), indexRecord.blockSize());
@@ -398,7 +409,9 @@ public class FileTable implements Table {
             ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
             tableFile.read(recordBlockBuffer, offset);
             recordBlockBuffer.rewind();
-            return new TupleBlock(new ByteMap(recordBlockMemory));
+            TupleBlock readBlock = new TupleBlock(new ByteMap(recordBlockMemory));
+            readBlock.memory().retain();
+            return readBlock;
         } catch (IOException e) {
             recordBlockMemory.release();
             throw e;

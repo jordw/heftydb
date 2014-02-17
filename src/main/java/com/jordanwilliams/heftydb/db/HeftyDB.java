@@ -27,19 +27,19 @@ import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 import java.util.concurrent.Future;
 
 public class HeftyDB implements DB {
 
-    private class InstrumentedScanIterator implements Iterator<Record> {
+    private class InstrumentedScanIterator implements CloseableIterator<Record> {
 
-        private final Iterator<Record> delegate;
+        private final CloseableIterator<Record> delegate;
 
-        private InstrumentedScanIterator(Iterator<Record> delegate) {
+        private InstrumentedScanIterator(CloseableIterator<Record> delegate) {
             this.delegate = delegate;
         }
 
@@ -61,6 +61,11 @@ public class HeftyDB implements DB {
         @Override
         public void remove() {
             delegate.remove();
+        }
+
+        @Override
+        public void close() throws IOException {
+            delegate.close();
         }
     }
 
@@ -99,23 +104,23 @@ public class HeftyDB implements DB {
     }
 
     @Override
-    public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
+    public CloseableIterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
         return new InstrumentedScanIterator(new Record.TupleIterator(tableReader.ascendingIterator(snapshot.id())));
     }
 
     @Override
-    public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
+    public CloseableIterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
         return new InstrumentedScanIterator(new Record.TupleIterator(tableReader.ascendingIterator(new Key(key,
                 snapshot.id()), snapshot.id())));
     }
 
     @Override
-    public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
+    public CloseableIterator<Record> descendingIterator(Snapshot snapshot) throws IOException {
         return new InstrumentedScanIterator(new Record.TupleIterator(tableReader.descendingIterator(snapshot.id())));
     }
 
     @Override
-    public Iterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
+    public CloseableIterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
         return new InstrumentedScanIterator(new Record.TupleIterator(tableReader.descendingIterator(new Key(key,
                 snapshot.id()), snapshot.id())));
     }

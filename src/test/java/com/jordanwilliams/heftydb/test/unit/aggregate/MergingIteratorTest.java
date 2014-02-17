@@ -18,6 +18,7 @@ package com.jordanwilliams.heftydb.test.unit.aggregate;
 
 import com.google.common.primitives.Ints;
 import com.jordanwilliams.heftydb.aggregate.MergingIterator;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,8 +32,9 @@ public class MergingIteratorTest {
 
     @Test
     public void mergeTest() {
-        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(Ints.asList(ARRAY1).iterator(),
-                Ints.asList(ARRAY2).iterator());
+        MergingIterator<Integer> mergingIterator = new MergingIterator<Integer>(new CloseableIterator
+                .Wrapper<Integer>(Ints.asList(ARRAY1).iterator()),
+                new CloseableIterator.Wrapper<Integer>(Ints.asList(ARRAY2).iterator()));
 
         Iterator<Integer> mergedIterator = Ints.asList(MERGED_ARRAY).iterator();
 

@@ -29,6 +29,7 @@ import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -56,7 +57,7 @@ public class Compactor {
         public void run() {
             try {
                 Timer.Context watch = metrics.timer("compactor.taskExecution").time();
-                List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+                List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
                 long tupleCount = 0;
                 long nextTableId = tables.nextId();
 

@@ -16,26 +16,27 @@
 
 package com.jordanwilliams.heftydb.aggregate;
 
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 import com.jordanwilliams.heftydb.util.PeekableIterator;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-public class MergingIterator<T extends Comparable> implements Iterator<T> {
+public class MergingIterator<T extends Comparable> implements CloseableIterator<T> {
 
     private static class ComparableIterator<T extends Comparable> implements PeekableIterator<T>,
             Comparable<ComparableIterator<T>> {
 
-        private final Iterator<T> delegate;
+        private final CloseableIterator<T> delegate;
         private T current;
 
-        private ComparableIterator(Iterator<T> delegate) {
+        private ComparableIterator(CloseableIterator<T> delegate) {
             this.delegate = delegate;
 
             if (delegate.hasNext()) {
@@ -58,6 +59,10 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
             return false;
         }
 
+        public void close() throws IOException {
+            delegate.close();
+        }
+
         @Override
         public int compareTo(ComparableIterator<T> other) {
             return current.compareTo(other.current);
@@ -67,20 +72,20 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
     private final Queue<T> next = new LinkedList<T>();
     private final PriorityQueue<ComparableIterator<T>> iteratorHeap;
 
-    public MergingIterator(List<Iterator<T>> iterators) {
+    public MergingIterator(List<CloseableIterator<T>> iterators) {
         this.iteratorHeap = new PriorityQueue<ComparableIterator<T>>();
         buildIteratorHeap(iterators);
     }
 
-    public MergingIterator(Iterator<T>... iterators) {
+    public MergingIterator(CloseableIterator<T>... iterators) {
         this(Arrays.asList(iterators));
     }
 
-    public MergingIterator(boolean descending, Iterator<T>... iterators) {
+    public MergingIterator(boolean descending, CloseableIterator<T>... iterators) {
         this(descending, Arrays.asList(iterators));
     }
 
-    public MergingIterator(boolean descending, List<Iterator<T>> iterators) {
+    public MergingIterator(boolean descending, List<CloseableIterator<T>> iterators) {
         this.iteratorHeap = descending ? new PriorityQueue<ComparableIterator<T>>(iterators.size(),
                 Collections.reverseOrder()) : new PriorityQueue<ComparableIterator<T>>();
         buildIteratorHeap(iterators);
@@ -130,11 +135,18 @@ public class MergingIterator<T extends Comparable> implements Iterator<T> {
         throw new UnsupportedOperationException();
     }
 
-    private void buildIteratorHeap(List<Iterator<T>> iteratorList) {
-        for (Iterator<T> iterator : iteratorList) {
+    private void buildIteratorHeap(List<CloseableIterator<T>> iteratorList) {
+        for (CloseableIterator<T> iterator : iteratorList) {
             if (iterator.hasNext()) {
                 iteratorHeap.add(new ComparableIterator<T>(iterator));
             }
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        for (ComparableIterator<T> comparableIterator : iteratorHeap){
+            comparableIterator.close();
         }
     }
 }

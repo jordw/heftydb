@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.table.MutableTable;
 import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,22 +61,22 @@ public class MemoryTable implements MutableTable {
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(long snapshotId) {
+    public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
         return records.ascendingIterator(snapshotId);
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(long snapshotId) {
+    public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
         return records.descendingIterator(snapshotId);
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
+    public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         return records.ascendingIterator(key, snapshotId);
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
+    public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
         return records.descendingIterator(key, snapshotId);
     }
 

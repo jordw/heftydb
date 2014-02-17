@@ -19,8 +19,7 @@ package com.jordanwilliams.heftydb.table.memory;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
-
-import java.util.Iterator;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 public interface SortedTupleMap extends Iterable<Tuple> {
 
@@ -28,12 +27,12 @@ public interface SortedTupleMap extends Iterable<Tuple> {
 
     public Tuple get(Key key);
 
-    public Iterator<Tuple> ascendingIterator(long snapshotId);
+    public CloseableIterator<Tuple> ascendingIterator(long snapshotId);
 
-    public Iterator<Tuple> descendingIterator(long snapshotId);
+    public CloseableIterator<Tuple> descendingIterator(long snapshotId);
 
-    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId);
+    public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId);
 
-    public Iterator<Tuple> descendingIterator(Key key, long snapshotId);
+    public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId);
 
 }

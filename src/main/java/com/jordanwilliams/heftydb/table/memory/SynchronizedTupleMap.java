@@ -20,7 +20,9 @@ import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -31,7 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class SynchronizedTupleMap implements SortedTupleMap {
 
-    private class LockingIterator implements Iterator<Tuple> {
+    private class LockingIterator implements CloseableIterator<Tuple> {
 
         private final Queue<Tuple> next = new LinkedList<Tuple>();
         private Key searchKey;
@@ -90,6 +92,9 @@ public class SynchronizedTupleMap implements SortedTupleMap {
         protected Map.Entry nextEntry(Key key) {
             return tuples.higherEntry(key);
         }
+
+        @Override
+        public void close() throws IOException {}
     }
 
     private class DescendingLockingIterator extends LockingIterator {
@@ -137,7 +142,7 @@ public class SynchronizedTupleMap implements SortedTupleMap {
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(long snapshotId) {
+    public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
         lock.lock();
 
         try {
@@ -150,7 +155,7 @@ public class SynchronizedTupleMap implements SortedTupleMap {
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(long snapshotId) {
+    public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
         lock.lock();
 
         try {
@@ -163,7 +168,7 @@ public class SynchronizedTupleMap implements SortedTupleMap {
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
+    public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
         lock.lock();
 
         try {
@@ -176,7 +181,7 @@ public class SynchronizedTupleMap implements SortedTupleMap {
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
+    public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
         lock.lock();
 
         try {

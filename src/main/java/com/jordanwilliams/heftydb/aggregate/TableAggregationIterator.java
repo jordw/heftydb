@@ -19,15 +19,16 @@ package com.jordanwilliams.heftydb.aggregate;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.state.Tables;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
-import java.util.Iterator;
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class TableAggregationIterator implements Iterator<Tuple> {
+public class TableAggregationIterator implements CloseableIterator<Tuple> {
 
     public interface Source {
-        public Iterator<Tuple> refresh(Key key, long snapshotId);
+        public CloseableIterator<Tuple> refresh(Key key, long snapshotId);
     }
 
     private final AtomicBoolean dirtySource = new AtomicBoolean();
@@ -37,9 +38,9 @@ public class TableAggregationIterator implements Iterator<Tuple> {
     private final Tables.ChangeHandler tableChangeHandler;
 
     private Key lastKey;
-    private Iterator<Tuple> delegate;
+    private CloseableIterator<Tuple> delegate;
 
-    public TableAggregationIterator(Iterator<Tuple> initialSource, long snapshotId, Tables tables, Source source) {
+    public TableAggregationIterator(CloseableIterator<Tuple> initialSource, long snapshotId, Tables tables, Source source) {
         this.snapshotId = snapshotId;
         this.source = source;
         this.tables = tables;
@@ -82,16 +83,26 @@ public class TableAggregationIterator implements Iterator<Tuple> {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void close() throws IOException {
+        delegate.close();
+    }
+
     private void refreshSource() {
         if (dirtySource.get()) {
-            this.delegate = source.refresh(lastKey, snapshotId);
+            try {
+                delegate.close();
+                this.delegate = source.refresh(lastKey, snapshotId);
 
-            //Advance past the previously seen key
-            if (delegate.hasNext()) {
-                delegate.next();
+                //Advance past the previously seen key
+                if (delegate.hasNext()) {
+                    delegate.next();
+                }
+
+                dirtySource.set(false);
+            } catch (IOException e){
+                throw new RuntimeException(e);
             }
-
-            dirtySource.set(false);
         }
     }
 }

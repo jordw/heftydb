@@ -17,23 +17,24 @@
 package com.jordanwilliams.heftydb.aggregate;
 
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
-import java.util.Iterator;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class LatestTupleIterator implements Iterator<Tuple> {
+public class LatestTupleIterator implements CloseableIterator<Tuple> {
 
-    private final Iterator<Tuple> recordIterator;
+    private final CloseableIterator<Tuple> tupleIterator;
     private final Queue<Tuple> nextTuple = new LinkedList<Tuple>();
     private final long maxSnapshotId;
     private final SortedSet<Tuple> currentKeyTuples = new TreeSet<Tuple>();
 
-    public LatestTupleIterator(long maxSnapshotId, Iterator<Tuple> recordIterator) {
+    public LatestTupleIterator(long maxSnapshotId, CloseableIterator<Tuple> tupleIterator) {
         this.maxSnapshotId = maxSnapshotId;
-        this.recordIterator = recordIterator;
+        this.tupleIterator = tupleIterator;
     }
 
     @Override
@@ -68,8 +69,8 @@ public class LatestTupleIterator implements Iterator<Tuple> {
     }
 
     private Tuple fetchNextRecord() {
-        while (recordIterator.hasNext()) {
-            Tuple next = recordIterator.next();
+        while (tupleIterator.hasNext()) {
+            Tuple next = tupleIterator.next();
 
             if (next.key().snapshotId() > maxSnapshotId) {
                 continue;
@@ -96,5 +97,10 @@ public class LatestTupleIterator implements Iterator<Tuple> {
         Tuple newest = currentKeyTuples.last();
         currentKeyTuples.clear();
         return newest;
+    }
+
+    @Override
+    public void close() throws IOException {
+        tupleIterator.close();
     }
 }

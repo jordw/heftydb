@@ -18,17 +18,18 @@ package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 
 public class Record implements Comparable<Record> {
 
-    public static class TupleIterator implements Iterator<Record> {
+    public static class TupleIterator implements CloseableIterator<Record> {
 
-        private final Iterator<Tuple> tupleIterator;
+        private final CloseableIterator<Tuple> tupleIterator;
 
-        public TupleIterator(Iterator<Tuple> tupleIterator) {
+        public TupleIterator(CloseableIterator<Tuple> tupleIterator) {
             this.tupleIterator = tupleIterator;
         }
 
@@ -45,6 +46,11 @@ public class Record implements Comparable<Record> {
         @Override
         public void remove() {
             tupleIterator.remove();
+        }
+
+        @Override
+        public void close() throws IOException {
+            tupleIterator.close();
         }
     }
 

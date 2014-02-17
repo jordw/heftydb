@@ -21,6 +21,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,8 +70,8 @@ public class TableReader implements Iterable<Tuple> {
         return closestTuple;
     }
 
-    public Iterator<Tuple> ascendingIterator(long snapshotId) {
-        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+    public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
+        List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
         for (Table table : currentTables()) {
             tableIterators.add(table.ascendingIterator(snapshotId));
@@ -82,8 +83,8 @@ public class TableReader implements Iterable<Tuple> {
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
 
-    public Iterator<Tuple> descendingIterator(long snapshotId) {
-        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+    public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
+        List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
         for (Table table : currentTables()) {
             tableIterators.add(table.descendingIterator(snapshotId));
@@ -95,8 +96,8 @@ public class TableReader implements Iterable<Tuple> {
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
 
-    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
-        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+    public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
+        List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
         for (Table table : currentTables()) {
             tableIterators.add(table.ascendingIterator(key, snapshotId));
@@ -108,8 +109,8 @@ public class TableReader implements Iterable<Tuple> {
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
 
-    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
-        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+    public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
+        List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
         for (Table table : currentTables()) {
             tableIterators.add(table.descendingIterator(key, snapshotId));
@@ -141,8 +142,8 @@ public class TableReader implements Iterable<Tuple> {
     private TableAggregationIterator.Source ascendingIteratorSource() {
         return new TableAggregationIterator.Source() {
             @Override
-            public Iterator<Tuple> refresh(Key key, long snapshotId) {
-                List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+            public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
+                List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
                 for (Table table : currentTables()) {
                     tableIterators.add(key == null ? table.ascendingIterator(snapshotId) : table.ascendingIterator
@@ -157,8 +158,8 @@ public class TableReader implements Iterable<Tuple> {
     private TableAggregationIterator.Source descendingIteratorSource() {
         return new TableAggregationIterator.Source() {
             @Override
-            public Iterator<Tuple> refresh(Key key, long snapshotId) {
-                List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+            public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
+                List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
                 for (Table table : currentTables()) {
                     tableIterators.add(key == null ? table.descendingIterator(snapshotId) : table.descendingIterator

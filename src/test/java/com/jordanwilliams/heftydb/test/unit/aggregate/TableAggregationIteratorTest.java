@@ -25,6 +25,7 @@ import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
 import com.jordanwilliams.heftydb.test.generator.TupleGenerator;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,7 +48,7 @@ public class TableAggregationIteratorTest {
     public void changingTablesTest() throws Exception {
         Tables tables = testTables();
         List<Tuple> iteratorTuples = new ArrayList<Tuple>();
-        Iterator<Tuple> tableReaderTuples = ascendingTupleIterator(tables);
+        CloseableIterator<Tuple> tableReaderTuples = ascendingTupleIterator(tables);
 
         while (tableReaderTuples.hasNext()) {
             iteratorTuples.add(tableReaderTuples.next());
@@ -102,14 +103,14 @@ public class TableAggregationIteratorTest {
     private TableAggregationIterator.Source ascendingIteratorSource(final Tables tables) {
         return new TableAggregationIterator.Source() {
             @Override
-            public Iterator<Tuple> refresh(Key key, long snapshotId) {
+            public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
                 return ascendingTupleIterator(tables, key, snapshotId);
             }
         };
     }
 
-    private Iterator<Tuple> ascendingTupleIterator(Tables tables) {
-        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+    private CloseableIterator<Tuple> ascendingTupleIterator(Tables tables) {
+        List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
         for (Table table : tables) {
             tableIterators.add(table.ascendingIterator(Long.MAX_VALUE));
@@ -118,8 +119,8 @@ public class TableAggregationIteratorTest {
         return new LatestTupleIterator(Long.MAX_VALUE, new MergingIterator<Tuple>(false, tableIterators));
     }
 
-    private Iterator<Tuple> ascendingTupleIterator(Tables tables, Key key, long snapshotId) {
-        List<Iterator<Tuple>> tableIterators = new ArrayList<Iterator<Tuple>>();
+    private CloseableIterator<Tuple> ascendingTupleIterator(Tables tables, Key key, long snapshotId) {
+        List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
         for (Table table : tables) {
             tableIterators.add(table.ascendingIterator(key, snapshotId));

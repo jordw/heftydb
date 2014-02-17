@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -79,24 +80,29 @@ public class SkipListTupleMap implements SortedTupleMap {
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new TupleEntryIterator(tuples.entrySet().iterator()));
+    public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples
+                .entrySet().iterator())));
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new TupleEntryIterator(tuples.descendingMap().entrySet().iterator()));
+    public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples.descendingMap().entrySet()
+                .iterator
+                ())));
     }
 
     @Override
-    public Iterator<Tuple> ascendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new TupleEntryIterator(tuples.tailMap(key, true).entrySet().iterator()));
+    public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples.tailMap(key,
+                true).entrySet().iterator())));
     }
 
     @Override
-    public Iterator<Tuple> descendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new TupleEntryIterator(tuples.headMap(key, true).descendingMap()
-                .entrySet().iterator()));
+    public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples.headMap(key,
+                true).descendingMap()
+                .entrySet().iterator())));
     }
 
     @Override
