@@ -84,8 +84,9 @@ public class Compactor {
         }
 
         private void removeObsoleteTables(List<Table> toRemove) throws IOException {
+            tables.removeAll(toRemove);
+
             for (Table table : toRemove) {
-                tables.remove(table);
                 table.close();
                 Files.deleteIfExists(paths.tablePath(table.id()));
                 Files.deleteIfExists(paths.indexPath(table.id()));

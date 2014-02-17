@@ -78,6 +78,18 @@ public class Tables implements Iterable<Table> {
         }
     }
 
+    public void removeAll(List<Table> toRemove){
+        try {
+            tableLock.writeLock().lock();
+            for (Table table : toRemove){
+                tables.remove(table);
+            }
+            notifyChanged();
+        } finally {
+            tableLock.writeLock().unlock();
+        }
+    }
+
     public void remove(Table toRemove) {
         try {
             tableLock.writeLock().lock();
