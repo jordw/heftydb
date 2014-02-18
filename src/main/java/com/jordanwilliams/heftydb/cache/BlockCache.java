@@ -100,7 +100,7 @@ public class BlockCache<T extends Offheap> {
         totalSize.addAndGet(block.memory().size());
     }
 
-    public long totalEntrySize(){
+    public long totalEntrySize() {
         return totalSize.get();
     }
 

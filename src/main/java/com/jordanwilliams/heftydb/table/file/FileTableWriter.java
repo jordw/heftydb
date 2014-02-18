@@ -81,7 +81,7 @@ public class FileTableWriter {
                 return this;
             }
 
-            public Builder throttle(Throttle throttle){
+            public Builder throttle(Throttle throttle) {
                 this.throttle = throttle;
                 return this;
             }

@@ -37,8 +37,7 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
         private final BlockCache<TupleBlock> cache;
 
         public Cache(long maxSize, Metrics metrics) {
-            cache = new BlockCache<TupleBlock>(maxSize, new Weigher<BlockCache.Entry,
-                    TupleBlock>() {
+            cache = new BlockCache<TupleBlock>(maxSize, new Weigher<BlockCache.Entry, TupleBlock>() {
                 @Override
                 public int weigh(BlockCache.Entry entry, TupleBlock value) {
                     return value.memory().size();
@@ -68,7 +67,7 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
             cache.put(tableId, offset, tupleBlock);
         }
 
-        public void invalidate(long tableId){
+        public void invalidate(long tableId) {
             cache.invalidate(tableId);
         }
 

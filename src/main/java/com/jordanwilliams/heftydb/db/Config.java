@@ -133,7 +133,8 @@ public class Config {
 
     public Config(CompactionStrategy compactionStrategy, int memoryTableSize, int tableBlockSize, int indexBlockSize,
                   int tableWriterThreads, int tableCompactionThreads, long tableCacheSize, long indexCacheSize,
-                  boolean printMetrics, Path tableDirectory, Path logDirectory, long maxCompactionRate, long maxMemoryTableWriteRate) {
+                  boolean printMetrics, Path tableDirectory, Path logDirectory, long maxCompactionRate,
+                  long maxMemoryTableWriteRate) {
         this.compactionStrategy = compactionStrategy;
         this.memoryTableSize = memoryTableSize;
         this.tableBlockSize = tableBlockSize;

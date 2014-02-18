@@ -39,8 +39,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         private final BlockCache<IndexBlock> cache;
 
         public Cache(long maxSize, Metrics metrics) {
-            cache = new BlockCache<IndexBlock>(maxSize, new Weigher<BlockCache.Entry,
-                    IndexBlock>() {
+            cache = new BlockCache<IndexBlock>(maxSize, new Weigher<BlockCache.Entry, IndexBlock>() {
                 @Override
                 public int weigh(BlockCache.Entry entry, IndexBlock value) {
                     return value.memory().size();
@@ -70,7 +69,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
             cache.put(tableId, offset, tupleBlock);
         }
 
-        public void invalidate(long tableId){
+        public void invalidate(long tableId) {
             cache.invalidate(tableId);
         }
 

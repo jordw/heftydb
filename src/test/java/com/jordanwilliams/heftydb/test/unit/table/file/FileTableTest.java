@@ -128,6 +128,7 @@ public class FileTableTest extends ParameterizedTupleTest {
 
         writerTask.run();
 
-        return FileTable.open(1, paths, new TupleBlock.Cache(1024000, new Metrics(config)), new IndexBlock.Cache(1024000, new Metrics(config)), new Metrics(config));
+        return FileTable.open(1, paths, new TupleBlock.Cache(1024000, new Metrics(config)),
+                new IndexBlock.Cache(1024000, new Metrics(config)), new Metrics(config));
     }
 }

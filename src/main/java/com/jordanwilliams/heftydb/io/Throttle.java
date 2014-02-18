@@ -28,10 +28,12 @@ public class Throttle {
     private final TokenBucket throttleBucket;
 
     public Throttle(long maxRatePerSecond) {
-        this.throttleBucket = TokenBuckets.newFixedIntervalRefill(maxRatePerSecond, maxRatePerSecond, 1, TimeUnit.SECONDS);;
+        this.throttleBucket = TokenBuckets.newFixedIntervalRefill(maxRatePerSecond, maxRatePerSecond, 1,
+                TimeUnit.SECONDS);
+        ;
     }
 
-    public void consume(long usage){
+    public void consume(long usage) {
         throttleBucket.consume(usage);
     }
 }

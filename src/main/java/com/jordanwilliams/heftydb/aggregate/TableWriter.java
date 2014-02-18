@@ -118,18 +118,19 @@ public class TableWriter {
     private void writeMemoryTable(final Table tableToWrite) {
         final FileTableWriter.Task task = new FileTableWriter.Task.Builder().tableId(tableToWrite.id()).level(1)
                 .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount
-                        (tableToWrite.tupleCount()).throttle(memoryTableWriteThrottle).callback(new FileTableWriter.Task.Callback() {
-                    @Override
-                    public void finish() {
-                        try {
-                            tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
-                                    caches.indexBlockCache(), metrics), tableToWrite);
-                            Files.deleteIfExists(paths.logPath(tableToWrite.id()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }).build();
+                        (tableToWrite.tupleCount()).throttle(memoryTableWriteThrottle).callback(new FileTableWriter
+                        .Task.Callback() {
+            @Override
+            public void finish() {
+                try {
+                    tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
+                            caches.indexBlockCache(), metrics), tableToWrite);
+                    Files.deleteIfExists(paths.logPath(tableToWrite.id()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).build();
 
         tableExecutor.execute(new Runnable() {
             @Override
