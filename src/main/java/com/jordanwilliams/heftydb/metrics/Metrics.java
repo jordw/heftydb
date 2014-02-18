@@ -18,6 +18,7 @@ package com.jordanwilliams.heftydb.metrics;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -55,6 +56,10 @@ public class Metrics {
 
     public CacheHitGauge hitGauge(String name) {
         return (CacheHitGauge) metrics.getGauges().get(metricName(name));
+    }
+
+    public void gauge(String name, Gauge<?> gauge) {
+        metrics.register(metricName(name), gauge);
     }
 
     public Histogram histogram(String name) {

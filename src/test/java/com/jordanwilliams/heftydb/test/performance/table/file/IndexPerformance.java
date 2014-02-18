@@ -46,7 +46,7 @@ public class IndexPerformance {
 
         fileTableWriter.finish();
 
-        Index index = Index.open(1, paths, new IndexBlock.Cache(4096000), new Metrics(config));
+        Index index = Index.open(1, paths, new IndexBlock.Cache(4096000, new Metrics(config)), new Metrics(config));
 
         Random random = new Random(System.nanoTime());
         int iterations = 1000000;

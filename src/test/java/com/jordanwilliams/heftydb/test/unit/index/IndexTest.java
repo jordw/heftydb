@@ -72,6 +72,6 @@ public class IndexTest extends ParameterizedTupleTest {
 
         indexWriter.finish();
 
-        return Index.open(1, paths, new IndexBlock.Cache(), new Metrics(config));
+        return Index.open(1, paths, new IndexBlock.Cache(1024000, new Metrics(config)), new Metrics(config));
     }
 }

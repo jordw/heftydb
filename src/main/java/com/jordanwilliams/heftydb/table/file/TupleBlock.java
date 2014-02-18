@@ -16,10 +16,12 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
+import com.codahale.metrics.Gauge;
 import com.google.common.cache.Weigher;
 import com.jordanwilliams.heftydb.cache.BlockCache;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.Memory;
 import com.jordanwilliams.heftydb.offheap.Offheap;
@@ -34,18 +36,28 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
 
         private final BlockCache<TupleBlock> cache;
 
-        public Cache(long maxsize) {
-            cache = new BlockCache<TupleBlock>(maxsize, new Weigher<BlockCache.Entry,
+        public Cache(long maxSize, Metrics metrics) {
+            cache = new BlockCache<TupleBlock>(maxSize, new Weigher<BlockCache.Entry,
                     TupleBlock>() {
                 @Override
                 public int weigh(BlockCache.Entry entry, TupleBlock value) {
                     return value.memory().size();
                 }
             });
-        }
 
-        public Cache() {
-            this(1024000);
+            metrics.gauge("cache.tupleBlock.entrySize", new Gauge<Long>() {
+                @Override
+                public Long getValue() {
+                    return cache.totalEntrySize();
+                }
+            });
+
+            metrics.gauge("cache.tupleBlock.utilizationRate", new Gauge<Double>() {
+                @Override
+                public Double getValue() {
+                    return cache.utilizationRate();
+                }
+            });
         }
 
         public TupleBlock get(long tableId, long offset) {

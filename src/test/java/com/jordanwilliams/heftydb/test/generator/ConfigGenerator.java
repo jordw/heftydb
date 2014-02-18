@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.compact.CompactionStrategies;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
@@ -35,7 +36,8 @@ public class ConfigGenerator {
     }
 
     public static Caches testCaches() {
-        return new Caches(new TupleBlock.Cache(32768000), new IndexBlock.Cache(16384000));
+        return new Caches(new TupleBlock.Cache(32768000, new Metrics(testConfig())), new IndexBlock.Cache(16384000,
+                new Metrics(testConfig())));
     }
 
     public static Config defaultConfig() {

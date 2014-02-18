@@ -47,8 +47,8 @@ public class DBInitializer {
         this.config = config;
         this.metrics = metrics;
         this.paths = new Paths(config.tableDirectory(), config.logDirectory());
-        this.caches = new Caches(new TupleBlock.Cache(config.tableCacheSize()),
-                new IndexBlock.Cache(config.indexCacheSize()));
+        this.caches = new Caches(new TupleBlock.Cache(config.tableCacheSize(), metrics),
+                new IndexBlock.Cache(config.indexCacheSize(), metrics));
     }
 
     public DBState initialize() throws IOException {

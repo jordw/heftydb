@@ -34,6 +34,7 @@ public class Config {
         private long tableCacheSize = 64000000;
         private long indexCacheSize = 64000000;
         private long maxCompactionRate = 16384000;
+        private long maxMemoryTableWriteRate = 32768000;
         private boolean printMetrics = false;
         private Path tableDirectory;
         private Path logDirectory;
@@ -104,10 +105,15 @@ public class Config {
             return this;
         }
 
+        public Builder maxMemoryTableWriteRate(long maxMemoryTableWriteRate) {
+            this.maxMemoryTableWriteRate = maxMemoryTableWriteRate;
+            return this;
+        }
+
         public Config build() {
             return new Config(compactionStrategy, memoryTableSize, tableBlockSize, indexBlockSize,
                     tableWriterThreads, tableCompactionThreads, tableCacheSize, indexCacheSize, printMetrics,
-                    tableDirectory, logDirectory, maxCompactionRate);
+                    tableDirectory, logDirectory, maxCompactionRate, maxMemoryTableWriteRate);
         }
     }
 
@@ -123,10 +129,11 @@ public class Config {
     private final Path tableDirectory;
     private final Path logDirectory;
     private final long maxCompactionRate;
+    private final long maxMemoryTableWriteRate;
 
     public Config(CompactionStrategy compactionStrategy, int memoryTableSize, int tableBlockSize, int indexBlockSize,
                   int tableWriterThreads, int tableCompactionThreads, long tableCacheSize, long indexCacheSize,
-                  boolean printMetrics, Path tableDirectory, Path logDirectory, long maxCompactionRate) {
+                  boolean printMetrics, Path tableDirectory, Path logDirectory, long maxCompactionRate, long maxMemoryTableWriteRate) {
         this.compactionStrategy = compactionStrategy;
         this.memoryTableSize = memoryTableSize;
         this.tableBlockSize = tableBlockSize;
@@ -139,6 +146,7 @@ public class Config {
         this.tableDirectory = tableDirectory;
         this.logDirectory = logDirectory;
         this.maxCompactionRate = maxCompactionRate;
+        this.maxMemoryTableWriteRate = maxMemoryTableWriteRate;
     }
 
     public CompactionStrategy compactionStrategy() {
@@ -187,5 +195,9 @@ public class Config {
 
     public long maxCompactionRate() {
         return maxCompactionRate;
+    }
+
+    public long maxMemoryTableWriteRate() {
+        return maxMemoryTableWriteRate;
     }
 }

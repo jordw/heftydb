@@ -34,7 +34,8 @@ public class Index {
 
     private final long tableId;
     private final DataFile indexFile;
-    private final IndexBlock rootIndexBlock;
+    private final long rootBlockOffset;
+    private final int rootBlockSize;
     private final IndexBlock.Cache cache;
     private final Metrics metrics;
 
@@ -43,32 +44,26 @@ public class Index {
         this.indexFile = indexFile;
         this.cache = cache;
         this.metrics = metrics;
-        long rootIndexBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
-        int rootIndexBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
-        this.rootIndexBlock = readIndexBlock(rootIndexBlockOffset, rootIndexBlockSize);
+        this.rootBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
+        this.rootBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
     }
 
     public IndexRecord get(Key key) throws IOException {
+        IndexBlock rootIndexBlock = getIndexBlock(rootBlockOffset, rootBlockSize);
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
         int searchLevels = 1;
-
-        if (currentIndexRecord != null && currentIndexRecord.isLeaf()) {
-            metrics.hitGauge("index.cacheHitRate").hit();
-        }
 
         while (currentIndexRecord != null && !currentIndexRecord.isLeaf()) {
             IndexBlock currentIndexBlock = getIndexBlock(currentIndexRecord.blockOffset(),
                     currentIndexRecord.blockSize());
             currentIndexRecord = currentIndexBlock.get(key);
-
-            if (currentIndexBlock != rootIndexBlock){
-                currentIndexBlock.memory().release();
-            }
-
+            currentIndexBlock.memory().release();
             searchLevels++;
         }
 
         metrics.histogram("index.searchLevels").update(searchLevels);
+
+        rootIndexBlock.memory().release();
 
         return currentIndexRecord;
     }
@@ -76,7 +71,6 @@ public class Index {
     public void close() throws IOException {
         indexFile.close();
         cache.clear();
-        rootIndexBlock.memory().free();
     }
 
     private IndexBlock getIndexBlock(long blockOffset, int blockSize) throws IOException {
