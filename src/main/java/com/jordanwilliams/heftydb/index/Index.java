@@ -60,6 +60,11 @@ public class Index {
             IndexBlock currentIndexBlock = getIndexBlock(currentIndexRecord.blockOffset(),
                     currentIndexRecord.blockSize());
             currentIndexRecord = currentIndexBlock.get(key);
+
+            if (currentIndexBlock != rootIndexBlock){
+                currentIndexBlock.memory().release();
+            }
+
             searchLevels++;
         }
 
@@ -71,7 +76,7 @@ public class Index {
     public void close() throws IOException {
         indexFile.close();
         cache.clear();
-        rootIndexBlock.memory().release();
+        rootIndexBlock.memory().free();
     }
 
     private IndexBlock getIndexBlock(long blockOffset, int blockSize) throws IOException {
@@ -81,6 +86,8 @@ public class Index {
         if (indexBlock == null) {
             indexBlock = readIndexBlock(blockOffset, blockSize);
             cache.put(tableId, blockOffset, indexBlock);
+        } else {
+            indexBlock.memory().retain();
         }
 
         return indexBlock;
@@ -93,7 +100,9 @@ public class Index {
             ByteBuffer indexBuffer = indexMemory.directBuffer();
             indexFile.read(indexBuffer, blockOffset);
             indexBuffer.rewind();
-            return new IndexBlock(new ByteMap(indexMemory));
+            IndexBlock readBlock = new IndexBlock(new ByteMap(indexMemory));
+            readBlock.memory().retain();
+            return readBlock;
         } catch (IOException e) {
             indexMemory.release();
             throw e;
