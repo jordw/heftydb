@@ -78,6 +78,7 @@ public class Compactor {
                         metrics));
 
                 removeObsoleteTables(compactionTask.tables());
+
                 watch.stop();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -89,6 +90,8 @@ public class Compactor {
 
             for (Table table : toRemove) {
                 table.close();
+                caches.indexBlockCache().invalidate(table.id());
+                caches.recordBlockCache().invalidate(table.id());
                 Files.deleteIfExists(paths.tablePath(table.id()));
                 Files.deleteIfExists(paths.indexPath(table.id()));
                 Files.deleteIfExists(paths.filterPath(table.id()));

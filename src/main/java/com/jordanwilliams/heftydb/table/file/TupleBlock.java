@@ -16,10 +16,8 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
+import com.jordanwilliams.heftydb.cache.BlockCache;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
@@ -34,22 +32,16 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
 
     public static class Cache {
 
-        private static final int CONCURRENCY_LEVEL = 64;
-
-        private final com.google.common.cache.Cache<String, TupleBlock> cache;
+        private final BlockCache<TupleBlock> cache;
 
         public Cache(long maxsize) {
-            cache = CacheBuilder.newBuilder().concurrencyLevel(CONCURRENCY_LEVEL).weigher(new Weigher<String, TupleBlock>() {
+            cache = new BlockCache<TupleBlock>(maxsize, new Weigher<BlockCache.Entry,
+                    TupleBlock>() {
                 @Override
-                public int weigh(String key, TupleBlock value) {
-                    return key.length() + value.memory().size();
+                public int weigh(BlockCache.Entry entry, TupleBlock value) {
+                    return value.memory().size();
                 }
-            }).removalListener(new RemovalListener<String, TupleBlock>() {
-                @Override
-                public void onRemoval(RemovalNotification<String, TupleBlock> removalNotification) {
-                    removalNotification.getValue().memory().release();
-                }
-            }).maximumWeight(maxsize).build();
+            });
         }
 
         public Cache() {
@@ -57,19 +49,19 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
         }
 
         public TupleBlock get(long tableId, long offset) {
-            return cache.getIfPresent(key(tableId, offset));
+            return cache.get(tableId, offset);
         }
 
         public void put(long tableId, long offset, TupleBlock tupleBlock) {
-            cache.put(key(tableId, offset), tupleBlock);
+            cache.put(tableId, offset, tupleBlock);
         }
 
-        private String key(long tableId, long offset) {
-            return new StringBuilder().append(tableId).append(offset).toString();
+        public void invalidate(long tableId){
+            cache.invalidate(tableId);
         }
 
         public void clear() {
-            cache.invalidateAll();
+            cache.clear();
         }
     }
 
