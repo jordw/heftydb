@@ -7,7 +7,7 @@ HeftyDB is a persistent, sorted, key-value library for the JVM. It was designed 
 1. Be as fast and memory efficient as is feasible on the JVM.
 2. Provide a stable base on which to build new and interesting distributed storage systems. 
 3. Provide detailed metrics about what is going on at every level of the stack.
-4. Have clean, understandable code that others with no database background can easily understand.
+4. Have clean, understandable code that others can learn from.
 
 ##Features
 
@@ -45,20 +45,21 @@ try {
 
     //Get an ascending iterator of keys greater than or equal
     //to the provided key at the provided snapshot
-    Iterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
+    CloseableIterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
     while (ascendingIterator.hasNext()){
         Record next = ascendingIterator.next();
     }
 
     //Get a descending iterator of keys less than or equal
     //to the provided key at the provided snapshot
-    Iterator<Record> descendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
+    CloseableIterator<Record> descendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
     while (descendingIterator.hasNext()){
         Record next = descendingIterator.next();
     }
 
     //Compact the database
-    testDB.compact();
+    Future<?> compactionFuture = testDB.compact();
+    compactionFuture.get();
 
     //Close the database
     testDB.close();
