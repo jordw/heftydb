@@ -22,6 +22,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.Snapshot;
+import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
@@ -49,6 +50,7 @@ public class TableWriter {
     private final Paths paths;
     private final Caches caches;
     private final Metrics metrics;
+    private final Throttle memoryTableWriteThrottle;
 
     private MemoryTable memoryTable;
     private WriteLog writeLog;
@@ -60,6 +62,7 @@ public class TableWriter {
         this.snapshots = snapshots;
         this.caches = caches;
         this.metrics = metrics;
+        this.memoryTableWriteThrottle = new Throttle(config.maxMemoryTableWriteRate());
 
         this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(), config.tableWriterThreads(),
                 Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
@@ -115,18 +118,18 @@ public class TableWriter {
     private void writeMemoryTable(final Table tableToWrite) {
         final FileTableWriter.Task task = new FileTableWriter.Task.Builder().tableId(tableToWrite.id()).level(1)
                 .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount
-                        (tableToWrite.tupleCount()).maxWriteRate(config.maxMemoryTableWriteRate()).callback(new FileTableWriter.Task.Callback() {
-            @Override
-            public void finish() {
-                try {
-                    tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
-                            caches.indexBlockCache(), metrics), tableToWrite);
-                    Files.deleteIfExists(paths.logPath(tableToWrite.id()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }).build();
+                        (tableToWrite.tupleCount()).throttle(memoryTableWriteThrottle).callback(new FileTableWriter.Task.Callback() {
+                    @Override
+                    public void finish() {
+                        try {
+                            tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
+                                    caches.indexBlockCache(), metrics), tableToWrite);
+                            Files.deleteIfExists(paths.logPath(tableToWrite.id()));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }).build();
 
         tableExecutor.execute(new Runnable() {
             @Override

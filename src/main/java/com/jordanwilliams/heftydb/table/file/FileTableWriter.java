@@ -22,16 +22,14 @@ import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.state.Paths;
-import org.isomorphism.util.TokenBucket;
-import org.isomorphism.util.TokenBuckets;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 public class FileTableWriter {
 
@@ -46,7 +44,7 @@ public class FileTableWriter {
             private Paths paths;
             private Config config;
             private Callback callback;
-            private long rateLimitRate = Long.MAX_VALUE;
+            private Throttle throttle = new Throttle(Integer.MAX_VALUE);
 
             public Builder tableId(long tableId) {
                 this.tableId = tableId;
@@ -83,13 +81,13 @@ public class FileTableWriter {
                 return this;
             }
 
-            public Builder maxWriteRate(long rateLimitRate) {
-                this.rateLimitRate = rateLimitRate;
+            public Builder throttle(Throttle throttle){
+                this.throttle = throttle;
                 return this;
             }
 
             public Task build() {
-                return new Task(tableId, level, paths, config, source, tupleCount, callback, rateLimitRate);
+                return new Task(tableId, level, paths, config, source, tupleCount, callback, throttle);
             }
         }
 
@@ -104,10 +102,10 @@ public class FileTableWriter {
         private final Paths paths;
         private final Config config;
         private final Callback callback;
-        private final long rateLimitRate;
+        private final Throttle throttle;
 
         public Task(long tableId, int level, Paths paths, Config config, Iterator<Tuple> tuples, long tupleCount,
-                    Callback callback, long rateLimitRate) {
+                    Callback callback, Throttle throttle) {
             this.tableId = tableId;
             this.level = level;
             this.paths = paths;
@@ -115,7 +113,7 @@ public class FileTableWriter {
             this.tuples = tuples;
             this.tupleCount = tupleCount;
             this.callback = callback;
-            this.rateLimitRate = rateLimitRate;
+            this.throttle = throttle;
         }
 
         @Override
@@ -124,13 +122,10 @@ public class FileTableWriter {
                 FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
                         config.indexBlockSize(), config.tableBlockSize(), level);
 
-                TokenBucket rateBucket = TokenBuckets.newFixedIntervalRefill(rateLimitRate, rateLimitRate, 1,
-                        TimeUnit.SECONDS);
-
                 while (tuples.hasNext()) {
                     Tuple tuple = tuples.next();
                     tableWriter.write(tuple);
-                    rateBucket.consume(tuple.size());
+                    throttle.consume(tuple.size());
                 }
 
                 tableWriter.finish();

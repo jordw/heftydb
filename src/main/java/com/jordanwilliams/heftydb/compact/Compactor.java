@@ -22,6 +22,7 @@ import com.jordanwilliams.heftydb.aggregate.MergingIterator;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
+import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -48,9 +49,11 @@ public class Compactor {
     private class Task implements Runnable {
 
         private final CompactionTask compactionTask;
+        private final Throttle throttle;
 
-        private Task(CompactionTask compactionTask) {
+        private Task(CompactionTask compactionTask, Throttle throttle) {
             this.compactionTask = compactionTask;
+            this.throttle = throttle;
         }
 
         @Override
@@ -70,7 +73,7 @@ public class Compactor {
 
                 FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config
                         (config).paths(paths).level(compactionTask.level()).tupleCount(tupleCount).source
-                        (mergedIterator).maxWriteRate(config.maxCompactionRate()).build();
+                        (mergedIterator).throttle(throttle).build();
 
                 writerTask.run();
 
@@ -147,9 +150,10 @@ public class Compactor {
             public void run() {
                 CompactionPlan compactionPlan = compactionPlanner.planCompaction();
                 List<Future<?>> taskFutures = new ArrayList<Future<?>>();
+                Throttle compactionThrottle = new Throttle(config.maxCompactionRate());
 
                 for (CompactionTask task : compactionPlan) {
-                    taskFutures.add(compactionExecutor.submit(new Task(task)));
+                    taskFutures.add(compactionExecutor.submit(new Task(task, compactionThrottle)));
                 }
 
                 metrics.histogram("compactor.concurrentTasks").update(compactionExecutor.getActiveCount());

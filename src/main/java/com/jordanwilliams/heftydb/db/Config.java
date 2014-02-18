@@ -27,14 +27,14 @@ public class Config {
 
         private CompactionStrategy compactionStrategy = CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY;
         private int memoryTableSize = 4096000;
-        private int tableBlockSize = 32768;
+        private int tableBlockSize = 16384;
         private int indexBlockSize = 32768;
-        private int tableWriterThreads = 2;
-        private int tableCompactionThreads = 4;
-        private long tableCacheSize = 64000000;
-        private long indexCacheSize = 64000000;
-        private long maxCompactionRate = 16384000;
-        private long maxMemoryTableWriteRate = 32768000;
+        private int tableWriterThreads = 4;
+        private int tableCompactionThreads = 8;
+        private long tableCacheSize = 128000000;
+        private long indexCacheSize = 32000000;
+        private long maxCompactionRate = 8192000;
+        private long maxMemoryTableWriteRate = 8192000;
         private boolean printMetrics = false;
         private Path tableDirectory;
         private Path logDirectory;

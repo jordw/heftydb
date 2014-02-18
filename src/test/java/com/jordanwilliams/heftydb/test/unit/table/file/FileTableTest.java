@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.index.IndexBlock;
+import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTable;
@@ -123,7 +124,7 @@ public class FileTableTest extends ParameterizedTupleTest {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
-                tuples.size(), null, Integer.MAX_VALUE);
+                tuples.size(), null, Throttle.MAX);
 
         writerTask.run();
 

@@ -20,6 +20,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DBInitializer;
 import com.jordanwilliams.heftydb.db.DBState;
+import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.log.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -46,7 +47,7 @@ public class DBInitializerTest extends TupleTest {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
-                tuples.size(), null, Integer.MAX_VALUE);
+                tuples.size(), null, Throttle.MAX);
         writerTask.run();
 
         DBState state = new DBInitializer(config, new Metrics(config)).initialize();
@@ -59,7 +60,7 @@ public class DBInitializerTest extends TupleTest {
         Paths paths = ConfigGenerator.testPaths();
         Config config = ConfigGenerator.testConfig();
         FileTableWriter.Task writerTask = new FileTableWriter.Task(1, 1, paths, config, tuples.iterator(),
-                tuples.size(), null, Integer.MAX_VALUE);
+                tuples.size(), null, Throttle.MAX);
         writerTask.run();
 
         WriteLog log = WriteLog.open(2, paths);
