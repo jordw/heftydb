@@ -34,10 +34,12 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
 
     public static class Cache {
 
+        private static final int CONCURRENCY_LEVEL = 64;
+
         private final com.google.common.cache.Cache<String, TupleBlock> cache;
 
         public Cache(long maxsize) {
-            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, TupleBlock>() {
+            cache = CacheBuilder.newBuilder().concurrencyLevel(CONCURRENCY_LEVEL).weigher(new Weigher<String, TupleBlock>() {
                 @Override
                 public int weigh(String key, TupleBlock value) {
                     return key.length() + value.memory().size();

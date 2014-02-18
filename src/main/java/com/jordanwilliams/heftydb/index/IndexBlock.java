@@ -36,10 +36,12 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     public static class Cache {
 
+        private static final int CONCURRENCY_LEVEL = 64;
+
         private final com.google.common.cache.Cache<String, IndexBlock> cache;
 
         public Cache(long maxsize) {
-            cache = CacheBuilder.newBuilder().concurrencyLevel(64).weigher(new Weigher<String, IndexBlock>() {
+            cache = CacheBuilder.newBuilder().concurrencyLevel(CONCURRENCY_LEVEL).weigher(new Weigher<String, IndexBlock>() {
                 @Override
                 public int weigh(String key, IndexBlock value) {
                     return key.length() + value.memory().size();
