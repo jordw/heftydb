@@ -23,9 +23,8 @@ import com.jordanwilliams.heftydb.util.Sizes;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
@@ -61,10 +60,10 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     public static class Builder {
 
-        private final Map<Key, Value> entries = new LinkedHashMap<Key, Value>();
+        private final List<Entry> entries = new LinkedList<Entry>();
 
         public void add(Key key, Value value) {
-            entries.put(key, value);
+            entries.add(new Entry(key, value));
         }
 
         public ByteMap build() {
@@ -82,13 +81,13 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             //Compute memory size
             int counter = 0;
 
-            for (Map.Entry<Key, Value> entry : entries.entrySet()) {
+            for (Entry entry : entries) {
                 entryOffsets[counter] = memorySize;
                 memorySize += Sizes.INT_SIZE;
-                memorySize += entry.getKey().size();
+                memorySize += entry.key().size();
                 memorySize += Sizes.LONG_SIZE;
                 memorySize += Sizes.INT_SIZE;
-                memorySize += entry.getValue().size();
+                memorySize += entry.value().size();
                 counter++;
             }
 
@@ -103,9 +102,9 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             }
 
             //Pack entries
-            for (Map.Entry<Key, Value> entry : entries.entrySet()) {
-                Key key = entry.getKey();
-                Value value = entry.getValue();
+            for (Entry entry : entries) {
+                Key key = entry.key();
+                Value value = entry.value();
 
                 key.data().rewind();
                 value.data().rewind();

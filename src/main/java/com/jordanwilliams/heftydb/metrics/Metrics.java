@@ -26,12 +26,15 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.db.Config;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class Metrics {
 
     private static final String METRIC_PREFIX = "heftydb.";
 
+    private final Map<String, CacheHitGauge> gaugeCache = new ConcurrentHashMap<String, CacheHitGauge>();
     private final MetricRegistry metrics = new MetricRegistry();
     private final ConsoleReporter consoleReporter;
 
@@ -55,7 +58,14 @@ public class Metrics {
     }
 
     public CacheHitGauge hitGauge(String name) {
-        return (CacheHitGauge) metrics.getGauges().get(metricName(name));
+        CacheHitGauge cacheHitGauge = gaugeCache.get(metricName(name));
+
+        if (cacheHitGauge == null){
+            cacheHitGauge = (CacheHitGauge) metrics.getGauges().get(metricName(name));
+            gaugeCache.put(metricName(name), cacheHitGauge);
+        }
+
+        return cacheHitGauge;
     }
 
     public void gauge(String name, Gauge<?> gauge) {
