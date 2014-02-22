@@ -30,6 +30,34 @@ import java.util.List;
 
 public class TableReader implements Iterable<Tuple> {
 
+    private final TableAggregationIterator.Source ascendingIteratorSource = new TableAggregationIterator.Source() {
+        @Override
+        public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
+            List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
+
+            for (Table table : currentTables()) {
+                tableIterators.add(key == null ? table.ascendingIterator(snapshotId) : table.ascendingIterator
+                        (key, snapshotId));
+            }
+
+            return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
+        }
+    };
+
+    private final TableAggregationIterator.Source descendingIteratorSource = new TableAggregationIterator.Source() {
+        @Override
+        public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
+            List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
+
+            for (Table table : currentTables()) {
+                tableIterators.add(key == null ? table.descendingIterator(snapshotId) : table.descendingIterator
+                        (key, snapshotId));
+            }
+
+            return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
+        }
+    };
+
     private final Tables tables;
     private final Metrics metrics;
 
@@ -78,7 +106,7 @@ public class TableReader implements Iterable<Tuple> {
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
-                (tableIterators), snapshotId, tables, ascendingIteratorSource());
+                (tableIterators), snapshotId, tables, ascendingIteratorSource);
 
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
@@ -91,7 +119,7 @@ public class TableReader implements Iterable<Tuple> {
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
-                (true, tableIterators), snapshotId, tables, descendingIteratorSource());
+                (true, tableIterators), snapshotId, tables, descendingIteratorSource);
 
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
@@ -104,7 +132,7 @@ public class TableReader implements Iterable<Tuple> {
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
-                (tableIterators), snapshotId, tables, ascendingIteratorSource());
+                (tableIterators), snapshotId, tables, ascendingIteratorSource);
 
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
@@ -117,7 +145,7 @@ public class TableReader implements Iterable<Tuple> {
         }
 
         TableAggregationIterator tableAggregationIterator = new TableAggregationIterator(new MergingIterator<Tuple>
-                (true, tableIterators), snapshotId, tables, descendingIteratorSource());
+                (true, tableIterators), snapshotId, tables, descendingIteratorSource);
 
         return new LatestTupleIterator(snapshotId, tableAggregationIterator);
     }
@@ -137,38 +165,6 @@ public class TableReader implements Iterable<Tuple> {
     @Override
     public Iterator<Tuple> iterator() {
         return ascendingIterator(Long.MAX_VALUE);
-    }
-
-    private TableAggregationIterator.Source ascendingIteratorSource() {
-        return new TableAggregationIterator.Source() {
-            @Override
-            public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
-                List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
-
-                for (Table table : currentTables()) {
-                    tableIterators.add(key == null ? table.ascendingIterator(snapshotId) : table.ascendingIterator
-                            (key, snapshotId));
-                }
-
-                return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
-            }
-        };
-    }
-
-    private TableAggregationIterator.Source descendingIteratorSource() {
-        return new TableAggregationIterator.Source() {
-            @Override
-            public CloseableIterator<Tuple> refresh(Key key, long snapshotId) {
-                List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
-
-                for (Table table : currentTables()) {
-                    tableIterators.add(key == null ? table.descendingIterator(snapshotId) : table.descendingIterator
-                            (key, snapshotId));
-                }
-
-                return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));
-            }
-        };
     }
 
     private List<Table> currentTables() {
