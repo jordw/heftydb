@@ -202,4 +202,69 @@ public class Config {
     public long maxMemoryTableWriteRate() {
         return maxMemoryTableWriteRate;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Config config = (Config) o;
+
+        if (indexBlockSize != config.indexBlockSize) return false;
+        if (indexCacheSize != config.indexCacheSize) return false;
+        if (maxCompactionRate != config.maxCompactionRate) return false;
+        if (maxMemoryTableWriteRate != config.maxMemoryTableWriteRate) return false;
+        if (memoryTableSize != config.memoryTableSize) return false;
+        if (printMetrics != config.printMetrics) return false;
+        if (tableBlockSize != config.tableBlockSize) return false;
+        if (tableCacheSize != config.tableCacheSize) return false;
+        if (tableCompactionThreads != config.tableCompactionThreads) return false;
+        if (tableWriterThreads != config.tableWriterThreads) return false;
+        if (compactionStrategy != null ? !compactionStrategy.equals(config.compactionStrategy) : config
+                .compactionStrategy != null)
+            return false;
+        if (logDirectory != null ? !logDirectory.equals(config.logDirectory) : config.logDirectory != null)
+            return false;
+        if (tableDirectory != null ? !tableDirectory.equals(config.tableDirectory) : config.tableDirectory != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = compactionStrategy != null ? compactionStrategy.hashCode() : 0;
+        result = 31 * result + memoryTableSize;
+        result = 31 * result + tableBlockSize;
+        result = 31 * result + indexBlockSize;
+        result = 31 * result + tableWriterThreads;
+        result = 31 * result + tableCompactionThreads;
+        result = 31 * result + (int) (tableCacheSize ^ (tableCacheSize >>> 32));
+        result = 31 * result + (int) (indexCacheSize ^ (indexCacheSize >>> 32));
+        result = 31 * result + (printMetrics ? 1 : 0);
+        result = 31 * result + (tableDirectory != null ? tableDirectory.hashCode() : 0);
+        result = 31 * result + (logDirectory != null ? logDirectory.hashCode() : 0);
+        result = 31 * result + (int) (maxCompactionRate ^ (maxCompactionRate >>> 32));
+        result = 31 * result + (int) (maxMemoryTableWriteRate ^ (maxMemoryTableWriteRate >>> 32));
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Config{" +
+                "compactionStrategy=" + compactionStrategy +
+                ", memoryTableSize=" + memoryTableSize +
+                ", tableBlockSize=" + tableBlockSize +
+                ", indexBlockSize=" + indexBlockSize +
+                ", tableWriterThreads=" + tableWriterThreads +
+                ", tableCompactionThreads=" + tableCompactionThreads +
+                ", tableCacheSize=" + tableCacheSize +
+                ", indexCacheSize=" + indexCacheSize +
+                ", printMetrics=" + printMetrics +
+                ", tableDirectory=" + tableDirectory +
+                ", logDirectory=" + logDirectory +
+                ", maxCompactionRate=" + maxCompactionRate +
+                ", maxMemoryTableWriteRate=" + maxMemoryTableWriteRate +
+                '}';
+    }
 }
