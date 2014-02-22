@@ -36,8 +36,8 @@ public class TableReader implements Iterable<Tuple> {
             List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
             for (Table table : currentTables()) {
-                tableIterators.add(key == null ? table.ascendingIterator(snapshotId) : table.ascendingIterator
-                        (key, snapshotId));
+                tableIterators.add(key == null ? table.ascendingIterator(snapshotId) : table.ascendingIterator(key,
+                        snapshotId));
             }
 
             return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(tableIterators));
@@ -50,8 +50,8 @@ public class TableReader implements Iterable<Tuple> {
             List<CloseableIterator<Tuple>> tableIterators = new ArrayList<CloseableIterator<Tuple>>();
 
             for (Table table : currentTables()) {
-                tableIterators.add(key == null ? table.descendingIterator(snapshotId) : table.descendingIterator
-                        (key, snapshotId));
+                tableIterators.add(key == null ? table.descendingIterator(snapshotId) : table.descendingIterator(key,
+                        snapshotId));
             }
 
             return new LatestTupleIterator(snapshotId, new MergingIterator<Tuple>(true, tableIterators));

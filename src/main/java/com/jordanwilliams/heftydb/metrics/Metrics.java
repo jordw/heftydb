@@ -60,7 +60,7 @@ public class Metrics {
     public CacheHitGauge hitGauge(String name) {
         CacheHitGauge cacheHitGauge = gaugeCache.get(metricName(name));
 
-        if (cacheHitGauge == null){
+        if (cacheHitGauge == null) {
             cacheHitGauge = (CacheHitGauge) metrics.getGauges().get(metricName(name));
             gaugeCache.put(metricName(name), cacheHitGauge);
         }
