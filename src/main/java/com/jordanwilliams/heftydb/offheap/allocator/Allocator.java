@@ -20,7 +20,7 @@ public interface Allocator {
 
     public long allocate(long bytes);
 
-    public void release(long address);
+    public void deallocate(long address);
 
     public static Allocator allocator = new UnsafeAllocator();
 }

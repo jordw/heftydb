@@ -83,7 +83,7 @@ public class Memory {
     }
 
     public void free() {
-        allocator.release(baseAddress);
+        allocator.deallocate(baseAddress);
         baseAddress = 0;
         metrics.counter("offHeapMemory").dec(size);
     }

@@ -34,7 +34,7 @@ public class JEMallocAllocator implements Allocator {
     }
 
     @Override
-    public void release(long address) {
+    public void deallocate(long address) {
         free(address);
     }
 }

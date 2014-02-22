@@ -41,7 +41,7 @@ public class UnsafeAllocator implements Allocator {
     }
 
     @Override
-    public void release(long address) {
+    public void deallocate(long address) {
         unsafe.freeMemory(address);
     }
 }
