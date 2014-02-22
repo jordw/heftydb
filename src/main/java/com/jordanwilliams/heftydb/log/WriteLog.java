@@ -24,6 +24,7 @@ import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
 import com.jordanwilliams.heftydb.util.XORShiftRandom;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
@@ -31,7 +32,7 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-public class WriteLog implements Iterable<Tuple>, AutoCloseable {
+public class WriteLog implements Iterable<Tuple>, Closeable {
 
     private class LogIterator implements Iterator<Tuple> {
 
