@@ -17,6 +17,7 @@
 package com.jordanwilliams.heftydb.compact;
 
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
+import com.jordanwilliams.heftydb.compact.planner.FullCompactionPlanner;
 import com.jordanwilliams.heftydb.compact.planner.SizeTieredCompactionPlanner;
 import com.jordanwilliams.heftydb.state.Tables;
 
@@ -45,6 +46,13 @@ public enum CompactionStrategies implements CompactionStrategy {
                     return false;
                 }
             };
+        }
+    },
+
+    FULL_COMPACTION_STRATEGY {
+        @Override
+        public CompactionPlanner initialize(Tables tables) {
+            return new FullCompactionPlanner(tables);
         }
     };
 

@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.performance.db;
+package com.jordanwilliams.heftydb.test.performance.thirdparty;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.jordanwilliams.heftydb.compact.CompactionStrategies;
 import com.jordanwilliams.heftydb.data.Value;
-import com.jordanwilliams.heftydb.db.Config;
-import com.jordanwilliams.heftydb.db.DB;
-import com.jordanwilliams.heftydb.db.HeftyDB;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
-import com.jordanwilliams.heftydb.util.ByteBuffers;
+import org.cojen.tupl.Database;
+import org.cojen.tupl.DatabaseConfig;
+import org.cojen.tupl.DurabilityMode;
+import org.cojen.tupl.Index;
 
 import java.util.Random;
 
-public class ReadWritePerformance {
+public class TuplPerformance {
 
     private static final int RECORD_COUNT = 5 * 1000000;
 
@@ -42,19 +41,14 @@ public class ReadWritePerformance {
         Value value = new Value(keyValueGenerator.testValue(100));
         Random random = new Random(System.nanoTime());
 
-        Config config = new Config.Builder()
-                .directory(TestFileHelper.TEMP_PATH)
-                .memoryTableSize(8192000)
-                .tableCacheSize(512000000)
-                .indexCacheSize(64000000)
-                .tableBlockSize(16384)
-                .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
-                .indexBlockSize(32768)
-                .maxMemoryTableWriteRate(Integer.MAX_VALUE)
-                .build();
+        DatabaseConfig config = new DatabaseConfig()
+                .baseFilePath("/tmp/heftytest/test")
+                .maxCacheSize(512000000)
+                .pageSize(4096)
+                .durabilityMode(DurabilityMode.NO_SYNC);
 
-        //Write
-        DB db = HeftyDB.open(config);
+        Database db = Database.open(config);
+        Index testIndex = db.openIndex("test");
 
         MetricRegistry metrics = new MetricRegistry();
         ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
@@ -63,7 +57,7 @@ public class ReadWritePerformance {
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
             Timer.Context watch = writeTimer.time();
-            db.put(ByteBuffers.fromString(i + ""), value.data());
+            testIndex.store(null, (i + "").getBytes(), value.data().array());
             watch.stop();
         }
 
@@ -74,29 +68,14 @@ public class ReadWritePerformance {
         Timer readTimer = metrics.timer("reads");
 
         //Read
-        /*for (int i = 0; i < RECORD_COUNT; i++) {
+        for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
-            db.get(ByteBuffers.fromString(key));
+            testIndex.load(null, key.getBytes());
             watch.stop();
         }
 
         reporter.report();
-        db.compact().get();
-
-        metrics = new MetricRegistry();
-        reporter = PerformanceHelper.consoleReporter(metrics);
-        Timer readCompactedTimer = metrics.timer("compactedReads");
-
-        //Read Compacted
-        for (int i = 0; i < RECORD_COUNT; i++) {
-            String key = random.nextInt(RECORD_COUNT) + "";
-            Timer.Context watch = readCompactedTimer.time();
-            db.get(ByteBuffers.fromString(key));
-            watch.stop();
-        }
-
-        reporter.report();*/
 
         db.close();
 
