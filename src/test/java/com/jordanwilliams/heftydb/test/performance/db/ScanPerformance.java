@@ -33,7 +33,7 @@ import com.jordanwilliams.heftydb.util.ByteBuffers;
 
 import java.util.Iterator;
 
-public class IteratorPerformance {
+public class ScanPerformance {
 
     private static final int RECORD_COUNT = 5 * 1000000;
 
