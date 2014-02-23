@@ -34,6 +34,15 @@ import java.util.Queue;
 
 public class WriteLog implements Iterable<Tuple>, Closeable {
 
+    private static final int WRITE_BUFFER_SIZE = 4096;
+
+    private static final ThreadLocal<Memory> writeBuffer = new ThreadLocal<Memory>() {
+        @Override
+        protected Memory initialValue() {
+            return Memory.allocate(WRITE_BUFFER_SIZE);
+        }
+    };
+
     private class LogIterator implements Iterator<Tuple> {
 
         private final XORShiftRandom pseudoRandom;
@@ -118,19 +127,15 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
     }
 
     public void append(Tuple tuple, boolean fsync) throws IOException {
-        Memory recordMemory = Memory.allocate(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE + Sizes.INT_SIZE);
+        Memory recordMemory = writeBuffer(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE + Sizes.INT_SIZE);
 
-        try {
-            recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE - Sizes.INT_SIZE);
-            Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
-            recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE, pseudoRandom.nextInt());
-            logFile.append(recordMemory.directBuffer());
+        recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE - Sizes.INT_SIZE);
+        Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
+        recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE, pseudoRandom.nextInt());
+        logFile.append(recordMemory.directBuffer());
 
-            if (fsync) {
-                logFile.sync();
-            }
-        } finally {
-            recordMemory.release();
+        if (fsync) {
+            logFile.sync();
         }
     }
 
@@ -159,6 +164,20 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
         }
 
         return seed;
+    }
+
+    private Memory writeBuffer(int size) {
+        Memory buffer = writeBuffer.get();
+
+        if (size > buffer.size()) {
+            buffer = Memory.allocate(buffer.size() * 2);
+            writeBuffer.set(buffer);
+        }
+
+        buffer.directBuffer().rewind();
+        buffer.directBuffer().limit(size);
+
+        return buffer;
     }
 
     public static WriteLog open(long tableId, Paths paths) throws IOException {

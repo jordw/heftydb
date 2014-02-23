@@ -89,7 +89,7 @@ public class Memory {
     }
 
     public int size() {
-        return size;
+        return directBuffer.limit();
     }
 
     public boolean retain() {
