@@ -27,11 +27,20 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ChannelDataFile implements DataFile {
 
-    private static final ThreadLocal<ByteBuffer> PRIMITIVE_BUFFER = new ThreadLocal<ByteBuffer>() {
+    private static final int APPEND_BUFFER_SIZE = 16384;
+
+    private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {
         @Override
         protected ByteBuffer initialValue() {
             ByteBuffer primitiveBuffer = ByteBuffer.allocate(Sizes.LONG_SIZE);
             return primitiveBuffer;
+        }
+    };
+
+    private final ThreadLocal<ByteBuffer> appendBuffer = new ThreadLocal<ByteBuffer>(){
+        @Override
+        protected ByteBuffer initialValue(){
+            return ByteBuffer.allocateDirect(APPEND_BUFFER_SIZE);
         }
     };
 
@@ -46,8 +55,24 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public long append(ByteBuffer bufferToWrite) throws IOException {
-        long writtenPosition = appendPosition.getAndAdd(bufferToWrite.limit() - bufferToWrite.position());
-        write(bufferToWrite, writtenPosition);
+        int writeLength = bufferToWrite.limit() - bufferToWrite.position();
+        long writtenPosition = appendPosition.getAndAdd(writeLength);
+
+        if (writeLength > APPEND_BUFFER_SIZE){
+            flushAppendBuffer();
+            channel.write(bufferToWrite);
+        } else {
+            ByteBuffer buffer = appendBuffer.get();
+
+            while (bufferToWrite.position() < bufferToWrite.limit()){
+                if (buffer.position() == buffer.limit()){
+                    flushAppendBuffer();
+                }
+
+                buffer.put(bufferToWrite.get());
+            }
+        }
+
         return writtenPosition;
     }
 
@@ -63,12 +88,14 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public long read(ByteBuffer bufferToRead, long position) throws IOException {
+        flushAppendBuffer();
         long bytesRead = channel.read(bufferToRead, position);
         return bytesRead;
     }
 
     @Override
     public int readInt(long position) throws IOException {
+        flushAppendBuffer();
         ByteBuffer intBuffer = intBuffer();
         channel.read(intBuffer, position);
         intBuffer.rewind();
@@ -77,6 +104,7 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public long readLong(long position) throws IOException {
+        flushAppendBuffer();
         ByteBuffer longBuffer = longBuffer();
         channel.read(longBuffer, position);
         longBuffer.rewind();
@@ -85,6 +113,7 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public long write(ByteBuffer bufferToWrite, long position) throws IOException {
+        flushAppendBuffer();
         bufferToWrite.rewind();
         long bytesWritten = channel.write(bufferToWrite, position);
         return bytesWritten;
@@ -102,11 +131,13 @@ public class ChannelDataFile implements DataFile {
 
     @Override
     public long size() throws IOException {
+        flushAppendBuffer();
         return channel.size();
     }
 
     @Override
     public void sync() throws IOException {
+        flushAppendBuffer();
         channel.force(true);
     }
 
@@ -124,7 +155,7 @@ public class ChannelDataFile implements DataFile {
     }
 
     private ByteBuffer intBuffer() {
-        ByteBuffer buffer = PRIMITIVE_BUFFER.get();
+        ByteBuffer buffer = primitiveBuffer.get();
         buffer.rewind();
         buffer.limit(Sizes.INT_SIZE);
         return buffer;
@@ -138,7 +169,7 @@ public class ChannelDataFile implements DataFile {
     }
 
     private ByteBuffer longBuffer() {
-        ByteBuffer buffer = PRIMITIVE_BUFFER.get();
+        ByteBuffer buffer = primitiveBuffer.get();
         buffer.rewind();
         buffer.limit(Sizes.LONG_SIZE);
         return buffer;
@@ -149,6 +180,20 @@ public class ChannelDataFile implements DataFile {
         longBuffer.putLong(value);
         longBuffer.rewind();
         return longBuffer;
+    }
+
+    private void flushAppendBuffer() throws IOException {
+        ByteBuffer buffer = appendBuffer.get();
+
+        if (buffer.position() == 0){
+            return;
+        }
+
+        buffer.limit(buffer.position());
+        buffer.rewind();
+        channel.write(buffer);
+        buffer.limit(buffer.capacity());
+        buffer.rewind();
     }
 
     public static ChannelDataFile open(Path path) throws IOException {

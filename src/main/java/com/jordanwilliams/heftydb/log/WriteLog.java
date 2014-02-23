@@ -170,7 +170,7 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
         Memory buffer = writeBuffer.get();
 
         if (size > buffer.size()) {
-            buffer = Memory.allocate(buffer.size() * 2);
+            buffer = Memory.allocate(size, 1024);
             writeBuffer.set(buffer);
         }
 

@@ -18,20 +18,14 @@ package com.jordanwilliams.heftydb.test.unit.io;
 
 
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
-import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.test.base.FileTest;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
-import com.jordanwilliams.heftydb.util.Sizes;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class DataFileTest extends FileTest {
 
@@ -40,44 +34,21 @@ public class DataFileTest extends FileTest {
 
     private final Path testFile = TestFileHelper.TEMP_PATH.resolve("testfile");
 
-
     @Test
-    public void concurrencyTest() throws Exception {
-        final int threadCount = 32;
-        final int iterationCount = 1000;
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        final DataFile dataFile = ChannelDataFile.open(testFile);
-        final AtomicInteger counter = new AtomicInteger();
+    public void bufferedAppendOffsetTest() throws IOException {
+        ChannelDataFile file = ChannelDataFile.open(testFile);
 
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = 0; i < iterationCount; i++) {
-                        try {
-                            dataFile.appendInt(counter.getAndIncrement());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
+        long[] offsets = new long[100];
+
+        for (int i = 0; i < 100; i++){
+            TEST_BYTES.rewind();
+            offsets[i] = file.appendInt(TEST_BYTES.capacity());
+            file.append(TEST_BYTES);
         }
 
-        executor.shutdown();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
-
-        int fileOffset = 0;
-        int[] readValues = new int[threadCount * iterationCount];
-
-        for (int i = 0; i < threadCount * iterationCount; i++) {
-            int read = dataFile.readInt(fileOffset);
-            readValues[read] += 1;
-            fileOffset += Sizes.INT_SIZE;
-        }
-
-        for (int i = 0; i < readValues.length; i++) {
-            Assert.assertEquals("All values appear once", 1, readValues[i]);
+        for (int i = 0; i < 100; i++){
+            long offset = offsets[i];
+            Assert.assertEquals("Offset is correct", 0, offset % 39);
         }
     }
 
