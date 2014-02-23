@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
-import com.google.common.hash.Hashing;
 import com.jordanwilliams.heftydb.data.Key;
+import com.jordanwilliams.heftydb.util.MurmurHash3;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
@@ -36,7 +36,7 @@ public class BloomFilter implements Offheap {
         }
 
         public void put(Key key) {
-            long hash64 = Hashing.murmur3_128().hashBytes(key.data().array()).asLong();
+            long hash64 = MurmurHash3.MurmurHash3_x64_64(key.data().array());
             int hash1 = (int) hash64;
             int hash2 = (int) (hash64 >>> 32);
 
@@ -83,7 +83,7 @@ public class BloomFilter implements Offheap {
     }
 
     public boolean mightContain(Key key) {
-        long hash64 = Hashing.murmur3_128().hashBytes(key.data().array()).asLong();
+        long hash64 = MurmurHash3.MurmurHash3_x64_64(key.data().array());
         int hash1 = (int) hash64;
         int hash2 = (int) (hash64 >>> 32);
 

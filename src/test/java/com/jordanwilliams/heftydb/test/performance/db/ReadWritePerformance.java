@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.performance.db;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.jordanwilliams.heftydb.compact.CompactionStrategies;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DB;
@@ -48,7 +47,6 @@ public class ReadWritePerformance {
                 .tableCacheSize(512000000)
                 .indexCacheSize(64000000)
                 .tableBlockSize(16384)
-                .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
                 .indexBlockSize(32768)
                 .maxMemoryTableWriteRate(Integer.MAX_VALUE)
                 .build();
@@ -77,21 +75,6 @@ public class ReadWritePerformance {
         for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
-            db.get(ByteBuffers.fromString(key));
-            watch.stop();
-        }
-
-        reporter.report();
-        db.compact().get();
-
-        metrics = new MetricRegistry();
-        reporter = PerformanceHelper.consoleReporter(metrics);
-        Timer readCompactedTimer = metrics.timer("compactedReads");
-
-        //Read Compacted
-        for (int i = 0; i < RECORD_COUNT; i++) {
-            String key = random.nextInt(RECORD_COUNT) + "";
-            Timer.Context watch = readCompactedTimer.time();
             db.get(ByteBuffers.fromString(key));
             watch.stop();
         }
