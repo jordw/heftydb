@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.offheap.allocator;
+package com.jordanwilliams.heftydb.offheap;
 
+import java.lang.reflect.Field;
 
-import com.jordanwilliams.heftydb.offheap.JVMUnsafe;
-import sun.misc.Unsafe;
+public class JVMUnsafe {
 
-public class UnsafeAllocator implements Allocator {
+    public static final sun.misc.Unsafe unsafe;
 
-    private static final Unsafe unsafe = JVMUnsafe.unsafe;
-
-    @Override
-    public long allocate(long size) {
-        return unsafe.allocateMemory(size);
-    }
-
-    @Override
-    public void deallocate(long address) {
-        unsafe.freeMemory(address);
+    static {
+        try {
+            Field field = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            unsafe = (sun.misc.Unsafe) field.get(null);
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
     }
 }

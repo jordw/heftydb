@@ -200,11 +200,17 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private final Memory memory;
     private final ByteBuffer directBuffer;
     private final int entryCount;
+    private final int[] entryOffsets;
 
     public ByteMap(Memory memory) {
         this.memory = memory;
         this.directBuffer = memory.directBuffer();
         this.entryCount = memory.directBuffer().getInt(0);
+        this.entryOffsets = new int[entryCount];
+
+        for (int i = 0; i < entryCount; i++) {
+            entryOffsets[i] = entryOffset(i);
+        }
     }
 
     public Entry get(int index) {
@@ -302,7 +308,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             throw new IndexOutOfBoundsException("Requested Index: " + index + " Max: " + (entryCount - 1));
         }
 
-        int entryOffset = entryOffset(index);
+        int entryOffset = entryOffsets[index];
 
         //Key
         int keySize = directBuffer.getInt(entryOffset);
@@ -334,7 +340,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
-        int entryOffset = entryOffset(bufferKeyIndex);
+        int entryOffset = entryOffsets[bufferKeyIndex];
 
         int keySize = directBuffer.getInt(entryOffset);
         entryOffset += Sizes.INT_SIZE;

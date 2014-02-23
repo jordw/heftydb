@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.offheap;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.jordanwilliams.heftydb.offheap.allocator.Allocator;
-import com.jordanwilliams.heftydb.offheap.allocator.UnsafeAllocator;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -28,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Memory {
 
-    private static final Unsafe unsafe = UnsafeAllocator.unsafe;
+    private static final Unsafe unsafe = JVMUnsafe.unsafe;
     private static final Allocator allocator = Allocator.allocator;
     private static final Class<?> directByteBufferClass;
     private static final long addressOffset;
@@ -72,6 +71,10 @@ public class Memory {
         directBuffer.rewind();
 
         metrics.counter("offHeapMemory").inc(size);
+    }
+
+    public long address() {
+        return baseAddress;
     }
 
     public ByteBuffer directBuffer() {
