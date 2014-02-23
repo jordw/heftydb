@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ChannelDataFile implements DataFile {
 
-    private static final int APPEND_BUFFER_SIZE = 16384;
+    private static final int APPEND_BUFFER_SIZE = 8192;
 
     private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {
         @Override

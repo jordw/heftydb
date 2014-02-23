@@ -74,7 +74,7 @@ public class ReadWritePerformance {
         Timer readTimer = metrics.timer("reads");
 
         //Read
-        /*for (int i = 0; i < RECORD_COUNT; i++) {
+        for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
             db.get(ByteBuffers.fromString(key));
@@ -96,7 +96,7 @@ public class ReadWritePerformance {
             watch.stop();
         }
 
-        reporter.report();*/
+        reporter.report();
 
         db.close();
 

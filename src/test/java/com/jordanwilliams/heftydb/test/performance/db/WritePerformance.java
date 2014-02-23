@@ -31,7 +31,7 @@ import com.jordanwilliams.heftydb.util.ByteBuffers;
 
 public class WritePerformance {
 
-    private static final int RECORD_COUNT = 5 * 1000000;
+    private static final int RECORD_COUNT = 10 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
