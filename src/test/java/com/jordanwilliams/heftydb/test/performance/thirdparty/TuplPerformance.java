@@ -23,10 +23,12 @@ import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
+import org.cojen.tupl.Cursor;
 import org.cojen.tupl.Database;
 import org.cojen.tupl.DatabaseConfig;
 import org.cojen.tupl.DurabilityMode;
 import org.cojen.tupl.Index;
+import org.cojen.tupl.Transaction;
 
 import java.util.Random;
 
@@ -54,13 +56,20 @@ public class TuplPerformance {
         ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
         Timer writeTimer = metrics.timer("writes");
 
-        for (int i = 0; i < RECORD_COUNT; i++) {
-            value.data().rewind();
-            Timer.Context watch = writeTimer.time();
-            testIndex.store(null, (i + "").getBytes(), value.data().array());
-            watch.stop();
+        Cursor fill = testIndex.newCursor(Transaction.BOGUS);
+        try {
+            for (int i = 0; i < RECORD_COUNT; i++) {
+                value.data().rewind();
+                Timer.Context watch = writeTimer.time();
+                fill.findNearby((i + "").getBytes());
+                fill.store(value.data().array());
+                watch.stop();
+            }
+        } finally {
+            fill.reset();
         }
 
+        db.checkpoint();
         reporter.report();
 
         metrics = new MetricRegistry();
