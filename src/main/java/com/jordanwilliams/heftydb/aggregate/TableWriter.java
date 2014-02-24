@@ -17,6 +17,7 @@
 package com.jordanwilliams.heftydb.aggregate;
 
 import com.codahale.metrics.Timer;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
@@ -66,6 +67,7 @@ public class TableWriter {
 
         this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(), config.tableWriterThreads(),
                 Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
+                new ThreadFactoryBuilder().setNameFormat("Table writer thread %d").build(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
     }
 

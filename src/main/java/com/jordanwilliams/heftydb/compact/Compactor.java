@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.compact;
 
 import com.codahale.metrics.Timer;
-import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jordanwilliams.heftydb.aggregate.MergingIterator;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
@@ -31,20 +31,27 @@ import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Compactor {
+
+    private static final Logger logger = LoggerFactory.getLogger(Compactor.class);
 
     private class Task implements Runnable {
 
@@ -106,11 +113,12 @@ public class Compactor {
     private final Paths paths;
     private final Tables tables;
     private final Caches caches;
-    private final ThreadPoolExecutor compactionExecutor;
+    private final ThreadPoolExecutor compactionTaskExecutor;
+    private final ExecutorService compactionExecutor;
     private final CompactionPlanner compactionPlanner;
     private final Metrics metrics;
-    private final AtomicBoolean compactionRunning = new AtomicBoolean();
-
+    private final AtomicInteger compactionId = new AtomicInteger();
+    private final LinkedList<Future<?>> pendingCompactions = new LinkedList<Future<?>>();
 
     public Compactor(Config config, Paths paths, Tables tables, Caches caches, CompactionStrategy compactionStrategy,
                      Metrics metrics) {
@@ -119,10 +127,15 @@ public class Compactor {
         this.tables = tables;
         this.caches = caches;
         this.metrics = metrics;
-        this.compactionExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
+        this.compactionTaskExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
                 config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>
-                (config.tableCompactionThreads()), new ThreadPoolExecutor.CallerRunsPolicy());
+                (config.tableCompactionThreads()), new ThreadFactoryBuilder().setNameFormat("Compactor task thread %d")
+                .build(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+        this.compactionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat
+                ("Compaction plan thread").build());
         this.compactionPlanner = compactionStrategy.initialize(tables);
+
 
         tables.addChangeHandler(new Tables.ChangeHandler() {
             @Override
@@ -134,50 +147,54 @@ public class Compactor {
 
     public synchronized void evaluateCompaction() {
         if (compactionPlanner.needsCompaction()) {
-            scheduleCompaction();
+            scheduleCompaction(false);
         }
     }
 
-    public synchronized Future<?> scheduleCompaction() {
-        if (compactionRunning.get()) {
-            return Futures.immediateFuture(null);
-        }
-
-        compactionRunning.set(true);
+    public synchronized Future<?> scheduleCompaction(final boolean force) {
 
         FutureTask<?> task = new FutureTask<Object>(new Runnable() {
             @Override
             public void run() {
-                CompactionPlan compactionPlan = compactionPlanner.planCompaction();
-                List<Future<?>> taskFutures = new ArrayList<Future<?>>();
-                Throttle compactionThrottle = new Throttle(config.maxCompactionRate());
-
-                for (CompactionTask task : compactionPlan) {
-                    taskFutures.add(compactionExecutor.submit(new Task(task, compactionThrottle)));
+                //Previous compaction may have obviated the need for another one
+                if (!compactionPlanner.needsCompaction() && !force){
+                    return;
                 }
 
-                metrics.histogram("compactor.concurrentTasks").update(compactionExecutor.getActiveCount());
+                int id = compactionId.incrementAndGet();
+                logger.info("Starting compaction " + id);
+
+                CompactionPlan compactionPlan = compactionPlanner.planCompaction();
+                List<Future<?>> taskFutures = new ArrayList<Future<?>>();
+                Throttle compactionThrottle = force ? Throttle.MAX : new Throttle(config.maxCompactionRate());
+
+                for (CompactionTask task : compactionPlan) {
+                    logger.info("Compaction " + id + "  task : " + task);
+                    taskFutures.add(compactionTaskExecutor.submit(new Task(task, compactionThrottle)));
+                }
+
+                metrics.histogram("compactor.concurrentTasks").update(compactionTaskExecutor.getActiveCount());
 
                 for (Future<?> taskFuture : taskFutures) {
                     try {
                         taskFuture.get();
                     } catch (Exception e) {
-                        compactionRunning.set(false);
                         throw new RuntimeException(e);
                     }
                 }
 
-                compactionRunning.set(false);
+                logger.info("Finishing compaction " + id);
             }
         }, null);
 
+        pendingCompactions.add(task);
         compactionExecutor.execute(task);
 
         return task;
     }
 
     public void close() throws IOException {
-        compactionExecutor.shutdownNow();
+        compactionTaskExecutor.shutdownNow();
     }
 
     @Override

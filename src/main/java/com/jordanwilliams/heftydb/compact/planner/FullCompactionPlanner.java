@@ -50,6 +50,6 @@ public class FullCompactionPlanner implements CompactionPlanner {
 
     @Override
     public boolean needsCompaction() {
-        return true;
+        return false;
     }
 }

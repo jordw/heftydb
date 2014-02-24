@@ -41,5 +41,7 @@ public interface DB {
 
     public void close() throws IOException;
 
+    public void logMetrics();
+
     public Future<?> compact() throws IOException;
 }

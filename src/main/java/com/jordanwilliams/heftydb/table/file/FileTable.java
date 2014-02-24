@@ -404,6 +404,14 @@ public class FileTable implements Table {
         return tupleBlock;
     }
 
+    @Override
+    public String toString() {
+        return "FileTable{" +
+                "tableId=" + tableId +
+                ", level=" + trailer.level() +
+                '}';
+    }
+
     private TupleBlock readTupleBlock(long offset, int size) throws IOException {
         Memory recordBlockMemory = Memory.allocate(size);
 

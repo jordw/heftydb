@@ -183,7 +183,7 @@ public class Config {
         return indexCacheSize;
     }
 
-    public boolean printMetrics() {
+    public boolean autoPrintMetrics() {
         return printMetrics;
     }
 
@@ -260,7 +260,7 @@ public class Config {
                 ", tableCompactionThreads=" + tableCompactionThreads +
                 ", tableCacheSize=" + tableCacheSize +
                 ", indexCacheSize=" + indexCacheSize +
-                ", printMetrics=" + printMetrics +
+                ", autoPrintMetrics=" + printMetrics +
                 ", tableDirectory=" + tableDirectory +
                 ", logDirectory=" + logDirectory +
                 ", maxCompactionRate=" + maxCompactionRate +

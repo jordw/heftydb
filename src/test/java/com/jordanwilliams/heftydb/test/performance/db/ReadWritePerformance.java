@@ -17,8 +17,10 @@
 package com.jordanwilliams.heftydb.test.performance.db;
 
 import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.jordanwilliams.heftydb.compact.CompactionStrategies;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DB;
@@ -43,10 +45,11 @@ public class ReadWritePerformance {
 
         Config config = new Config.Builder()
                 .directory(TestFileHelper.TEMP_PATH)
+                .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
                 .memoryTableSize(8192000)
                 .tableCacheSize(512000000)
                 .indexCacheSize(64000000)
-                .tableBlockSize(16384)
+                .tableBlockSize(4096)
                 .indexBlockSize(32768)
                 .maxMemoryTableWriteRate(Integer.MAX_VALUE)
                 .build();
@@ -56,7 +59,7 @@ public class ReadWritePerformance {
 
         MetricRegistry metrics = new MetricRegistry();
         ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
-        Timer writeTimer = metrics.timer("writes");
+        Timer writeTimer = metrics.register("writes", new Timer(new ExponentiallyDecayingReservoir()));
 
         for (int i = 0; i < RECORD_COUNT; i++) {
             value.data().rewind();
@@ -69,7 +72,9 @@ public class ReadWritePerformance {
 
         metrics = new MetricRegistry();
         reporter = PerformanceHelper.consoleReporter(metrics);
-        Timer readTimer = metrics.timer("reads");
+        Timer readTimer = metrics.register("reads", new Timer(new ExponentiallyDecayingReservoir()));
+
+        db.compact().get();
 
         //Read
         for (int i = 0; i < RECORD_COUNT; i++) {
@@ -80,6 +85,8 @@ public class ReadWritePerformance {
         }
 
         reporter.report();
+
+        db.logMetrics();
 
         db.close();
 

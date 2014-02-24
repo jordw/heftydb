@@ -16,15 +16,16 @@
 
 package com.jordanwilliams.heftydb.metrics;
 
-import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.db.Config;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,17 +37,21 @@ public class Metrics {
 
     private final Map<String, CacheHitGauge> gaugeCache = new ConcurrentHashMap<String, CacheHitGauge>();
     private final MetricRegistry metrics = new MetricRegistry();
-    private final ConsoleReporter consoleReporter;
+    private final Slf4jReporter reporter;
 
     public Metrics(Config config) {
-        this.consoleReporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS)
-                .convertRatesTo(TimeUnit.SECONDS).build();
+        this.reporter = Slf4jReporter.forRegistry(metrics).outputTo(LoggerFactory.getLogger(Metrics.class))
+                .convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo(TimeUnit.SECONDS).build();
 
-        if (config.printMetrics()) {
-            consoleReporter.start(30, TimeUnit.SECONDS);
+        if (config.autoPrintMetrics()) {
+            reporter.start(30, TimeUnit.SECONDS);
         }
 
         initMetrics();
+    }
+
+    public void logMetrics() {
+        reporter.report();
     }
 
     public Counter counter(String name) {

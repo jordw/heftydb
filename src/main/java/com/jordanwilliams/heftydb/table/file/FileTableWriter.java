@@ -24,12 +24,15 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.state.Paths;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FileTableWriter {
 
@@ -95,6 +98,9 @@ public class FileTableWriter {
             public void finish();
         }
 
+        private static final AtomicInteger taskId = new AtomicInteger();
+        private static final Logger logger = LoggerFactory.getLogger(FileTableWriter.class);
+
         private final long tableId;
         private final int level;
         private final Iterator<Tuple> tuples;
@@ -119,6 +125,9 @@ public class FileTableWriter {
         @Override
         public void run() {
             try {
+                int id = taskId.incrementAndGet();
+                logger.info("Starting table writer " + id + " for table " + tableId);
+
                 FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
                         config.indexBlockSize(), config.tableBlockSize(), level);
 
@@ -135,6 +144,8 @@ public class FileTableWriter {
                 if (callback != null) {
                     callback.finish();
                 }
+
+                logger.info("Finishing table writer " + id);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

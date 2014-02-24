@@ -133,8 +133,13 @@ public class HeftyDB implements DB {
     }
 
     @Override
+    public void logMetrics() {
+        metrics.logMetrics();
+    }
+
+    @Override
     public synchronized Future<?> compact() throws IOException {
-        return compactor.scheduleCompaction();
+        return compactor.scheduleCompaction(true);
     }
 
     private Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
