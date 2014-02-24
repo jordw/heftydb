@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.aggregate;
+package com.jordanwilliams.heftydb.read;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.util.CloseableIterator;

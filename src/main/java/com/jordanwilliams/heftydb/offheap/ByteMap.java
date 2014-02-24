@@ -91,7 +91,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 counter++;
             }
 
-            MemoryPointer pointer = MemoryPointer.allocate(memorySize, PAGE_SIZE);
+            MemoryPointer pointer = MemoryAllocator.allocate(memorySize, PAGE_SIZE);
             ByteBuffer memoryBuffer = pointer.directBuffer();
 
             //Pack pointers

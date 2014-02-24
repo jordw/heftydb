@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DBInitializer;
 import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.io.Throttle;
-import com.jordanwilliams.heftydb.log.WriteLog;
+import com.jordanwilliams.heftydb.write.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;

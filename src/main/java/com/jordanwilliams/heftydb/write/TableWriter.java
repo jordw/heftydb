@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.aggregate;
+package com.jordanwilliams.heftydb.write;
 
 import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -24,7 +24,7 @@ import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.io.Throttle;
-import com.jordanwilliams.heftydb.log.WriteLog;
+import com.jordanwilliams.heftydb.write.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;

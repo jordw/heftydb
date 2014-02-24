@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.log.WriteLog;
+import com.jordanwilliams.heftydb.write.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;

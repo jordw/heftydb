@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.aggregate;
+package com.jordanwilliams.heftydb.test.unit.read;
 
-import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
+import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;

@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
+import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,7 +25,7 @@ public class MemoryPointerTest {
 
     @Test
     public void retainReleaseTest() {
-        MemoryPointer pointer = MemoryPointer.allocate(256);
+        MemoryPointer pointer = MemoryAllocator.allocate(256);
 
         pointer.retain();
         pointer.retain();

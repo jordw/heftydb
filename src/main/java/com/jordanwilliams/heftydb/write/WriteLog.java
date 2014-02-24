@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.log;
+package com.jordanwilliams.heftydb.write;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -39,7 +40,7 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
     private static final ThreadLocal<MemoryPointer> writeBuffer = new ThreadLocal<MemoryPointer>() {
         @Override
         protected MemoryPointer initialValue() {
-            return MemoryPointer.allocate(WRITE_BUFFER_SIZE);
+            return MemoryAllocator.allocate(WRITE_BUFFER_SIZE);
         }
     };
 
@@ -170,7 +171,7 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
         MemoryPointer buffer = writeBuffer.get();
 
         if (size > buffer.size()) {
-            buffer = MemoryPointer.allocate(size, 1024);
+            buffer = MemoryAllocator.allocate(size, 1024);
             writeBuffer.set(buffer);
         }
 

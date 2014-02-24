@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.test.performance.offheap;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 
@@ -37,7 +38,7 @@ public class MemoryPerformance {
 
         for (int i = 0; i < pointerArray.length; i++) {
             Timer.Context watch = timer.time();
-            pointerArray[i] = MemoryPointer.allocate(random.nextInt(16384));
+            pointerArray[i] = MemoryAllocator.allocate(random.nextInt(16384));
             watch.stop();
         }
 

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.log;
+package com.jordanwilliams.heftydb.test.unit.write;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.log.WriteLog;
+import com.jordanwilliams.heftydb.write.WriteLog;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;

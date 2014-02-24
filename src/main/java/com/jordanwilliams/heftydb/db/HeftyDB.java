@@ -17,8 +17,8 @@
 package com.jordanwilliams.heftydb.db;
 
 import com.codahale.metrics.Timer;
-import com.jordanwilliams.heftydb.aggregate.TableReader;
-import com.jordanwilliams.heftydb.aggregate.TableWriter;
+import com.jordanwilliams.heftydb.read.TableReader;
+import com.jordanwilliams.heftydb.write.TableWriter;
 import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;

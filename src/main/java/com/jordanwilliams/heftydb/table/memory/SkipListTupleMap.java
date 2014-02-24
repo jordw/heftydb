@@ -16,7 +16,7 @@
 
 package com.jordanwilliams.heftydb.table.memory;
 
-import com.jordanwilliams.heftydb.aggregate.LatestTupleIterator;
+import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
