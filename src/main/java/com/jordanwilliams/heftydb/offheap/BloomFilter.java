@@ -52,8 +52,8 @@ public class BloomFilter implements Offheap {
         }
 
         public BloomFilter build() {
-            Memory bloomFilterMemory = serializeBloomFilter(bitSetBuilder.build(), hashFunctionCount);
-            return new BloomFilter(bloomFilterMemory);
+            MemoryPointer bloomFilterPointer = serializeBloomFilter(bitSetBuilder.build(), hashFunctionCount);
+            return new BloomFilter(bloomFilterPointer);
         }
 
         private static int hashFunctionCount(long approxElementCount, long bitCount) {
@@ -64,21 +64,21 @@ public class BloomFilter implements Offheap {
             return (long) (-approxElementCount * Math.log(falsePositiveProbability) / (Math.log(2) * Math.log(2)));
         }
 
-        private static Memory serializeBloomFilter(BitSet bitSet, int hashFunctionCount) {
-            Memory bloomFilterMemory = bitSet.memory();
-            bloomFilterMemory.directBuffer().putInt(bitSet.usableBytes(), hashFunctionCount);
-            return bloomFilterMemory;
+        private static MemoryPointer serializeBloomFilter(BitSet bitSet, int hashFunctionCount) {
+            MemoryPointer bloomFilterPointer = bitSet.memory();
+            bloomFilterPointer.directBuffer().putInt(bitSet.usableBytes(), hashFunctionCount);
+            return bloomFilterPointer;
         }
     }
 
-    private final Memory memory;
+    private final MemoryPointer pointer;
     private final BitSet bitSet;
     private final int hashFunctionCount;
 
-    public BloomFilter(Memory memory) {
-        this.memory = memory;
-        this.bitSet = new BitSet(memory, memory.size() - Sizes.INT_SIZE);
-        ByteBuffer directBuffer = memory.directBuffer();
+    public BloomFilter(MemoryPointer pointer) {
+        this.pointer = pointer;
+        this.bitSet = new BitSet(pointer, pointer.size() - Sizes.INT_SIZE);
+        ByteBuffer directBuffer = pointer.directBuffer();
         this.hashFunctionCount = directBuffer.getInt(directBuffer.capacity() - Sizes.INT_SIZE);
     }
 
@@ -101,7 +101,7 @@ public class BloomFilter implements Offheap {
     }
 
     @Override
-    public Memory memory() {
-        return memory;
+    public MemoryPointer memory() {
+        return pointer;
     }
 }

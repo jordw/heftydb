@@ -26,7 +26,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
-import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
@@ -413,17 +413,17 @@ public class FileTable implements Table {
     }
 
     private TupleBlock readTupleBlock(long offset, int size) throws IOException {
-        Memory recordBlockMemory = Memory.allocate(size);
+        MemoryPointer recordBlockPointer = MemoryPointer.allocate(size);
 
         try {
-            ByteBuffer recordBlockBuffer = recordBlockMemory.directBuffer();
+            ByteBuffer recordBlockBuffer = recordBlockPointer.directBuffer();
             tableFile.read(recordBlockBuffer, offset);
             recordBlockBuffer.rewind();
-            TupleBlock readBlock = new TupleBlock(new ByteMap(recordBlockMemory));
+            TupleBlock readBlock = new TupleBlock(new ByteMap(recordBlockPointer));
             readBlock.memory().retain();
             return readBlock;
         } catch (IOException e) {
-            recordBlockMemory.release();
+            recordBlockPointer.release();
             throw e;
         }
     }

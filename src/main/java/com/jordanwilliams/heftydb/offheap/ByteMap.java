@@ -70,15 +70,15 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             return new ByteMap(serializeEntries());
         }
 
-        private Memory serializeEntries() {
-            //Allocate memory
+        private MemoryPointer serializeEntries() {
+            //Allocate pointer
             int memorySize = 0;
             int[] entryOffsets = new int[entries.size()];
 
-            memorySize += Sizes.INT_SIZE; //Pointer count
+            memorySize += Sizes.INT_SIZE; //MemoryPointer count
             memorySize += Sizes.INT_SIZE * entries.size(); //Pointers
 
-            //Compute memory size
+            //Compute pointer size
             int counter = 0;
 
             for (Entry entry : entries) {
@@ -91,8 +91,8 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
                 counter++;
             }
 
-            Memory memory = Memory.allocate(memorySize, PAGE_SIZE);
-            ByteBuffer memoryBuffer = memory.directBuffer();
+            MemoryPointer pointer = MemoryPointer.allocate(memorySize, PAGE_SIZE);
+            ByteBuffer memoryBuffer = pointer.directBuffer();
 
             //Pack pointers
             memoryBuffer.putInt(entries.size());
@@ -133,7 +133,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
             memoryBuffer.rewind();
 
-            return memory;
+            return pointer;
         }
     }
 
@@ -197,15 +197,15 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         }
     }
 
-    private final Memory memory;
+    private final MemoryPointer pointer;
     private final ByteBuffer directBuffer;
     private final int entryCount;
     private final int[] entryOffsets;
 
-    public ByteMap(Memory memory) {
-        this.memory = memory;
-        this.directBuffer = memory.directBuffer();
-        this.entryCount = memory.directBuffer().getInt(0);
+    public ByteMap(MemoryPointer pointer) {
+        this.pointer = pointer;
+        this.directBuffer = pointer.directBuffer();
+        this.entryCount = pointer.directBuffer().getInt(0);
         this.entryOffsets = new int[entryCount];
 
         for (int i = 0; i < entryCount; i++) {
@@ -289,8 +289,8 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     @Override
-    public Memory memory() {
-        return memory;
+    public MemoryPointer memory() {
+        return pointer;
     }
 
     @Override

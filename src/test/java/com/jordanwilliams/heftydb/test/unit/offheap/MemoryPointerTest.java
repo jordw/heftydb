@@ -14,11 +14,25 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.offheap.allocator;
+package com.jordanwilliams.heftydb.test.unit.offheap;
 
-public interface Allocator {
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
+import org.junit.Assert;
+import org.junit.Test;
 
-    public long allocate(long bytes);
+public class MemoryPointerTest {
 
-    public void deallocate(long address);
+    @Test
+    public void retainReleaseTest() {
+        MemoryPointer pointer = MemoryPointer.allocate(256);
+
+        pointer.retain();
+        pointer.retain();
+
+        pointer.release();
+        pointer.release();
+        pointer.release();
+
+        Assert.assertTrue("MemoryPointer has been freed", pointer.isFree());
+    }
 }

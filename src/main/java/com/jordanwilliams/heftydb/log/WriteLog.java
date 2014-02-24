@@ -19,7 +19,7 @@ package com.jordanwilliams.heftydb.log;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
-import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.util.Sizes;
 import com.jordanwilliams.heftydb.util.XORShiftRandom;
@@ -36,10 +36,10 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
 
     private static final int WRITE_BUFFER_SIZE = 4096;
 
-    private static final ThreadLocal<Memory> writeBuffer = new ThreadLocal<Memory>() {
+    private static final ThreadLocal<MemoryPointer> writeBuffer = new ThreadLocal<MemoryPointer>() {
         @Override
-        protected Memory initialValue() {
-            return Memory.allocate(WRITE_BUFFER_SIZE);
+        protected MemoryPointer initialValue() {
+            return MemoryPointer.allocate(WRITE_BUFFER_SIZE);
         }
     };
 
@@ -127,12 +127,12 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
     }
 
     public void append(Tuple tuple, boolean fsync) throws IOException {
-        Memory recordMemory = writeBuffer(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE + Sizes.INT_SIZE);
+        MemoryPointer recordPointer = writeBuffer(Tuple.SERIALIZER.size(tuple) + Sizes.INT_SIZE + Sizes.INT_SIZE);
 
-        recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE - Sizes.INT_SIZE);
-        Tuple.SERIALIZER.serialize(tuple, recordMemory.directBuffer());
-        recordMemory.directBuffer().putInt(recordMemory.size() - Sizes.INT_SIZE, pseudoRandom.nextInt());
-        logFile.append(recordMemory.directBuffer());
+        recordPointer.directBuffer().putInt(recordPointer.size() - Sizes.INT_SIZE - Sizes.INT_SIZE);
+        Tuple.SERIALIZER.serialize(tuple, recordPointer.directBuffer());
+        recordPointer.directBuffer().putInt(recordPointer.size() - Sizes.INT_SIZE, pseudoRandom.nextInt());
+        logFile.append(recordPointer.directBuffer());
 
         if (fsync) {
             logFile.sync();
@@ -166,11 +166,11 @@ public class WriteLog implements Iterable<Tuple>, Closeable {
         return seed;
     }
 
-    private Memory writeBuffer(int size) {
-        Memory buffer = writeBuffer.get();
+    private MemoryPointer writeBuffer(int size) {
+        MemoryPointer buffer = writeBuffer.get();
 
         if (size > buffer.size()) {
-            buffer = Memory.allocate(size, 1024);
+            buffer = MemoryPointer.allocate(size, 1024);
             writeBuffer.set(buffer);
         }
 

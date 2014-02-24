@@ -23,7 +23,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
-import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 
 import java.util.ArrayList;
@@ -163,7 +163,7 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
     }
 
     @Override
-    public Memory memory() {
+    public MemoryPointer memory() {
         return byteMap.memory();
     }
 

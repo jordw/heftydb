@@ -24,14 +24,14 @@ public class BitSet implements Offheap {
 
     public static class Builder {
 
-        private final Memory memory;
+        private final MemoryPointer pointer;
         private final ByteBuffer directBuffer;
         private final int usableBytes;
 
         public Builder(long bitCount, int paddingBytes) {
             this.usableBytes = memoryOffset(bitCount) + Sizes.LONG_SIZE;
-            this.memory = Memory.allocateAndZero(usableBytes + paddingBytes);
-            this.directBuffer = memory.directBuffer();
+            this.pointer = MemoryPointer.allocateAndZero(usableBytes + paddingBytes);
+            this.directBuffer = pointer.directBuffer();
         }
 
         public void set(long bitIndex, boolean value) {
@@ -47,7 +47,7 @@ public class BitSet implements Offheap {
         }
 
         public BitSet build() {
-            return new BitSet(memory, usableBytes);
+            return new BitSet(pointer, usableBytes);
         }
 
         public int usableBytes() {
@@ -61,13 +61,13 @@ public class BitSet implements Offheap {
 
     private static final int ADDRESS_BITS_PER_WORD = 6;
 
-    private final Memory memory;
+    private final MemoryPointer pointer;
     private final ByteBuffer directBuffer;
     private final int usableBytes;
 
-    public BitSet(Memory memory, int usableBytes) {
-        this.memory = memory;
-        this.directBuffer = memory.directBuffer();
+    public BitSet(MemoryPointer pointer, int usableBytes) {
+        this.pointer = pointer;
+        this.directBuffer = pointer.directBuffer();
         this.usableBytes = usableBytes;
     }
 
@@ -86,8 +86,8 @@ public class BitSet implements Offheap {
     }
 
     @Override
-    public Memory memory() {
-        return memory;
+    public MemoryPointer memory() {
+        return pointer;
     }
 
     private static int memoryOffset(long bitIndex) {

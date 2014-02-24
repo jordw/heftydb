@@ -4,7 +4,7 @@
 
 HeftyDB is a persistent, sorted, key-value library for the JVM. It was designed with the following goals in mind:
 
-1. Be as fast and memory efficient as is feasible on the JVM.
+1. Be as fast and memory efficient as is feasible on the JVM for random reads and writes.
 2. Provide a stable base on which to build new and interesting distributed storage systems. 
 3. Provide detailed metrics about what is going on at every level of the stack.
 4. Have clean, understandable code that others can learn from.
@@ -22,7 +22,8 @@ are written with a full B+tree index for memory efficiency, even at very large t
 Reads and range scans never block writes.
 
 ###Off-heap data structures
-Operations in the critical read and write paths are implemented using off-heap memory wherever possible to reduce GC pressure and memory overhead.
+Operations in the critical read and write paths are implemented using off-heap memory wherever possible to reduce GC
+pressure and memory overhead.
 
 ###Multi-threaded compactions
 Make use of multiple CPU cores for table writes and table compactions

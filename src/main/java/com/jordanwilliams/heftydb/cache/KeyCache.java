@@ -14,25 +14,7 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.test.unit.offheap;
+package com.jordanwilliams.heftydb.cache;
 
-import com.jordanwilliams.heftydb.offheap.Memory;
-import org.junit.Assert;
-import org.junit.Test;
-
-public class MemoryTest {
-
-    @Test
-    public void retainReleaseTest() {
-        Memory memory = Memory.allocate(256);
-
-        memory.retain();
-        memory.retain();
-
-        memory.release();
-        memory.release();
-        memory.release();
-
-        Assert.assertTrue("Memory has been freed", memory.isFree());
-    }
+public class KeyCache {
 }

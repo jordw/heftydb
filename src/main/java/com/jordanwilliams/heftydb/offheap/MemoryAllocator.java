@@ -19,16 +19,16 @@ package com.jordanwilliams.heftydb.offheap;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.jordanwilliams.heftydb.offheap.allocator.Allocator;
+import com.jordanwilliams.heftydb.offheap.allocator.UnsafeAllocator;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class Memory {
+public class MemoryAllocator {
 
     private static final Unsafe unsafe = JVMUnsafe.unsafe;
-    private static final Allocator allocator = Allocator.allocator;
+    private static final Allocator allocator = new UnsafeAllocator();
     private static final Class<?> directByteBufferClass;
     private static final long addressOffset;
     private static final long capacityOffset;
@@ -58,90 +58,40 @@ public class Memory {
         }
     }
 
-    private final AtomicInteger retainCount = new AtomicInteger(1);
-    private final int size;
-    private final ByteBuffer directBuffer;
 
-    private long baseAddress;
-
-    private Memory(int size) {
-        this.baseAddress = allocator.allocate(size);
-        this.size = size;
-        this.directBuffer = rawDirectBuffer(baseAddress, size);
-        directBuffer.rewind();
-
-        metrics.counter("offHeapMemory").inc(size);
-    }
-
-    public long address() {
-        return baseAddress;
-    }
-
-    public ByteBuffer directBuffer() {
-        return directBuffer;
-    }
-
-    public boolean isFree() {
-        return baseAddress == 0;
-    }
-
-    public void free() {
-        allocator.deallocate(baseAddress);
-        baseAddress = 0;
-        metrics.counter("offHeapMemory").dec(size);
-    }
-
-    public int size() {
-        return directBuffer.limit();
-    }
-
-    public boolean retain() {
-        while (true) {
-            int retainValue = retainCount.get();
-
-            if (retainValue <= 0) {
-                return false;
-            }
-
-            if (retainCount.compareAndSet(retainValue, retainValue + 1)) {
-                return true;
-            }
-        }
-    }
-
-    public void release() {
-        if (retainCount.decrementAndGet() == 0) {
-            free();
-        }
-    }
-
-    @Override
-    public String toString() {
-        return toHexString(directBuffer);
-    }
-
-    public static Memory allocate(int size) {
+    public static MemoryPointer allocate(int size) {
         if (size < 0) {
             throw new IllegalArgumentException();
         }
 
-        return new Memory(size);
+        long address = allocator.allocate(size);
+        metrics.counter("offHeapMemory").inc(size);
+        return new MemoryPointer(address, size, rawDirectBuffer(address, size));
     }
 
-    public static Memory allocateAndZero(int size) {
-        Memory memory = allocate(size);
-        zeroMemory(memory);
-        return memory;
+    public static MemoryPointer allocateAndZero(int size) {
+        MemoryPointer pointer = allocate(size);
+        zeroMemory(pointer);
+        return pointer;
     }
 
-    public static Memory allocate(int size, int align) {
+    public static MemoryPointer allocate(int size, int align) {
         return allocate(pageAlignedSize(size, align));
     }
 
-    public static Memory allocateAndZero(int size, int align) {
-        Memory memory = allocate(size, align);
-        zeroMemory(memory);
-        return memory;
+    public static MemoryPointer allocateAndZero(int size, int align) {
+        MemoryPointer pointer = allocate(size, align);
+        zeroMemory(pointer);
+        return pointer;
+    }
+
+    public static void deallocate(long address, int size){
+        allocator.deallocate(address);
+        metrics.counter("offHeapMemory").dec(size);
+    }
+
+    private static void zeroMemory(MemoryPointer pointer) {
+        unsafe.setMemory(pointer.address(), pointer.size(), (byte) 0);
     }
 
     private static ByteBuffer rawDirectBuffer(long address, int size) {
@@ -164,21 +114,5 @@ public class Memory {
         }
 
         return pageCount * pageSize;
-    }
-
-    private static void zeroMemory(Memory memory) {
-        unsafe.setMemory(memory.baseAddress, memory.size, (byte) 0);
-    }
-
-    private static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
-    private static String toHexString(ByteBuffer byteBuffer) {
-        char[] hexChars = new char[byteBuffer.capacity() * 2];
-        for (int i = 0; i < byteBuffer.capacity(); i++) {
-            int v = byteBuffer.get(i) & 0xFF;
-            hexChars[i * 2] = hexArray[v >>> 4];
-            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
-        }
-        return new String(hexChars);
     }
 }

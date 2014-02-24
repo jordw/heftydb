@@ -20,7 +20,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
-import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.state.Paths;
 
@@ -44,16 +44,16 @@ public class TableBloomFilter implements Offheap {
     }
 
     @Override
-    public Memory memory() {
+    public MemoryPointer memory() {
         return bloomFilter.memory();
     }
 
     public static TableBloomFilter read(long tableId, Paths paths) throws IOException {
         DataFile filterFile = ChannelDataFile.open(paths.filterPath(tableId));
-        Memory filterMemory = Memory.allocate((int) filterFile.size());
-        ByteBuffer filterBuffer = filterMemory.directBuffer();
+        MemoryPointer filterPointer = MemoryPointer.allocate((int) filterFile.size());
+        ByteBuffer filterBuffer = filterPointer.directBuffer();
         filterFile.read(filterBuffer, 0);
         filterFile.close();
-        return new TableBloomFilter(new BloomFilter(filterMemory));
+        return new TableBloomFilter(new BloomFilter(filterPointer));
     }
 }

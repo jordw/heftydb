@@ -23,7 +23,7 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
-import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.util.Sizes;
 
@@ -157,7 +157,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     }
 
     @Override
-    public Memory memory() {
+    public MemoryPointer memory() {
         return byteMap.memory();
     }
 

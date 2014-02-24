@@ -21,7 +21,7 @@ import com.jordanwilliams.heftydb.io.ChannelDataFile;
 import com.jordanwilliams.heftydb.io.DataFile;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
-import com.jordanwilliams.heftydb.offheap.Memory;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -88,17 +88,17 @@ public class Index {
     }
 
     private IndexBlock readIndexBlock(long blockOffset, int blockSize) throws IOException {
-        Memory indexMemory = Memory.allocate(blockSize);
+        MemoryPointer indexPointer = MemoryPointer.allocate(blockSize);
 
         try {
-            ByteBuffer indexBuffer = indexMemory.directBuffer();
+            ByteBuffer indexBuffer = indexPointer.directBuffer();
             indexFile.read(indexBuffer, blockOffset);
             indexBuffer.rewind();
-            IndexBlock readBlock = new IndexBlock(new ByteMap(indexMemory));
+            IndexBlock readBlock = new IndexBlock(new ByteMap(indexPointer));
             readBlock.memory().retain();
             return readBlock;
         } catch (IOException e) {
-            indexMemory.release();
+            indexPointer.release();
             throw e;
         }
     }

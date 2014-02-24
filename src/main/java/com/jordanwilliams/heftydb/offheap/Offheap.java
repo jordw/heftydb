@@ -18,6 +18,6 @@ package com.jordanwilliams.heftydb.offheap;
 
 public interface Offheap {
 
-    public Memory memory();
+    public MemoryPointer memory();
 
 }
