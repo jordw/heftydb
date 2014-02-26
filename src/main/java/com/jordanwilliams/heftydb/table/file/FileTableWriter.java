@@ -20,8 +20,8 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.index.IndexWriter;
-import com.jordanwilliams.heftydb.io.ChannelDataFile;
-import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.AppendChannelFile;
+import com.jordanwilliams.heftydb.io.AppendFile;
 import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.state.Paths;
 import org.slf4j.Logger;
@@ -156,12 +156,12 @@ public class FileTableWriter {
     private final IndexWriter indexWriter;
     private final TableBloomFilterWriter filterWriter;
     private final TableTrailer.Builder trailerBuilder;
-    private final DataFile tableDataFile;
+    private final AppendFile tableDataFile;
 
     private TupleBlock.Builder recordBlockBuilder;
 
     private FileTableWriter(long tableId, IndexWriter indexWriter, TableBloomFilterWriter filterWriter,
-                            DataFile tableDataFile, int maxRecordBlockSize, int level) throws IOException {
+                            AppendFile tableDataFile, int maxRecordBlockSize, int level) throws IOException {
         this.indexWriter = indexWriter;
         this.filterWriter = filterWriter;
         this.recordBlockBuilder = new TupleBlock.Builder();
@@ -212,7 +212,7 @@ public class FileTableWriter {
                                        int maxRecordBlockSize, int level) throws IOException {
         IndexWriter indexWriter = IndexWriter.open(tableId, paths, maxIndexBlockSize);
         TableBloomFilterWriter filterWriter = TableBloomFilterWriter.open(tableId, paths, approxRecordCount);
-        DataFile tableDataFile = ChannelDataFile.open(paths.tempPath(tableId));
+        AppendFile tableDataFile = AppendChannelFile.open(paths.tempPath(tableId));
 
         return new FileTableWriter(tableId, indexWriter, filterWriter, tableDataFile, maxRecordBlockSize, level);
     }

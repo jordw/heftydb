@@ -18,7 +18,7 @@ package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.write.WriteLog;
+import com.jordanwilliams.heftydb.write.CommitLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -85,7 +85,7 @@ public class DBInitializer {
         Set<Long> logIds = paths.logFileIds();
 
         for (Long id : logIds) {
-            WriteLog log = WriteLog.open(id, paths);
+            CommitLog log = CommitLog.open(id, paths);
             Table memoryTable = readTable(log);
             log.close();
 
@@ -99,7 +99,7 @@ public class DBInitializer {
         }
     }
 
-    private Table readTable(WriteLog log) {
+    private Table readTable(CommitLog log) {
         MutableTable memoryTable = new MemoryTable(log.tableId());
 
         for (Tuple tuple : log) {

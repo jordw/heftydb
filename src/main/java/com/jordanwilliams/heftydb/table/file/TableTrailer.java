@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.ImmutableFile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -93,7 +93,7 @@ public class TableTrailer {
         return buffer;
     }
 
-    public static TableTrailer read(DataFile tableFile) throws IOException {
+    public static TableTrailer read(ImmutableFile tableFile) throws IOException {
         ByteBuffer trailerBuffer = ByteBuffer.allocate(SIZE);
         tableFile.read(trailerBuffer, tableFile.size() - SIZE);
         trailerBuffer.rewind();

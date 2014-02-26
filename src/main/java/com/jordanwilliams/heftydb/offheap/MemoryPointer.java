@@ -77,7 +77,12 @@ public class MemoryPointer {
 
     @Override
     public String toString() {
-        return toHexString(directBuffer);
+        return "MemoryPointer{" +
+                "retainCount=" + retainCount +
+                ", size=" + size +
+                ", address=" + address +
+                ", contents=" + toHexString(directBuffer) +
+                '}';
     }
 
     private static char[] hexArray = "0123456789ABCDEF".toCharArray();

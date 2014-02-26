@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package com.jordanwilliams.heftydb.cache;
+package com.jordanwilliams.heftydb.io;
 
-public class KeyCache {
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
-    private static class Entry {
+public interface AppendFile extends Closeable {
 
-        private final long tableId;
-        private final long offset;
+    public long append(ByteBuffer buffer) throws IOException;
 
-        private Entry(long tableId, long offset) {
-            this.tableId = tableId;
-            this.offset = offset;
-        }
-    }
+    public long appendLong(long value) throws IOException;
+
+    public long appendInt(int value) throws IOException;
+
+    public long size() throws IOException;
+
+    public void sync() throws IOException;
 }

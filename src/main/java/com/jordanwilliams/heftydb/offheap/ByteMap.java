@@ -218,6 +218,10 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     public int floorIndex(Key key) {
+        if (pointer.isFree()){
+            throw new IllegalStateException("Memory was aleady freed");
+        }
+
         int low = 0;
         int high = entryCount - 1;
 
@@ -239,6 +243,10 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     public int ceilingIndex(Key key) {
+        if (pointer.isFree()){
+            throw new IllegalStateException("Memory was aleady freed");
+        }
+
         int low = 0;
         int high = entryCount - 1;
 
@@ -306,6 +314,10 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private Entry getEntry(int index) {
         if (index < 0 || index >= entryCount) {
             throw new IndexOutOfBoundsException("Requested Index: " + index + " Max: " + (entryCount - 1));
+        }
+
+        if (pointer.isFree()){
+            throw new IllegalStateException("Memory was aleady freed");
         }
 
         int entryOffset = entryOffsets[index];

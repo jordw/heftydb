@@ -17,8 +17,8 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.jordanwilliams.heftydb.data.Key;
-import com.jordanwilliams.heftydb.io.ChannelDataFile;
-import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.AppendChannelFile;
+import com.jordanwilliams.heftydb.io.AppendFile;
 import com.jordanwilliams.heftydb.offheap.BloomFilter;
 import com.jordanwilliams.heftydb.state.Paths;
 
@@ -30,9 +30,9 @@ public class TableBloomFilterWriter {
     private static final double FALSE_POSITIVE_PROBABILITY = 0.01;
 
     private final BloomFilter.Builder filterBuilder;
-    private final DataFile filterFile;
+    private final AppendFile filterFile;
 
-    private TableBloomFilterWriter(DataFile filterFile, long approxRecordCount) {
+    private TableBloomFilterWriter(AppendFile filterFile, long approxRecordCount) {
         this.filterBuilder = new BloomFilter.Builder(approxRecordCount, FALSE_POSITIVE_PROBABILITY);
         this.filterFile = filterFile;
     }
@@ -50,7 +50,7 @@ public class TableBloomFilterWriter {
     }
 
     public static TableBloomFilterWriter open(long tableId, Paths paths, long approxRecordCount) throws IOException {
-        DataFile filterFile = ChannelDataFile.open(paths.filterPath(tableId));
+        AppendFile filterFile = AppendChannelFile.open(paths.filterPath(tableId));
         return new TableBloomFilterWriter(filterFile, approxRecordCount);
     }
 }

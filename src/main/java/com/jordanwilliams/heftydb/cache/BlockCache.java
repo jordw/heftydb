@@ -92,11 +92,20 @@ public class BlockCache<T extends Offheap> {
     }
 
     public T get(long tableId, long offset) {
-        return cache.getIfPresent(new Entry(tableId, offset));
+        T block = cache.getIfPresent(new Entry(tableId, offset));
+
+        if (block != null){
+            block.memory().retain();
+        }
+
+        return block;
     }
 
     public void put(long tableId, long offset, T block) {
-        cache.put(new Entry(tableId, offset), block);
+        Entry entry = new Entry(tableId, offset);
+        cache.invalidate(entry);
+        block.memory().retain();
+        cache.put(entry, block);
         totalSize.addAndGet(block.memory().size());
     }
 

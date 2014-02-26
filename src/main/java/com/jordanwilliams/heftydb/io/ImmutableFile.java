@@ -16,18 +16,11 @@
 
 package com.jordanwilliams.heftydb.io;
 
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Path;
 
-public interface DataFile {
-
-    public long append(ByteBuffer bufferToWrite) throws IOException;
-
-    public long appendInt(int intToWrite) throws IOException;
-
-    public long appendLong(long longToWrite) throws IOException;
+public interface ImmutableFile extends Closeable {
 
     public long read(ByteBuffer bufferToRead, long position) throws IOException;
 
@@ -35,17 +28,5 @@ public interface DataFile {
 
     public long readLong(long position) throws IOException;
 
-    public long write(ByteBuffer bufferToWrite, long position) throws IOException;
-
-    public long writeLong(long longToWrite, long position) throws IOException;
-
-    public long writeInt(int intToWrite, long position) throws IOException;
-
     public long size() throws IOException;
-
-    public void sync() throws IOException;
-
-    public void close() throws IOException;
-
-    public Path path();
 }

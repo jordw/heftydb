@@ -95,6 +95,11 @@ public class Tuple implements Comparable<Tuple> {
         return key.size() + value().size();
     }
 
+    public void rewind(){
+        key.data().rewind();
+        value.data().rewind();
+    }
+
     @Override
     public int compareTo(Tuple o) {
         return key.compareTo(o.key);

@@ -24,7 +24,6 @@ import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.Snapshot;
 import com.jordanwilliams.heftydb.io.Throttle;
-import com.jordanwilliams.heftydb.write.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -54,7 +53,7 @@ public class TableWriter {
     private final Throttle memoryTableWriteThrottle;
 
     private MemoryTable memoryTable;
-    private WriteLog writeLog;
+    private CommitLogWriter commitLog;
 
     public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches, Metrics metrics) {
         this.config = config;
@@ -85,7 +84,7 @@ public class TableWriter {
         Value recordValue = new Value(value);
         Tuple tuple = new Tuple(recordKey, recordValue);
 
-        writeLog.append(tuple, fsync);
+        commitLog.append(tuple, fsync);
         memoryTable.put(tuple);
 
         return new Snapshot(nextSnapshotId);
@@ -94,7 +93,7 @@ public class TableWriter {
     public void close() throws IOException {
         try {
             if (memoryTable != null) {
-                writeLog.close();
+                commitLog.close();
                 writeMemoryTable(memoryTable);
             }
 
@@ -107,13 +106,13 @@ public class TableWriter {
 
     private void rotateMemoryTable() throws IOException {
         if (memoryTable != null) {
-            writeLog.close();
+            commitLog.close();
             writeMemoryTable(memoryTable);
         }
 
         long nextTableId = tables.nextId();
         memoryTable = new MemoryTable(nextTableId);
-        writeLog = WriteLog.open(nextTableId, paths);
+        commitLog = CommitLogWriter.open(nextTableId, paths);
         tables.add(memoryTable);
     }
 

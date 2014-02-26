@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.io;
 
+import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
+import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.io.IOException;
@@ -25,9 +27,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ChannelDataFile implements DataFile {
+public class AppendChannelFile implements AppendFile {
 
-    private static final int APPEND_BUFFER_SIZE = 8192;
+    private static final int DEFAULT_APPEND_BUFFER_SIZE = 8192;
 
     private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {
         @Override
@@ -37,32 +39,25 @@ public class ChannelDataFile implements DataFile {
         }
     };
 
-    private final ThreadLocal<ByteBuffer> appendBuffer = new ThreadLocal<ByteBuffer>(){
-        @Override
-        protected ByteBuffer initialValue(){
-            return ByteBuffer.allocateDirect(APPEND_BUFFER_SIZE);
-        }
-    };
-
-    private final Path path;
+    private final MemoryPointer appendBuffer;
     private final FileChannel channel;
     private final AtomicLong appendPosition = new AtomicLong();
 
-    private ChannelDataFile(Path path, FileChannel fileChannel) {
-        this.path = path;
-        this.channel = fileChannel;
+    private AppendChannelFile(FileChannel channel, int appendBufferSize) {
+        this.channel = channel;
+        this.appendBuffer = MemoryAllocator.allocate(appendBufferSize);
     }
 
     @Override
-    public long append(ByteBuffer bufferToWrite) throws IOException {
+    public synchronized long append(ByteBuffer bufferToWrite) throws IOException {
         int writeLength = bufferToWrite.limit() - bufferToWrite.position();
         long writtenPosition = appendPosition.getAndAdd(writeLength);
 
-        if (writeLength > APPEND_BUFFER_SIZE){
+        if (writeLength > DEFAULT_APPEND_BUFFER_SIZE){
             flushAppendBuffer();
             channel.write(bufferToWrite);
         } else {
-            ByteBuffer buffer = appendBuffer.get();
+            ByteBuffer buffer = appendBuffer.directBuffer();
 
             while (bufferToWrite.position() < bufferToWrite.limit()){
                 if (buffer.position() == buffer.limit()){
@@ -87,56 +82,13 @@ public class ChannelDataFile implements DataFile {
     }
 
     @Override
-    public long read(ByteBuffer bufferToRead, long position) throws IOException {
-        flushAppendBuffer();
-        long bytesRead = channel.read(bufferToRead, position);
-        return bytesRead;
-    }
-
-    @Override
-    public int readInt(long position) throws IOException {
-        flushAppendBuffer();
-        ByteBuffer intBuffer = intBuffer();
-        channel.read(intBuffer, position);
-        intBuffer.rewind();
-        return intBuffer.getInt();
-    }
-
-    @Override
-    public long readLong(long position) throws IOException {
-        flushAppendBuffer();
-        ByteBuffer longBuffer = longBuffer();
-        channel.read(longBuffer, position);
-        longBuffer.rewind();
-        return longBuffer.getLong();
-    }
-
-    @Override
-    public long write(ByteBuffer bufferToWrite, long position) throws IOException {
-        flushAppendBuffer();
-        bufferToWrite.rewind();
-        long bytesWritten = channel.write(bufferToWrite, position);
-        return bytesWritten;
-    }
-
-    @Override
-    public long writeLong(long longToWrite, long position) throws IOException {
-        return write(longBuffer(longToWrite), position);
-    }
-
-    @Override
-    public long writeInt(int intToWrite, long position) throws IOException {
-        return write(intBuffer(intToWrite), position);
-    }
-
-    @Override
-    public long size() throws IOException {
+    public synchronized long size() throws IOException {
         flushAppendBuffer();
         return channel.size();
     }
 
     @Override
-    public void sync() throws IOException {
+    public synchronized void sync() throws IOException {
         flushAppendBuffer();
         channel.force(true);
     }
@@ -145,13 +97,13 @@ public class ChannelDataFile implements DataFile {
     public synchronized void close() throws IOException {
         if (channel.isOpen()) {
             sync();
+
+            if (appendBuffer != null && !appendBuffer.isFree()){
+                appendBuffer.free();
+            }
+
             channel.close();
         }
-    }
-
-    @Override
-    public Path path() {
-        return path;
     }
 
     private ByteBuffer intBuffer() {
@@ -183,7 +135,7 @@ public class ChannelDataFile implements DataFile {
     }
 
     private void flushAppendBuffer() throws IOException {
-        ByteBuffer buffer = appendBuffer.get();
+        ByteBuffer buffer = appendBuffer.directBuffer();
 
         if (buffer.position() == 0){
             return;
@@ -196,9 +148,8 @@ public class ChannelDataFile implements DataFile {
         buffer.rewind();
     }
 
-    public static ChannelDataFile open(Path path) throws IOException {
-        FileChannel dataFileChannel = FileChannel.open(path, StandardOpenOption.READ, StandardOpenOption.WRITE,
-                StandardOpenOption.CREATE);
-        return new ChannelDataFile(path, dataFileChannel);
+    public static AppendFile open(Path path) throws IOException {
+        FileChannel channel = FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        return new AppendChannelFile(channel, DEFAULT_APPEND_BUFFER_SIZE);
     }
 }

@@ -16,8 +16,8 @@
 
 package com.jordanwilliams.heftydb.index;
 
-import com.jordanwilliams.heftydb.io.ChannelDataFile;
-import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.AppendChannelFile;
+import com.jordanwilliams.heftydb.io.AppendFile;
 import com.jordanwilliams.heftydb.state.Paths;
 
 import java.io.IOException;
@@ -29,11 +29,11 @@ import java.util.Queue;
 
 public class IndexWriter {
 
-    private final DataFile indexFile;
+    private final AppendFile indexFile;
     private final int maxIndexBlockSize;
     private final List<IndexBlock.Builder> indexBlockBuilders = new ArrayList<IndexBlock.Builder>();
 
-    private IndexWriter(DataFile indexFile, int maxIndexBlockSize) {
+    private IndexWriter(AppendFile indexFile, int maxIndexBlockSize) {
         this.indexFile = indexFile;
         this.maxIndexBlockSize = maxIndexBlockSize;
         indexBlockBuilders.add(new IndexBlock.Builder());
@@ -103,7 +103,7 @@ public class IndexWriter {
     }
 
     public static IndexWriter open(long tableId, Paths paths, int maxIndexBlockSize) throws IOException {
-        DataFile indexFile = ChannelDataFile.open(paths.indexPath(tableId));
+        AppendFile indexFile = AppendChannelFile.open(paths.indexPath(tableId));
         return new IndexWriter(indexFile, maxIndexBlockSize);
     }
 }

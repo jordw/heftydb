@@ -16,18 +16,18 @@
 
 package com.jordanwilliams.heftydb.table.file;
 
-import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.Index;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
-import com.jordanwilliams.heftydb.io.ChannelDataFile;
-import com.jordanwilliams.heftydb.io.DataFile;
+import com.jordanwilliams.heftydb.io.ImmutableChannelFile;
+import com.jordanwilliams.heftydb.io.ImmutableFile;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
+import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
@@ -230,10 +230,10 @@ public class FileTable implements Table {
     private final TableBloomFilter tableBloomFilter;
     private final TableTrailer trailer;
     private final TupleBlock.Cache recordCache;
-    private final DataFile tableFile;
+    private final ImmutableFile tableFile;
     private final Metrics metrics;
 
-    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, DataFile tableFile,
+    private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, ImmutableFile tableFile,
                       TableTrailer trailer, TupleBlock.Cache recordCache, Metrics metrics) throws IOException {
         this.tableId = tableId;
         this.recordCache = recordCache;
@@ -433,7 +433,7 @@ public class FileTable implements Table {
                                  IndexBlock.Cache indexCache, Metrics metrics) throws IOException {
         Index index = Index.open(tableId, paths, indexCache, metrics);
         TableBloomFilter tableBloomFilter = TableBloomFilter.read(tableId, paths);
-        DataFile tableFile = ChannelDataFile.open(paths.tablePath(tableId));
+        ImmutableFile tableFile = ImmutableChannelFile.open(paths.tablePath(tableId));
         TableTrailer trailer = TableTrailer.read(tableFile);
         return new FileTable(tableId, index, tableBloomFilter, tableFile, trailer, recordCache, metrics);
     }

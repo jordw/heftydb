@@ -21,12 +21,12 @@ import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DBInitializer;
 import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.io.Throttle;
-import com.jordanwilliams.heftydb.write.WriteLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.test.base.TupleTest;
 import com.jordanwilliams.heftydb.test.generator.ConfigGenerator;
+import com.jordanwilliams.heftydb.write.CommitLogWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -63,7 +63,7 @@ public class DBInitializerTest extends TupleTest {
                 tuples.size(), null, Throttle.MAX);
         writerTask.run();
 
-        WriteLog log = WriteLog.open(2, paths);
+        CommitLogWriter log = CommitLogWriter.open(2, paths);
         List<Tuple> moreTestTuples = generateMoreTestRecords(101);
         for (Tuple tuple : moreTestTuples) {
             log.append(tuple, false);
