@@ -48,6 +48,7 @@ public class MemoryPointer {
 
     public void free() {
         MemoryAllocator.deallocate(address, size);
+        retainCount.set(0);
         address = 0;
     }
 

@@ -34,8 +34,7 @@ public class AppendChannelFile implements AppendFile {
     private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {
         @Override
         protected ByteBuffer initialValue() {
-            ByteBuffer primitiveBuffer = ByteBuffer.allocate(Sizes.LONG_SIZE);
-            return primitiveBuffer;
+            return ByteBuffer.allocate(Sizes.LONG_SIZE);
         }
     };
 
@@ -96,6 +95,7 @@ public class AppendChannelFile implements AppendFile {
     @Override
     public synchronized void close() throws IOException {
         if (channel.isOpen()) {
+            flushAppendBuffer();
             sync();
 
             if (appendBuffer != null && !appendBuffer.isFree()){

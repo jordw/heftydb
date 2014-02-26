@@ -69,8 +69,10 @@ public class DBInitializerTest extends TupleTest {
             log.append(tuple, false);
         }
 
+        log.close();
+
         DBState state = new DBInitializer(config, new Metrics(config)).initialize();
         Assert.assertEquals("Should be 2 tables", 2, state.tables().count());
-        Assert.assertEquals("Should be 100 as the max snapshot id", 200, state.snapshots().currentId());
+        Assert.assertEquals("Should be 200 as the max snapshot id", 200, state.snapshots().currentId());
     }
 }

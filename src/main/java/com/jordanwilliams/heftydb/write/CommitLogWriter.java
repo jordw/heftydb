@@ -54,6 +54,7 @@ public class CommitLogWriter implements Closeable {
         logFile.appendInt(tuple.value().size());
         logFile.append(tuple.value().data());
         logFile.appendInt(pseudoRandom.nextInt());
+        tuple.rewind();
 
         if (fsync) {
             logFile.sync();

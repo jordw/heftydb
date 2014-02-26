@@ -53,7 +53,7 @@ public class TableWriter {
     private final Throttle memoryTableWriteThrottle;
 
     private MemoryTable memoryTable;
-    private CommitLogWriter commitLog;
+    private CommitLogWriter commitLogWriter;
 
     public TableWriter(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches, Metrics metrics) {
         this.config = config;
@@ -84,7 +84,7 @@ public class TableWriter {
         Value recordValue = new Value(value);
         Tuple tuple = new Tuple(recordKey, recordValue);
 
-        commitLog.append(tuple, fsync);
+        commitLogWriter.append(tuple, fsync);
         memoryTable.put(tuple);
 
         return new Snapshot(nextSnapshotId);
@@ -93,7 +93,7 @@ public class TableWriter {
     public void close() throws IOException {
         try {
             if (memoryTable != null) {
-                commitLog.close();
+                commitLogWriter.close();
                 writeMemoryTable(memoryTable);
             }
 
@@ -106,13 +106,13 @@ public class TableWriter {
 
     private void rotateMemoryTable() throws IOException {
         if (memoryTable != null) {
-            commitLog.close();
+            commitLogWriter.close();
             writeMemoryTable(memoryTable);
         }
 
         long nextTableId = tables.nextId();
         memoryTable = new MemoryTable(nextTableId);
-        commitLog = CommitLogWriter.open(nextTableId, paths);
+        commitLogWriter = CommitLogWriter.open(nextTableId, paths);
         tables.add(memoryTable);
     }
 
