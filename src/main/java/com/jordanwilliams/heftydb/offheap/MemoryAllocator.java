@@ -58,6 +58,9 @@ public class MemoryAllocator {
         }
     }
 
+    public static MemoryPointer wrap(long address, int size){
+        return new MemoryPointer(address, size, rawDirectBuffer(address, size));
+    }
 
     public static MemoryPointer allocate(int size) {
         if (size < 0) {
@@ -94,6 +97,16 @@ public class MemoryAllocator {
         unsafe.setMemory(pointer.address(), pointer.size(), (byte) 0);
     }
 
+    private static int pageAlignedSize(int memorySize, int pageSize) {
+        int pageCount = memorySize / pageSize;
+
+        if (memorySize % pageSize != 0) {
+            pageCount++;
+        }
+
+        return pageCount * pageSize;
+    }
+
     private static ByteBuffer rawDirectBuffer(long address, int size) {
         try {
             ByteBuffer newBuffer = (ByteBuffer) unsafe.allocateInstance(directByteBufferClass);
@@ -104,15 +117,5 @@ public class MemoryAllocator {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static int pageAlignedSize(int memorySize, int pageSize) {
-        int pageCount = memorySize / pageSize;
-
-        if (memorySize % pageSize != 0) {
-            pageCount++;
-        }
-
-        return pageCount * pageSize;
     }
 }

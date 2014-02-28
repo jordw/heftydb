@@ -16,24 +16,19 @@
 
 package com.jordanwilliams.heftydb.io;
 
-import org.isomorphism.util.TokenBucket;
-import org.isomorphism.util.TokenBuckets;
-
-import java.util.concurrent.TimeUnit;
+import com.google.common.util.concurrent.RateLimiter;
 
 public class Throttle {
 
     public static Throttle MAX = new Throttle(Integer.MAX_VALUE);
 
-    private final TokenBucket throttleBucket;
+    private final RateLimiter rateLimiter;
 
     public Throttle(long maxRatePerSecond) {
-        this.throttleBucket = TokenBuckets.newFixedIntervalRefill(maxRatePerSecond, maxRatePerSecond, 1,
-                TimeUnit.SECONDS);
-        ;
+        this.rateLimiter = RateLimiter.create(maxRatePerSecond);
     }
 
-    public void consume(long usage) {
-        throttleBucket.consume(usage);
+    public void consume(int usage) {
+       rateLimiter.acquire(usage);
     }
 }
