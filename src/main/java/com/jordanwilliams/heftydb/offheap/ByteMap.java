@@ -205,7 +205,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     public ByteMap(MemoryPointer pointer) {
         this.pointer = pointer;
         this.directBuffer = pointer.directBuffer();
-        this.entryCount = pointer.directBuffer().getInt(0);
+        this.entryCount = directBuffer.getInt(0);
         this.entryOffsets = new int[entryCount];
 
         for (int i = 0; i < entryCount; i++) {
@@ -219,7 +219,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     public int floorIndex(Key key) {
         if (pointer.isFree()){
-            throw new IllegalStateException("Memory was aleady freed");
+            throw new IllegalStateException("Memory was already freed");
         }
 
         int low = 0;

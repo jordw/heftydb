@@ -44,5 +44,4 @@ public class MemoryPerformance {
 
         reporter.report();
     }
-
 }
