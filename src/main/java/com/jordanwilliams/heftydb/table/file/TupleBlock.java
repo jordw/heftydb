@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.table.file;
 
 import com.codahale.metrics.Gauge;
-import com.google.common.cache.Weigher;
+import com.googlecode.concurrentlinkedhashmap.Weigher;
 import com.jordanwilliams.heftydb.cache.BlockCache;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
@@ -37,10 +37,10 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
         private final BlockCache<TupleBlock> cache;
 
         public Cache(long maxSize, Metrics metrics) {
-            cache = new BlockCache<TupleBlock>(maxSize, new Weigher<BlockCache.Entry, TupleBlock>() {
+            cache = new BlockCache<TupleBlock>(maxSize, new Weigher<TupleBlock>() {
                 @Override
-                public int weigh(BlockCache.Entry entry, TupleBlock value) {
-                    return value.memory().size();
+                public int weightOf(TupleBlock tuple) {
+                    return tuple.memory().size();
                 }
             });
 

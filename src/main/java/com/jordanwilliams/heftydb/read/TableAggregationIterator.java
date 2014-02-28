@@ -58,14 +58,20 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
 
     @Override
     public boolean hasNext() {
-        refreshSource();
+        tables.readLock();
 
-        boolean hasNext = delegate.hasNext();
-        if (!hasNext) {
-            tables.removeChangeHandler(tableChangeHandler);
+        try {
+            refreshSource();
+
+            boolean hasNext = delegate.hasNext();
+            if (!hasNext) {
+                tables.removeChangeHandler(tableChangeHandler);
+            }
+
+            return delegate.hasNext();
+        } finally {
+            tables.readUnlock();
         }
-
-        return delegate.hasNext();
     }
 
     @Override

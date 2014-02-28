@@ -16,10 +16,9 @@
 
 package com.jordanwilliams.heftydb.cache;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.cache.Weigher;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.EvictionListener;
+import com.googlecode.concurrentlinkedhashmap.Weigher;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -75,27 +74,31 @@ public class BlockCache<T extends Offheap> {
 
     private static final int CONCURRENCY_LEVEL = 64;
 
-    private final com.google.common.cache.Cache<Entry, T> cache;
+    private final ConcurrentLinkedHashMap<Entry, T> cache;
     private final long maxSize;
     private final AtomicLong totalSize = new AtomicLong();
 
-    public BlockCache(long maxSize, Weigher<Entry, T> weigher) {
-        cache = CacheBuilder.newBuilder().concurrencyLevel(CONCURRENCY_LEVEL).weigher(weigher).removalListener(new RemovalListener<Entry, T>() {
-            @Override
-            public void onRemoval(RemovalNotification<Entry, T> removalNotification) {
-                T value = removalNotification.getValue();
-                totalSize.addAndGet(value.memory().size() * -1);
-                value.memory().release();
-            }
-        }).maximumWeight(maxSize).build();
+    public BlockCache(long maxSize, Weigher<T> weigher) {
+        cache = new ConcurrentLinkedHashMap.Builder<Entry, T>().concurrencyLevel(CONCURRENCY_LEVEL).weigher(weigher)
+                .listener(new EvictionListener<Entry, T>() {
+                    @Override
+                    public void onEviction(Entry key, T value) {
+                        totalSize.addAndGet(value.memory().size() * -1);
+                        value.memory().release();
+                    }
+                }).maximumWeightedCapacity(maxSize).build();
         this.maxSize = maxSize;
     }
 
     public T get(long tableId, long offset) {
-        T block = cache.getIfPresent(new Entry(tableId, offset));
+        T block = cache.get((new Entry(tableId, offset)));
 
-        if (block != null){
-            block.memory().retain();
+        if (block == null) {
+            return null;
+        }
+
+        if (!block.memory().retain()) {
+            return null;
         }
 
         return block;
@@ -103,9 +106,17 @@ public class BlockCache<T extends Offheap> {
 
     public void put(long tableId, long offset, T block) {
         Entry entry = new Entry(tableId, offset);
-        cache.invalidate(entry);
-        block.memory().retain();
-        cache.put(entry, block);
+
+        if (!block.memory().retain()){
+            return;
+        }
+
+        T existingBlock = cache.put(entry, block);
+
+        if (existingBlock != null) {
+            existingBlock.memory().release();
+        }
+
         totalSize.addAndGet(block.memory().size());
     }
 
@@ -118,14 +129,18 @@ public class BlockCache<T extends Offheap> {
     }
 
     public void invalidate(long tableId) {
-        for (Entry entry : cache.asMap().keySet()) {
+        for (Entry entry : cache.keySet()) {
             if (entry.tableId() == tableId) {
-                cache.invalidate(entry);
+                T existingBlock = cache.remove(entry);
+
+                if (existingBlock != null) {
+                    existingBlock.memory().release();
+                }
             }
         }
     }
 
     public void clear() {
-        cache.invalidateAll();
+        cache.clear();
     }
 }

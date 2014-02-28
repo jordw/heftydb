@@ -76,7 +76,7 @@ public class FileTablePerformance {
                 new IndexBlock.Cache(16384000, new Metrics(config)), new Metrics(config));
 
         Random random = new Random(System.nanoTime());
-        int iterations = 10 * 1000000;
+        int iterations = 2 * 1000000;
 
         for (int i = 0; i < iterations; i++) {
             Timer.Context watch = readTimer.time();

@@ -19,6 +19,7 @@ package com.jordanwilliams.heftydb.offheap;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.util.Sizes;
+import sun.misc.Unsafe;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.NoSuchElementException;
 
 public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
+    private static final Unsafe unsafe = JVMUnsafe.unsafe;
     private static final int PAGE_SIZE = 1024;
 
     public static class Entry {
@@ -317,22 +319,25 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         }
 
         if (pointer.isFree()){
-            throw new IllegalStateException("Memory was aleady freed");
+            throw new IllegalStateException("Memory was already freed");
         }
 
         int entryOffset = entryOffsets[index];
+        long startAddress = pointer.address();
 
         //Key
-        int keySize = directBuffer.getInt(entryOffset);
+        int keySize = unsafe.getInt(startAddress + entryOffset);
 
         ByteBuffer keyBuffer = ByteBuffer.allocate(keySize);
         int keyOffset = entryOffset + Sizes.INT_SIZE;
+        byte[] keyArray = keyBuffer.array();
+        long keyAddress = startAddress + keyOffset;
 
-        for (int i = keyOffset; i < keyOffset + keySize; i++) {
-            keyBuffer.put(directBuffer.get(i));
+        for (int i = 0; i < keySize; i++) {
+            keyArray[i] = unsafe.getByte(keyAddress++);
         }
 
-        long snapshotId = directBuffer.getLong(keyOffset + keySize);
+        long snapshotId = unsafe.getLong(startAddress + keyOffset + keySize);
 
         keyBuffer.rewind();
 
@@ -341,9 +346,11 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
         int valueSize = directBuffer.getInt(valueOffset);
         ByteBuffer valueBuffer = ByteBuffer.allocate(valueSize);
         valueOffset += Sizes.INT_SIZE;
+        byte[] valueArray = valueBuffer.array();
+        long valueAddress = startAddress + valueOffset;
 
-        for (int i = valueOffset; i < valueOffset + valueSize; i++) {
-            valueBuffer.put(directBuffer.get(i));
+        for (int i = 0; i < valueSize; i++) {
+            valueArray[i] = unsafe.getByte(valueAddress++);
         }
 
         valueBuffer.rewind();
@@ -353,18 +360,20 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
         int entryOffset = entryOffsets[bufferKeyIndex];
+        long startAddress = pointer.address();
 
-        int keySize = directBuffer.getInt(entryOffset);
+        int keySize = unsafe.getInt(startAddress + entryOffset);
         entryOffset += Sizes.INT_SIZE;
 
         int bufferKeyRemaining = keySize;
         int compareKeyRemaining = compareKey.data().remaining();
         int compareCount = Math.min(bufferKeyRemaining, compareKeyRemaining);
+        byte[] compareKeyArray = compareKey.data().array();
 
         //Compare key bytes
         for (int i = 0; i < compareCount; i++) {
-            byte bufferKeyVal = directBuffer.get(entryOffset + i);
-            byte compareKeyVal = compareKey.data().get(i);
+            byte bufferKeyVal = unsafe.getByte(startAddress + entryOffset + i);
+            byte compareKeyVal = compareKeyArray[i];
             bufferKeyRemaining--;
             compareKeyRemaining--;
 
@@ -383,7 +392,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
         //If key bytes are equal, compare snapshot ids
         if (remainingDifference == 0) {
-            long bufferSnapshotId = directBuffer.getLong(entryOffset + compareCount);
+            long bufferSnapshotId = unsafe.getLong(startAddress + entryOffset + compareCount);
             return Long.compare(bufferSnapshotId, compareKey.snapshotId());
         }
 

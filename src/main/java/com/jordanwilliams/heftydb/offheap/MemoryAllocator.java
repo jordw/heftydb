@@ -24,6 +24,7 @@ import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class MemoryAllocator {
 
@@ -113,6 +114,7 @@ public class MemoryAllocator {
             unsafe.putLong(newBuffer, addressOffset, address);
             unsafe.putInt(newBuffer, capacityOffset, size);
             unsafe.putInt(newBuffer, limitOffset, size);
+            newBuffer.order(ByteOrder.nativeOrder());
             return newBuffer;
         } catch (Exception e) {
             throw new RuntimeException(e);

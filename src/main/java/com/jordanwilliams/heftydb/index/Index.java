@@ -35,22 +35,21 @@ public class Index {
 
     private final long tableId;
     private final ImmutableFile indexFile;
-    private final long rootBlockOffset;
-    private final int rootBlockSize;
     private final IndexBlock.Cache cache;
     private final Metrics metrics;
+    private final IndexBlock rootIndexBlock;
 
     private Index(long tableId, ImmutableFile indexFile, IndexBlock.Cache cache, Metrics metrics) throws IOException {
         this.tableId = tableId;
         this.indexFile = indexFile;
         this.cache = cache;
         this.metrics = metrics;
-        this.rootBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
-        this.rootBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
+        long rootBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
+        int rootBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
+        this.rootIndexBlock = readIndexBlock(rootBlockOffset, rootBlockSize);
     }
 
     public IndexRecord get(Key key) throws IOException {
-        IndexBlock rootIndexBlock = getIndexBlock(rootBlockOffset, rootBlockSize);
         IndexRecord currentIndexRecord = rootIndexBlock.get(key);
         int searchLevels = 1;
 
@@ -64,12 +63,11 @@ public class Index {
 
         metrics.histogram("index.searchLevels").update(searchLevels);
 
-        rootIndexBlock.memory().release();
-
         return currentIndexRecord;
     }
 
     public void close() throws IOException {
+        rootIndexBlock.memory().release();
         indexFile.close();
         cache.clear();
     }
@@ -81,8 +79,6 @@ public class Index {
         if (indexBlock == null) {
             indexBlock = readIndexBlock(blockOffset, blockSize);
             cache.put(tableId, blockOffset, indexBlock);
-        } else {
-            indexBlock.memory().retain();
         }
 
         return indexBlock;
@@ -96,7 +92,6 @@ public class Index {
             indexFile.read(indexBuffer, blockOffset);
             indexBuffer.rewind();
             IndexBlock readBlock = new IndexBlock(new ByteMap(indexPointer));
-            readBlock.memory().retain();
             return readBlock;
         } catch (IOException e) {
             indexPointer.release();

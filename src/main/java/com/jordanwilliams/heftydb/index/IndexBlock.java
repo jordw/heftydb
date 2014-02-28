@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.index;
 
 import com.codahale.metrics.Gauge;
-import com.google.common.cache.Weigher;
+import com.googlecode.concurrentlinkedhashmap.Weigher;
 import com.jordanwilliams.heftydb.cache.BlockCache;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Value;
@@ -39,10 +39,10 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         private final BlockCache<IndexBlock> cache;
 
         public Cache(long maxSize, Metrics metrics) {
-            cache = new BlockCache<IndexBlock>(maxSize, new Weigher<BlockCache.Entry, IndexBlock>() {
+            cache = new BlockCache<IndexBlock>(maxSize, new Weigher<IndexBlock>() {
                 @Override
-                public int weigh(BlockCache.Entry entry, IndexBlock value) {
-                    return value.memory().size();
+                public int weightOf(IndexBlock indexRecord) {
+                    return indexRecord.memory().size();
                 }
             });
 
