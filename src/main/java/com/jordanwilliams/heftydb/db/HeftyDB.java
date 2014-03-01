@@ -16,18 +16,19 @@
 
 package com.jordanwilliams.heftydb.db;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import com.jordanwilliams.heftydb.read.TableReader;
-import com.jordanwilliams.heftydb.write.TableWriter;
 import com.jordanwilliams.heftydb.compact.Compactor;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.Metrics;
+import com.jordanwilliams.heftydb.read.TableReader;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
+import com.jordanwilliams.heftydb.write.TableWriter;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -45,7 +46,7 @@ public class HeftyDB implements DB {
 
         @Override
         public boolean hasNext() {
-            Timer.Context watch = metrics.timer("scan").time();
+            Timer.Context watch = scanTimer.time();
             boolean hasNext = delegate.hasNext();
             watch.stop();
             return hasNext;
@@ -54,7 +55,7 @@ public class HeftyDB implements DB {
         @Override
         public Record next() {
             Record record = delegate.next();
-            metrics.meter("scan.rate").mark(record.key().capacity() + record.value().capacity());
+            scanRate.mark(record.key().capacity() + record.value().capacity());
             return record;
         }
 
@@ -75,12 +76,26 @@ public class HeftyDB implements DB {
     private final Snapshots snapshots;
     private final Metrics metrics;
 
+    private final Timer writeTimer;
+    private final Timer readTimer;
+    private final Timer scanTimer;
+    private final Meter writeRate;
+    private final Meter readRate;
+    private final Meter scanRate;
+
     private HeftyDB(Config config, Paths paths, Tables tables, Snapshots snapshots, Caches caches, Metrics metrics) {
         this.snapshots = snapshots;
         this.tableWriter = new TableWriter(config, paths, tables, snapshots, caches, metrics);
         this.tableReader = new TableReader(tables, metrics);
         this.compactor = new Compactor(config, paths, tables, caches, config.compactionStrategy(), metrics);
         this.metrics = metrics;
+
+        this.writeTimer = metrics.timer("write");
+        this.readTimer = metrics.timer("read");
+        this.scanTimer = metrics.timer("scan");
+        this.writeRate = metrics.meter("write.rate");
+        this.readRate = metrics.meter("read.rate");
+        this.scanRate = metrics.meter("scan.rate");
     }
 
     @Override
@@ -143,19 +158,19 @@ public class HeftyDB implements DB {
     }
 
     private Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {
-        Timer.Context watch = metrics.timer("write").time();
+        Timer.Context watch = writeTimer.time();
         Snapshot snapshot = tableWriter.write(key, value, fsync);
         watch.stop();
-        metrics.meter("write.rate").mark(key.capacity() + value.capacity());
+        writeRate.mark(key.capacity() + value.capacity());
         return snapshot;
     }
 
     private Record read(ByteBuffer key, long snapshotId) {
-        Timer.Context watch = metrics.timer("read").time();
+        Timer.Context watch = readTimer.time();
         Tuple tuple = tableReader.get(new Key(key, snapshotId));
         watch.stop();
         if (tuple != null) {
-            metrics.meter("read.rate").mark(tuple.size());
+           readRate.mark(tuple.size());
         }
         return tuple == null ? null : new Record(tuple);
     }

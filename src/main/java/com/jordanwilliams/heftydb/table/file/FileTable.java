@@ -23,6 +23,7 @@ import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
 import com.jordanwilliams.heftydb.io.ImmutableChannelFile;
 import com.jordanwilliams.heftydb.io.ImmutableFile;
+import com.jordanwilliams.heftydb.metrics.CacheHitGauge;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
@@ -233,6 +234,8 @@ public class FileTable implements Table {
     private final ImmutableFile tableFile;
     private final Metrics metrics;
 
+    private final CacheHitGauge tableCacheHitRate;
+
     private FileTable(long tableId, Index index, TableBloomFilter tableBloomFilter, ImmutableFile tableFile,
                       TableTrailer trailer, TupleBlock.Cache recordCache, Metrics metrics) throws IOException {
         this.tableId = tableId;
@@ -243,6 +246,8 @@ public class FileTable implements Table {
         this.trailer = trailer;
         this.metrics = metrics;
         this.fileSize = tableFile.size();
+
+        this.tableCacheHitRate = metrics.hitGauge("table.cacheHitRate");
     }
 
     @Override
@@ -393,7 +398,7 @@ public class FileTable implements Table {
 
     private TupleBlock getTupleBlock(long offset, int size) throws IOException {
         TupleBlock tupleBlock = recordCache.get(tableId, offset);
-        metrics.hitGauge("table.cacheHitRate").sample(tupleBlock != null);
+        tableCacheHitRate.sample(tupleBlock != null);
 
         if (tupleBlock == null) {
             tupleBlock = readTupleBlock(offset, size);

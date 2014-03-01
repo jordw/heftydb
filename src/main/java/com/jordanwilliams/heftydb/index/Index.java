@@ -16,9 +16,11 @@
 
 package com.jordanwilliams.heftydb.index;
 
+import com.codahale.metrics.Histogram;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.io.ImmutableChannelFile;
 import com.jordanwilliams.heftydb.io.ImmutableFile;
+import com.jordanwilliams.heftydb.metrics.CacheHitGauge;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.offheap.ByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
@@ -39,6 +41,9 @@ public class Index {
     private final Metrics metrics;
     private final IndexBlock rootIndexBlock;
 
+    private final Histogram indexSearchLevels;
+    private final CacheHitGauge indexCacheHitRate;
+
     private Index(long tableId, ImmutableFile indexFile, IndexBlock.Cache cache, Metrics metrics) throws IOException {
         this.tableId = tableId;
         this.indexFile = indexFile;
@@ -47,6 +52,9 @@ public class Index {
         long rootBlockOffset = indexFile.readLong(indexFile.size() - ROOT_INDEX_BLOCK_OFFSET);
         int rootBlockSize = indexFile.readInt(indexFile.size() - ROOT_INDEX_BLOCK_SIZE_OFFSET);
         this.rootIndexBlock = readIndexBlock(rootBlockOffset, rootBlockSize);
+
+        this.indexSearchLevels = metrics.histogram("index.searchLevels");
+        this.indexCacheHitRate = metrics.hitGauge("index.cacheHitRate");
     }
 
     public IndexRecord get(Key key) throws IOException {
@@ -61,7 +69,7 @@ public class Index {
             searchLevels++;
         }
 
-        metrics.histogram("index.searchLevels").update(searchLevels);
+        indexSearchLevels.update(searchLevels);
 
         return currentIndexRecord;
     }
@@ -74,7 +82,7 @@ public class Index {
 
     private IndexBlock getIndexBlock(long blockOffset, int blockSize) throws IOException {
         IndexBlock indexBlock = cache.get(tableId, blockOffset);
-        metrics.hitGauge("index.cacheHitRate").sample(indexBlock != null);
+        indexCacheHitRate.sample(indexBlock != null);
 
         if (indexBlock == null) {
             indexBlock = readIndexBlock(blockOffset, blockSize);

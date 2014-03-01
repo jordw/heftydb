@@ -16,8 +16,10 @@
 
 package com.jordanwilliams.heftydb.read;
 
+import com.codahale.metrics.Histogram;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
+import com.jordanwilliams.heftydb.metrics.CacheHitGauge;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
@@ -61,9 +63,17 @@ public class TableReader implements Iterable<Tuple> {
     private final Tables tables;
     private final Metrics metrics;
 
+    private final CacheHitGauge bloomFilterFalsePositiveRate;
+    private final Histogram tablesConsultedHistogram;
+    private final CacheHitGauge recordNotFoundRate;
+
     public TableReader(Tables tables, Metrics metrics) {
         this.tables = tables;
         this.metrics = metrics;
+
+        this.bloomFilterFalsePositiveRate = metrics.hitGauge("read.bloomFilterFalsePositiveRate");
+        this.tablesConsultedHistogram = metrics.histogram("read.tablesConsulted");
+        this.recordNotFoundRate = metrics.hitGauge("read.recordNotFoundRate");
     }
 
     public Tuple get(Key key) {
@@ -79,7 +89,7 @@ public class TableReader implements Iterable<Tuple> {
                     Tuple tableTuple = table.get(key);
                     tablesConsulted++;
 
-                    metrics.hitGauge("read.bloomFilterFalsePositiveRate").sample(tableTuple == null);
+                    bloomFilterFalsePositiveRate.sample(tableTuple == null);
 
                     if (tableTuple != null) {
                         if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
@@ -92,8 +102,8 @@ public class TableReader implements Iterable<Tuple> {
             tables.readUnlock();
         }
 
-        metrics.histogram("read.tablesConsulted").update(tablesConsulted);
-        metrics.hitGauge("read.recordNotFoundRate").sample(closestTuple == null);
+        tablesConsultedHistogram.update(tablesConsulted);
+        recordNotFoundRate.sample(closestTuple == null);
 
         return closestTuple;
     }
