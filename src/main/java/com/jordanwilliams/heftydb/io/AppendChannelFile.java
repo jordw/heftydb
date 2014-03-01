@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.io;
 
+import com.jordanwilliams.heftydb.offheap.JVMUnsafe;
 import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -29,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class AppendChannelFile implements AppendFile {
 
-    private static final int DEFAULT_APPEND_BUFFER_SIZE = 8192;
+    private static final int DEFAULT_APPEND_BUFFER_SIZE = JVMUnsafe.unsafe.pageSize();
 
     private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {
         @Override

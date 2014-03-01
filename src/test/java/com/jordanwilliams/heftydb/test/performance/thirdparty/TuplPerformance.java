@@ -34,7 +34,7 @@ import java.util.Random;
 
 public class TuplPerformance {
 
-    private static final int RECORD_COUNT = 5 * 1000000;
+    private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -77,7 +77,7 @@ public class TuplPerformance {
         Timer readTimer = metrics.timer("reads");
 
         //Read
-        for (int i = 0; i < RECORD_COUNT; i++) {
+        for (int i = 0; i < RECORD_COUNT * 5; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
             testIndex.load(null, key.getBytes());

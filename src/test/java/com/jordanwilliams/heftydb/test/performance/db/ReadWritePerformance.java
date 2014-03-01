@@ -34,7 +34,7 @@ import java.util.Random;
 
 public class ReadWritePerformance {
 
-    private static final int RECORD_COUNT = 1 * 1000000;
+    private static final int RECORD_COUNT = 2 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -49,8 +49,8 @@ public class ReadWritePerformance {
                 .memoryTableSize(8192000)
                 .tableCacheSize(512000000)
                 .indexCacheSize(64000000)
-                .tableBlockSize(4096)
-                .indexBlockSize(32768)
+                .tableBlockSize(32768)
+                .indexBlockSize(65536)
                 .maxMemoryTableWriteRate(Integer.MAX_VALUE)
                 .build();
 
@@ -81,7 +81,7 @@ public class ReadWritePerformance {
         db.compact().get();
 
         //Read
-        for (int i = 0; i < RECORD_COUNT * 100; i++) {
+        for (int i = 0; i < RECORD_COUNT * 5; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
             db.get(ByteBuffers.fromString(key));
