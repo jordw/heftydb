@@ -26,8 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 public class TupleGenerator {
 
@@ -36,16 +34,6 @@ public class TupleGenerator {
     }
 
     private final KeyValueGenerator testDataGenerator = new KeyValueGenerator();
-
-    public static ConcurrentNavigableMap<Key, Tuple> toMap(List<Tuple> tuples) {
-        ConcurrentNavigableMap<Key, Tuple> recordMap = new ConcurrentSkipListMap<Key, Tuple>();
-
-        for (Tuple tuple : tuples) {
-            recordMap.put(tuple.key(), tuple);
-        }
-
-        return recordMap;
-    }
 
     public List<Tuple> testRecords(int startingSnapshotId, int recordCount, int keyReuse, Function<Integer> keySize,
                                    Function<Integer> valueSize) {

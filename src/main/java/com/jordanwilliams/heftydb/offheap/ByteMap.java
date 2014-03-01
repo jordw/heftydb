@@ -202,17 +202,11 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private final MemoryPointer pointer;
     private final ByteBuffer directBuffer;
     private final int entryCount;
-    private final int[] entryOffsets;
 
     public ByteMap(MemoryPointer pointer) {
         this.pointer = pointer;
         this.directBuffer = pointer.directBuffer();
-        this.entryCount = directBuffer.getInt(0);
-        this.entryOffsets = new int[entryCount];
-
-        for (int i = 0; i < entryCount; i++) {
-            entryOffsets[i] = entryOffset(i);
-        }
+        this.entryCount = unsafe.getInt(pointer.address());
     }
 
     public Entry get(int index) {
@@ -322,7 +316,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             throw new IllegalStateException("Memory was already freed");
         }
 
-        int entryOffset = entryOffsets[index];
+        int entryOffset = entryOffset(index);
         long startAddress = pointer.address();
 
         //Key
@@ -359,7 +353,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     private int compareKeys(Key compareKey, int bufferKeyIndex) {
-        int entryOffset = entryOffsets[bufferKeyIndex];
+        int entryOffset = entryOffset(bufferKeyIndex);
         long startAddress = pointer.address();
 
         int keySize = unsafe.getInt(startAddress + entryOffset);
@@ -400,12 +394,6 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     }
 
     private int entryOffset(int index) {
-        return directBuffer.getInt(pointerOffset(index));
-    }
-
-    private static int pointerOffset(int pointerIndex) {
-        int pointerOffset = Sizes.INT_SIZE;
-        pointerOffset += pointerIndex * Sizes.INT_SIZE;
-        return pointerOffset;
+        return unsafe.getInt(pointer.address() + (Sizes.INT_SIZE + (index * Sizes.INT_SIZE)));
     }
 }

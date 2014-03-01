@@ -66,9 +66,7 @@ public class Key implements Comparable<Key> {
 
     @Override
     public int hashCode() {
-        int result = data != null ? data.hashCode() : 0;
-        result = 31 * result + (int) (snapshotId ^ (snapshotId >>> 32));
-        return result;
+        return data != null ? data.hashCode() : 0;
     }
 
     @Override

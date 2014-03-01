@@ -34,7 +34,7 @@ import java.util.Random;
 
 public class ReadWritePerformance {
 
-    private static final int RECORD_COUNT = 5 * 1000000;
+    private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -74,10 +74,14 @@ public class ReadWritePerformance {
         reporter = PerformanceHelper.consoleReporter(metrics);
         Timer readTimer = metrics.register("reads", new Timer(new ExponentiallyDecayingReservoir()));
 
+        db.close();
+
+        db = HeftyDB.open(config);
+
         db.compact().get();
 
         //Read
-        for (int i = 0; i < RECORD_COUNT; i++) {
+        for (int i = 0; i < RECORD_COUNT * 100; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
             db.get(ByteBuffers.fromString(key));
@@ -91,5 +95,7 @@ public class ReadWritePerformance {
         db.close();
 
         TestFileHelper.cleanUpTestFiles();
+
+        System.exit(0);
     }
 }
