@@ -27,15 +27,15 @@ public class Config {
 
         //Default config values
         private CompactionStrategy compactionStrategy = CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY;
-        private int memoryTableSize = 4096000;
+        private int memoryTableSize = 8192000;
         private int tableBlockSize = 16384;
-        private int indexBlockSize = 32768;
+        private int indexBlockSize = 65536;
         private int tableWriterThreads = 4;
         private int tableCompactionThreads = 8;
         private long tableCacheSize = 128000000;
         private long indexCacheSize = 32000000;
-        private long maxCompactionRate = 8192000;
-        private long maxMemoryTableWriteRate = 8192000;
+        private long maxCompactionRate = 16384000;
+        private long maxWriteRate = 32768000;
         private boolean printMetrics = false;
         private Path tableDirectory;
         private Path logDirectory;
@@ -106,15 +106,15 @@ public class Config {
             return this;
         }
 
-        public Builder maxMemoryTableWriteRate(long maxMemoryTableWriteRate) {
-            this.maxMemoryTableWriteRate = maxMemoryTableWriteRate;
+        public Builder maxWriteRate(long maxWriteRate) {
+            this.maxWriteRate = maxWriteRate;
             return this;
         }
 
         public Config build() {
             return new Config(compactionStrategy, memoryTableSize, tableBlockSize, indexBlockSize,
                     tableWriterThreads, tableCompactionThreads, tableCacheSize, indexCacheSize, printMetrics,
-                    tableDirectory, logDirectory, maxCompactionRate, maxMemoryTableWriteRate);
+                    tableDirectory, logDirectory, maxCompactionRate, maxWriteRate);
         }
     }
 
@@ -130,12 +130,12 @@ public class Config {
     private final Path tableDirectory;
     private final Path logDirectory;
     private final long maxCompactionRate;
-    private final long maxMemoryTableWriteRate;
+    private final long maxWriteRate;
 
     public Config(CompactionStrategy compactionStrategy, int memoryTableSize, int tableBlockSize, int indexBlockSize,
                   int tableWriterThreads, int tableCompactionThreads, long tableCacheSize, long indexCacheSize,
                   boolean printMetrics, Path tableDirectory, Path logDirectory, long maxCompactionRate,
-                  long maxMemoryTableWriteRate) {
+                  long maxWriteRate) {
         this.compactionStrategy = compactionStrategy;
         this.memoryTableSize = memoryTableSize;
         this.tableBlockSize = tableBlockSize;
@@ -148,7 +148,7 @@ public class Config {
         this.tableDirectory = tableDirectory;
         this.logDirectory = logDirectory;
         this.maxCompactionRate = maxCompactionRate;
-        this.maxMemoryTableWriteRate = maxMemoryTableWriteRate;
+        this.maxWriteRate = maxWriteRate;
     }
 
     public CompactionStrategy compactionStrategy() {
@@ -199,8 +199,8 @@ public class Config {
         return maxCompactionRate;
     }
 
-    public long maxMemoryTableWriteRate() {
-        return maxMemoryTableWriteRate;
+    public long maxWriteRate() {
+        return maxWriteRate;
     }
 
     @Override
@@ -213,7 +213,7 @@ public class Config {
         if (indexBlockSize != config.indexBlockSize) return false;
         if (indexCacheSize != config.indexCacheSize) return false;
         if (maxCompactionRate != config.maxCompactionRate) return false;
-        if (maxMemoryTableWriteRate != config.maxMemoryTableWriteRate) return false;
+        if (maxWriteRate != config.maxWriteRate) return false;
         if (memoryTableSize != config.memoryTableSize) return false;
         if (printMetrics != config.printMetrics) return false;
         if (tableBlockSize != config.tableBlockSize) return false;
@@ -245,7 +245,7 @@ public class Config {
         result = 31 * result + (tableDirectory != null ? tableDirectory.hashCode() : 0);
         result = 31 * result + (logDirectory != null ? logDirectory.hashCode() : 0);
         result = 31 * result + (int) (maxCompactionRate ^ (maxCompactionRate >>> 32));
-        result = 31 * result + (int) (maxMemoryTableWriteRate ^ (maxMemoryTableWriteRate >>> 32));
+        result = 31 * result + (int) (maxWriteRate ^ (maxWriteRate >>> 32));
         return result;
     }
 
@@ -264,7 +264,7 @@ public class Config {
                 ", tableDirectory=" + tableDirectory +
                 ", logDirectory=" + logDirectory +
                 ", maxCompactionRate=" + maxCompactionRate +
-                ", maxMemoryTableWriteRate=" + maxMemoryTableWriteRate +
+                ", maxWriteRate=" + maxWriteRate +
                 '}';
     }
 }

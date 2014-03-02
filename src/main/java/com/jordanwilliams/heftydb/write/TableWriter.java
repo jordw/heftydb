@@ -50,7 +50,7 @@ public class TableWriter {
     private final Paths paths;
     private final Caches caches;
     private final Metrics metrics;
-    private final Throttle memoryTableWriteThrottle;
+    private final Throttle writeThrottle;
 
     private MemoryTable memoryTable;
     private CommitLogWriter commitLogWriter;
@@ -62,7 +62,7 @@ public class TableWriter {
         this.snapshots = snapshots;
         this.caches = caches;
         this.metrics = metrics;
-        this.memoryTableWriteThrottle = new Throttle(config.maxMemoryTableWriteRate());
+        this.writeThrottle = new Throttle(config.maxWriteRate());
 
         this.tableExecutor = new ThreadPoolExecutor(config.tableWriterThreads(), config.tableWriterThreads(),
                 Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableWriterThreads()),
@@ -74,6 +74,8 @@ public class TableWriter {
         if (memoryTable == null || memoryTable.size() >= config.memoryTableSize()) {
             rotateMemoryTable();
         }
+
+        writeThrottle.consume(key.capacity() + value.capacity());
 
         long nextSnapshotId = snapshots.nextId();
 
@@ -119,7 +121,7 @@ public class TableWriter {
     private void writeMemoryTable(final Table tableToWrite) {
         final FileTableWriter.Task task = new FileTableWriter.Task.Builder().tableId(tableToWrite.id()).level(1)
                 .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount
-                        (tableToWrite.tupleCount()).throttle(memoryTableWriteThrottle).callback(new FileTableWriter
+                        (tableToWrite.tupleCount()).throttle(Throttle.MAX).callback(new FileTableWriter
                         .Task.Callback() {
             @Override
             public void finish() {

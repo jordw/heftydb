@@ -45,8 +45,8 @@ public class ReadWritePerformance {
 
         Config config = new Config.Builder().directory(TestFileHelper.TEMP_PATH).compactionStrategy
                 (CompactionStrategies.FULL_COMPACTION_STRATEGY).memoryTableSize(32768000).tableCacheSize(3276800)
-                .indexCacheSize(64000000).tableBlockSize(32768).indexBlockSize(65000).maxMemoryTableWriteRate(Integer
-                        .MAX_VALUE).build();
+                .indexCacheSize(64000000).tableBlockSize(32768).indexBlockSize(65000).maxWriteRate(Integer.MAX_VALUE)
+                .build();
 
         MetricRegistry metrics = new MetricRegistry();
         ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);

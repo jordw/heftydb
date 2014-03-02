@@ -47,7 +47,7 @@ public class WritePerformance {
                 .tableBlockSize(4096)
                 .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
                 .indexBlockSize(65000)
-                .maxMemoryTableWriteRate(Integer.MAX_VALUE)
+                .maxWriteRate(Integer.MAX_VALUE)
                 .build();
 
         //Write

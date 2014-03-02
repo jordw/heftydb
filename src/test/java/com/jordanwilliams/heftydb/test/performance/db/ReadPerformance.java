@@ -45,7 +45,7 @@ public class ReadPerformance {
                 .indexCacheSize(64000000)
                 .tableBlockSize(32768)
                 .indexBlockSize(65000)
-                .maxMemoryTableWriteRate(Integer.MAX_VALUE)
+                .maxWriteRate(Integer.MAX_VALUE)
                 .build();
 
         MetricRegistry metrics = new MetricRegistry();
