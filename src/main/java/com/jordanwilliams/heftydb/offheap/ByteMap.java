@@ -240,7 +240,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
 
     public int ceilingIndex(Key key) {
         if (pointer.isFree()){
-            throw new IllegalStateException("Memory was aleady freed");
+            throw new IllegalStateException("Memory was already freed");
         }
 
         int low = 0;

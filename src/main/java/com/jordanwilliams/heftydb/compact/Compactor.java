@@ -165,6 +165,13 @@ public class Compactor {
                 logger.info("Starting compaction " + id);
 
                 CompactionPlan compactionPlan = compactionPlanner.planCompaction();
+
+                if (compactionPlan == null){
+                    logger.info("No compaction tasks present " + id);
+                    logger.info("Finishing compaction " + id);
+                    return;
+                }
+
                 List<Future<?>> taskFutures = new ArrayList<Future<?>>();
                 Throttle compactionThrottle = force ? Throttle.MAX : new Throttle(config.maxCompactionRate());
 

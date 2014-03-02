@@ -403,8 +403,6 @@ public class FileTable implements Table {
         if (tupleBlock == null) {
             tupleBlock = readTupleBlock(offset, size);
             recordCache.put(tableId, offset, tupleBlock);
-        } else {
-            tupleBlock.memory().retain();
         }
 
         return tupleBlock;
@@ -425,9 +423,7 @@ public class FileTable implements Table {
             ByteBuffer recordBlockBuffer = recordBlockPointer.directBuffer();
             tableFile.read(recordBlockBuffer, offset);
             recordBlockBuffer.rewind();
-            TupleBlock readBlock = new TupleBlock(new ByteMap(recordBlockPointer));
-            readBlock.memory().retain();
-            return readBlock;
+            return new TupleBlock(new ByteMap(recordBlockPointer));
         } catch (IOException e) {
             recordBlockPointer.release();
             throw e;

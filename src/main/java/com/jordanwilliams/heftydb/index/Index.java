@@ -99,8 +99,7 @@ public class Index {
             ByteBuffer indexBuffer = indexPointer.directBuffer();
             indexFile.read(indexBuffer, blockOffset);
             indexBuffer.rewind();
-            IndexBlock readBlock = new IndexBlock(new ByteMap(indexPointer));
-            return readBlock;
+            return new IndexBlock(new ByteMap(indexPointer));
         } catch (IOException e) {
             indexPointer.release();
             throw e;

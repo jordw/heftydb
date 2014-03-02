@@ -34,7 +34,7 @@ import java.util.Random;
 
 public class ReadWritePerformance {
 
-    private static final int RECORD_COUNT = 2 * 1000000;
+    private static final int RECORD_COUNT = 20 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -43,22 +43,17 @@ public class ReadWritePerformance {
         Value value = new Value(keyValueGenerator.testValue(100));
         Random random = new Random(System.nanoTime());
 
-        Config config = new Config.Builder()
-                .directory(TestFileHelper.TEMP_PATH)
-                .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
-                .memoryTableSize(8192000)
-                .tableCacheSize(512000000)
-                .indexCacheSize(64000000)
-                .tableBlockSize(32768)
-                .indexBlockSize(65536)
-                .maxMemoryTableWriteRate(Integer.MAX_VALUE)
-                .build();
+        Config config = new Config.Builder().directory(TestFileHelper.TEMP_PATH).compactionStrategy
+                (CompactionStrategies.FULL_COMPACTION_STRATEGY).memoryTableSize(32768000).tableCacheSize(3276800)
+                .indexCacheSize(64000000).tableBlockSize(32768).indexBlockSize(65000).maxMemoryTableWriteRate(Integer
+                        .MAX_VALUE).build();
+
+        MetricRegistry metrics = new MetricRegistry();
+        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
 
         //Write
         DB db = HeftyDB.open(config);
 
-        MetricRegistry metrics = new MetricRegistry();
-        ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);
         Timer writeTimer = metrics.register("writes", new Timer(new ExponentiallyDecayingReservoir()));
 
         for (int i = 0; i < RECORD_COUNT; i++) {
@@ -70,18 +65,19 @@ public class ReadWritePerformance {
 
         reporter.report();
 
+
+        db.close();
+
         metrics = new MetricRegistry();
         reporter = PerformanceHelper.consoleReporter(metrics);
         Timer readTimer = metrics.register("reads", new Timer(new ExponentiallyDecayingReservoir()));
-
-        db.close();
 
         db = HeftyDB.open(config);
 
         db.compact().get();
 
         //Read
-        for (int i = 0; i < RECORD_COUNT * 5; i++) {
+        for (int i = 0; i < RECORD_COUNT; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
             db.get(ByteBuffers.fromString(key));
