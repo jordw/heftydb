@@ -44,6 +44,9 @@ try {
     //Read a key at a particular snapshot
     Record record = testDB.get(someByteBufferKey, snapshot);
 
+    //Delete a key
+    Snapshot deleteSnapshot = testDB.delete(someByteBufferKey);
+
     //Get an ascending iterator of keys greater than or equal
     //to the provided key at the provided snapshot
     CloseableIterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
