@@ -32,19 +32,16 @@ import java.util.Random;
 
 public class ReadPerformance {
 
-    private static final int RECORD_COUNT = 20 * 1000000;
+    private static final int RECORD_COUNT = 10 * 1000000;
 
     public static void main(String[] args) throws Exception {
         Random random = new Random(System.nanoTime());
 
         Config config = new Config.Builder()
                 .directory(TestFileHelper.TEMP_PATH)
-                .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
-                .memoryTableSize(32768000)
-                .tableCacheSize(1024000000)
+                .compactionStrategy(CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY)
+                .tableCacheSize(512000000)
                 .indexCacheSize(64000000)
-                .tableBlockSize(32768)
-                .indexBlockSize(65000)
                 .maxWriteRate(Integer.MAX_VALUE)
                 .build();
 
@@ -65,9 +62,7 @@ public class ReadPerformance {
         }
 
         reporter.report();
-
         db.logMetrics();
-
         db.close();
 
         System.exit(0);

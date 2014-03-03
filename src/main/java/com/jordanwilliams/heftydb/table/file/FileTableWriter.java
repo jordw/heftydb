@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
@@ -146,6 +147,8 @@ public class FileTableWriter {
                 }
 
                 logger.info("Finishing table writer " + id);
+            } catch (ClosedByInterruptException e){
+                logger.info("File table was only partially written " + tableId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

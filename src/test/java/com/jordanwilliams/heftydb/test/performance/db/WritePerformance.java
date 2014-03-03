@@ -31,7 +31,7 @@ import com.jordanwilliams.heftydb.util.ByteBuffers;
 
 public class WritePerformance {
 
-    private static final int RECORD_COUNT = 20 * 1000000;
+    private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
@@ -41,12 +41,12 @@ public class WritePerformance {
 
         Config config = new Config.Builder()
                 .directory(TestFileHelper.TEMP_PATH)
-                .memoryTableSize(32768000)
+                .memoryTableSize(16384000)
                 .tableCacheSize(512000000)
                 .indexCacheSize(64000000)
-                .tableBlockSize(4096)
-                .compactionStrategy(CompactionStrategies.FULL_COMPACTION_STRATEGY)
-                .indexBlockSize(65000)
+                .tableBlockSize(16384)
+                .compactionStrategy(CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY)
+                .indexBlockSize(32768)
                 .maxWriteRate(Integer.MAX_VALUE)
                 .build();
 

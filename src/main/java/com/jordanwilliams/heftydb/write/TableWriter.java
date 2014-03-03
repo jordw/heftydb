@@ -81,12 +81,12 @@ public class TableWriter {
 
         key.rewind();
 
-        if (value != null){
+        if (value != null) {
             value.rewind();
         }
 
         Key recordKey = new Key(key, nextSnapshotId);
-        Value recordValue = value == null? Value.TOMBSTONE_VALUE : new Value(value);
+        Value recordValue = value == null ? Value.TOMBSTONE_VALUE : new Value(value);
         Tuple tuple = new Tuple(recordKey, recordValue);
 
         commitLogWriter.append(tuple, fsync);
@@ -96,17 +96,12 @@ public class TableWriter {
     }
 
     public void close() throws IOException {
-        try {
-            if (memoryTable != null) {
-                commitLogWriter.close();
-                writeMemoryTable(memoryTable);
-            }
-
-            tableExecutor.shutdown();
-            tableExecutor.awaitTermination(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        if (memoryTable != null) {
+            commitLogWriter.close();
+            writeMemoryTable(memoryTable);
         }
+
+        tableExecutor.shutdownNow();
     }
 
     private void rotateMemoryTable() throws IOException {
@@ -124,8 +119,8 @@ public class TableWriter {
     private void writeMemoryTable(final Table tableToWrite) {
         final FileTableWriter.Task task = new FileTableWriter.Task.Builder().tableId(tableToWrite.id()).level(1)
                 .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount
-                        (tableToWrite.tupleCount()).throttle(Throttle.MAX).callback(new FileTableWriter
-                        .Task.Callback() {
+                        (tableToWrite.tupleCount()).throttle(Throttle.MAX).callback(new FileTableWriter.Task.Callback
+                        () {
             @Override
             public void finish() {
                 try {

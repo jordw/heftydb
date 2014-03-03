@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -90,6 +91,8 @@ public class Compactor {
                 removeObsoleteTables(compactionTask.tables());
 
                 watch.stop();
+            } catch (ClosedByInterruptException e){
+                logger.info("Compaction terminated without finishing " + compactionId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -201,6 +204,7 @@ public class Compactor {
     }
 
     public void close() throws IOException {
+        compactionExecutor.shutdownNow();
         compactionTaskExecutor.shutdownNow();
     }
 
