@@ -18,12 +18,12 @@ package com.jordanwilliams.heftydb.compact;
 
 import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.jordanwilliams.heftydb.read.MergingIterator;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.metrics.Metrics;
+import com.jordanwilliams.heftydb.read.MergingIterator;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
 import com.jordanwilliams.heftydb.state.Tables;
@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.channels.ClosedByInterruptException;
+import java.nio.channels.ClosedChannelException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -91,7 +91,7 @@ public class Compactor {
                 removeObsoleteTables(compactionTask.tables());
 
                 watch.stop();
-            } catch (ClosedByInterruptException e){
+            } catch (ClosedChannelException e){
                 logger.info("Compaction terminated without finishing " + compactionId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
