@@ -75,15 +75,18 @@ public class TableWriter {
             rotateMemoryTable();
         }
 
-        writeThrottle.consume(key.capacity() + value.capacity());
-
+        int valueCapacity = value == null ? 0 : value.capacity();
+        writeThrottle.consume(key.capacity() + valueCapacity);
         long nextSnapshotId = snapshots.nextId();
 
         key.rewind();
-        value.rewind();
+
+        if (value != null){
+            value.rewind();
+        }
 
         Key recordKey = new Key(key, nextSnapshotId);
-        Value recordValue = new Value(value);
+        Value recordValue = value == null? Value.TOMBSTONE_VALUE : new Value(value);
         Tuple tuple = new Tuple(recordKey, recordValue);
 
         commitLogWriter.append(tuple, fsync);

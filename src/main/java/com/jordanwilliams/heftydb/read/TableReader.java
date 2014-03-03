@@ -86,16 +86,16 @@ public class TableReader implements Iterable<Tuple> {
         try {
             for (Table table : tables) {
                 if (table.mightContain(key)) {
-//                    Tuple tableTuple = table.get(key);
-//                    tablesConsulted++;
-//
-//                    bloomFilterFalsePositiveRate.sample(tableTuple == null);
-//
-//                    if (tableTuple != null) {
-//                        if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
-//                            closestTuple = tableTuple;
-//                        }
-//                    }
+                    Tuple tableTuple = table.get(key);
+                    tablesConsulted++;
+
+                    bloomFilterFalsePositiveRate.sample(tableTuple == null);
+
+                    if (tableTuple != null) {
+                        if (closestTuple == null || tableTuple.key().snapshotId() > closestTuple.key().snapshotId()) {
+                            closestTuple = tableTuple;
+                        }
+                    }
                 }
             }
         } finally {

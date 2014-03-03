@@ -78,7 +78,7 @@ public abstract class ParameterizedIntegrationTest {
                     }, new TupleGenerator.Function<Integer>() {
                         @Override
                         public Integer apply() {
-                            return random.nextInt(255);
+                            return random.nextInt(255) + 1;
                         }
                     }
             );

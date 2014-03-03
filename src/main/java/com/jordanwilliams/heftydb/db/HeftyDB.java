@@ -119,6 +119,11 @@ public class HeftyDB implements DB {
     }
 
     @Override
+    public Snapshot delete(ByteBuffer key) throws IOException {
+        return write(key, null, false);
+    }
+
+    @Override
     public CloseableIterator<Record> ascendingIterator(Snapshot snapshot) throws IOException {
         return new InstrumentedScanIterator(new Record.TupleIterator(tableReader.ascendingIterator(snapshot.id())));
     }
@@ -161,7 +166,8 @@ public class HeftyDB implements DB {
         Timer.Context watch = writeTimer.time();
         Snapshot snapshot = tableWriter.write(key, value, fsync);
         watch.stop();
-        writeRate.mark(key.capacity() + value.capacity());
+        int valueCapacity = value == null ? 0 : value.capacity();
+        writeRate.mark(key.capacity() + valueCapacity);
         return snapshot;
     }
 
@@ -172,7 +178,7 @@ public class HeftyDB implements DB {
         if (tuple != null) {
            readRate.mark(tuple.size());
         }
-        return tuple == null ? null : new Record(tuple);
+        return tuple == null || tuple.value().isEmpty() ? null : new Record(tuple);
     }
 
     public static DB open(Config config) throws IOException {

@@ -31,6 +31,8 @@ public interface DB {
 
     public Record get(ByteBuffer key, Snapshot snapshot) throws IOException;
 
+    public Snapshot delete(ByteBuffer key) throws IOException;
+
     public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException;
 
     public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException;
