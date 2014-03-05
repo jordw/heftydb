@@ -16,95 +16,63 @@
 
 package com.jordanwilliams.heftydb.table.memory;
 
-import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class SkipListTupleMap implements SortedTupleMap {
 
-    private class TupleEntryIterator implements Iterator<Tuple> {
-
-        private final Iterator<Map.Entry<Key, Value>> delegate;
-
-        private TupleEntryIterator(Iterator<Map.Entry<Key, Value>> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return delegate.hasNext();
-        }
-
-        @Override
-        public Tuple next() {
-            if (!delegate.hasNext()) {
-                throw new NoSuchElementException();
-            }
-
-            Map.Entry<Key, Value> next = delegate.next();
-
-            return new Tuple(next.getKey(), next.getValue());
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private final ConcurrentNavigableMap<Key, Value> tuples = new ConcurrentSkipListMap<Key, Value>();
+    private final ConcurrentNavigableMap<Key, Tuple> tuples = new ConcurrentSkipListMap<Key, Tuple>();
 
     @Override
     public void put(Key key, Value value) {
-        tuples.put(key, value);
+        tuples.put(key, new Tuple(key, value));
     }
 
     @Override
     public Tuple get(Key key) {
-        Map.Entry<Key, Value> closestEntry = tuples.floorEntry(key);
+        Map.Entry<Key, Tuple> closestEntry = tuples.floorEntry(key);
 
         if (closestEntry == null) {
             return null;
         }
 
-        return closestEntry.getKey().data().equals(key.data()) ? new Tuple(closestEntry.getKey(),
-                closestEntry.getValue()) : null;
+        return closestEntry.getKey().data().equals(key.data()) ? closestEntry.getValue() : null;
     }
 
     @Override
     public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples
-                .entrySet().iterator())));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
+                .values().iterator()));
     }
 
     @Override
     public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples
-                .descendingMap().entrySet().iterator())));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
+                .descendingMap().values().iterator()));
     }
 
     @Override
     public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples
-                .tailMap(key, true).entrySet().iterator())));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
+                .tailMap(key, true).values().iterator()));
     }
 
     @Override
     public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(new TupleEntryIterator(tuples
-                .headMap(key, true).descendingMap().entrySet().iterator())));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
+                .headMap(key, true).descendingMap().values().iterator()));
     }
 
     @Override
     public Iterator<Tuple> iterator() {
-        return new TupleEntryIterator(tuples.entrySet().iterator());
+        return tuples.values().iterator();
     }
 }

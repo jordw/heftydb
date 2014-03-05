@@ -33,15 +33,20 @@ import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.file.Files;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class TableWriter {
+
+    private static final Logger logger = LoggerFactory.getLogger(TableWriter.class);
 
     private final Config config;
     private final Snapshots snapshots;
@@ -118,20 +123,20 @@ public class TableWriter {
 
     private void writeMemoryTable(final Table tableToWrite) {
         final FileTableWriter.Task task = new FileTableWriter.Task.Builder().tableId(tableToWrite.id()).level(1)
-                .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount
-                        (tableToWrite.tupleCount()).throttle(Throttle.MAX).callback(new FileTableWriter.Task.Callback
-                        () {
-            @Override
-            public void finish() {
-                try {
-                    tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
-                            caches.indexBlockCache(), metrics), tableToWrite);
-                    Files.deleteIfExists(paths.logPath(tableToWrite.id()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }).build();
+                .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount(tableToWrite.tupleCount()).throttle(Throttle.MAX).callback(new FileTableWriter.Task.Callback() {
+                    @Override
+                    public void finish() {
+                        try {
+                            tables.swap(FileTable.open(tableToWrite.id(), paths, caches.recordBlockCache(),
+                                    caches.indexBlockCache(), metrics), tableToWrite);
+                            Files.deleteIfExists(paths.logPath(tableToWrite.id()));
+                        } catch (ClosedChannelException e) {
+                            logger.debug("File table was only partially written " + tableToWrite.id());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }).build();
 
         tableExecutor.execute(new Runnable() {
             @Override
