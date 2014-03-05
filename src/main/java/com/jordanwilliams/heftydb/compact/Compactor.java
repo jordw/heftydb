@@ -132,7 +132,8 @@ public class Compactor {
         this.metrics = metrics;
         this.compactionTaskExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
                 config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>
-                (config.tableCompactionThreads()), new ThreadFactoryBuilder().setNameFormat("Compactor task thread %d")
+                (config.tableCompactionThreads()), new ThreadFactoryBuilder().setNameFormat("Compaction task thread " +
+                "%d")
                 .build(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
         this.compactionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat

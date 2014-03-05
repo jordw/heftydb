@@ -16,6 +16,7 @@
 
 package com.jordanwilliams.heftydb.offheap;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.jordanwilliams.heftydb.offheap.allocator.Allocator;
@@ -37,6 +38,7 @@ public class MemoryAllocator {
 
     private static final MetricRegistry metrics = new MetricRegistry();
     private static final JmxReporter jmxReporter;
+    private static final Counter offHeapMemoryCounter;
 
     static {
         try {
@@ -51,7 +53,7 @@ public class MemoryAllocator {
             directByteBufferClass = Class.forName("java.nio.DirectByteBuffer");
 
             //Metrics
-            metrics.counter("offHeapMemory");
+            offHeapMemoryCounter = metrics.counter("offHeapMemory");
             jmxReporter = JmxReporter.forRegistry(metrics).inDomain("HeftyDB").build();
             jmxReporter.start();
         } catch (Exception e) {
@@ -69,7 +71,7 @@ public class MemoryAllocator {
         }
 
         long address = allocator.allocate(size);
-        metrics.counter("offHeapMemory").inc(size);
+        offHeapMemoryCounter.inc(size);
         return new MemoryPointer(address, size, rawDirectBuffer(address, size));
     }
 
@@ -91,7 +93,7 @@ public class MemoryAllocator {
 
     public static void deallocate(long address, int size){
         allocator.deallocate(address);
-        metrics.counter("offHeapMemory").dec(size);
+        offHeapMemoryCounter.dec(size);
     }
 
     private static void zeroMemory(MemoryPointer pointer) {
