@@ -127,7 +127,7 @@ public class FileTableWriter {
         public void run() {
             try {
                 int id = taskId.incrementAndGet();
-                logger.info("Starting table writer " + id + " for table " + tableId);
+                logger.debug("Starting table writer " + id + " for table " + tableId);
 
                 FileTableWriter tableWriter = FileTableWriter.open(tableId, paths, tupleCount,
                         config.indexBlockSize(), config.tableBlockSize(), level);
@@ -146,9 +146,9 @@ public class FileTableWriter {
                     callback.finish();
                 }
 
-                logger.info("Finishing table writer " + id);
+                logger.debug("Finishing table writer " + id);
             } catch (ClosedChannelException e){
-                logger.info("File table was only partially written " + tableId);
+                logger.debug("File table was only partially written " + tableId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

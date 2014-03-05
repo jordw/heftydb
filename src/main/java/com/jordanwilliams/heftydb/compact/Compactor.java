@@ -92,7 +92,7 @@ public class Compactor {
 
                 watch.stop();
             } catch (ClosedChannelException e){
-                logger.info("Compaction terminated without finishing " + compactionId);
+                logger.debug("Compaction terminated without finishing " + compactionId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -166,13 +166,13 @@ public class Compactor {
                 }
 
                 int id = compactionId.incrementAndGet();
-                logger.info("Starting compaction " + id);
+                logger.debug("Starting compaction " + id);
 
                 CompactionPlan compactionPlan = compactionPlanner.planCompaction();
 
                 if (compactionPlan == null){
-                    logger.info("No compaction tasks present " + id);
-                    logger.info("Finishing compaction " + id);
+                    logger.debug("No compaction tasks present " + id);
+                    logger.debug("Finishing compaction " + id);
                     return;
                 }
 
@@ -180,7 +180,7 @@ public class Compactor {
                 Throttle compactionThrottle = force ? Throttle.MAX : new Throttle(config.maxCompactionRate());
 
                 for (CompactionTask task : compactionPlan) {
-                    logger.info("Compaction " + id + "  task : " + task);
+                    logger.debug("Compaction " + id + "  task : " + task);
                     taskFutures.add(compactionTaskExecutor.submit(new Task(task, compactionThrottle)));
                 }
 
@@ -194,7 +194,7 @@ public class Compactor {
                     }
                 }
 
-                logger.info("Finishing compaction " + id);
+                logger.debug("Finishing compaction " + id);
             }
         }, null);
 
