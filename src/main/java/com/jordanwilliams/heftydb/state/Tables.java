@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -35,16 +35,13 @@ public class Tables implements Iterable<Table> {
     }
 
     private final AtomicLong currentTableId = new AtomicLong();
-    private final NavigableMap<Long, Table> tables = new TreeMap<Long, Table>();
+    private final NavigableSet<Table> tables = new TreeSet<Table>();
     private final ReadWriteLock tableLock = new ReentrantReadWriteLock();
     private final List<ChangeHandler> changeHandlers = new ArrayList<ChangeHandler>();
 
     public Tables(Collection<Table> initialTables) {
-        for (Table table : initialTables){
-            tables.put(table.id(), table);
-        }
-
-        this.currentTableId.set(tables.isEmpty() ? 0 : tables.lastEntry().getValue().id());
+        this.tables.addAll(initialTables);
+        this.currentTableId.set(tables.isEmpty() ? 0 : tables.last().id());
     }
 
     public synchronized void addChangeHandler(ChangeHandler changeHandler) {
@@ -71,21 +68,10 @@ public class Tables implements Iterable<Table> {
         tableLock.readLock().unlock();
     }
 
-    public Table get(long tableId) {
-        try {
-            tableLock.readLock().lock();
-            Table table = tables.get(tableId);
-            tableLock.readLock().unlock();
-            return table;
-        } finally {
-            tableLock.readLock().unlock();
-        }
-    }
-
     public void add(Table toAdd) {
         try {
             tableLock.writeLock().lock();
-            tables.put(toAdd.id(), toAdd);
+            tables.add(toAdd);
             notifyChanged();
         } finally {
             tableLock.writeLock().unlock();
@@ -96,7 +82,7 @@ public class Tables implements Iterable<Table> {
         try {
             tableLock.writeLock().lock();
             for (Table table : toRemove) {
-                tables.remove(table.id());
+                tables.remove(table);
             }
             notifyChanged();
         } finally {
@@ -107,7 +93,7 @@ public class Tables implements Iterable<Table> {
     public void remove(Table toRemove) {
         try {
             tableLock.writeLock().lock();
-            tables.remove(toRemove.id());
+            tables.remove(toRemove);
             notifyChanged();
         } finally {
             tableLock.writeLock().unlock();
@@ -117,8 +103,8 @@ public class Tables implements Iterable<Table> {
     public void swap(Table toAdd, Table toRemove) {
         try {
             tableLock.writeLock().lock();
-            tables.remove(toRemove.id());
-            tables.put(toAdd.id(), toAdd);
+            tables.remove(toRemove);
+            tables.add(toAdd);
             notifyChanged();
         } finally {
             tableLock.writeLock().unlock();
@@ -131,7 +117,7 @@ public class Tables implements Iterable<Table> {
 
     @Override
     public Iterator<Table> iterator() {
-        return tables.values().iterator();
+        return tables.iterator();
     }
 
     private synchronized void notifyChanged() {
