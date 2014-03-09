@@ -64,8 +64,13 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
             refreshSource();
 
             boolean hasNext = delegate.hasNext();
+
             if (!hasNext) {
-                tables.removeChangeHandler(tableChangeHandler);
+                try {
+                    close();
+                } catch (IOException e){
+                    throw new RuntimeException(e);
+                }
             }
 
             return delegate.hasNext();
@@ -93,6 +98,7 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
     @Override
     public void close() throws IOException {
         delegate.close();
+        tables.removeChangeHandler(tableChangeHandler);
     }
 
     private void refreshSource() {

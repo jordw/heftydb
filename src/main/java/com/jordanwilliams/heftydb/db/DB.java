@@ -16,9 +16,10 @@
 
 package com.jordanwilliams.heftydb.db;
 
+import com.jordanwilliams.heftydb.util.CloseableIterator;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Iterator;
 import java.util.concurrent.Future;
 
 public interface DB {
@@ -33,13 +34,13 @@ public interface DB {
 
     public Snapshot delete(ByteBuffer key) throws IOException;
 
-    public Iterator<Record> ascendingIterator(Snapshot snapshot) throws IOException;
+    public CloseableIterator<Record> ascendingIterator(Snapshot snapshot) throws IOException;
 
-    public Iterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException;
+    public CloseableIterator<Record> ascendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException;
 
-    public Iterator<Record> descendingIterator(Snapshot snapshot) throws IOException;
+    public CloseableIterator<Record> descendingIterator(Snapshot snapshot) throws IOException;
 
-    public Iterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException;
+    public CloseableIterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException;
 
     public void close() throws IOException;
 
