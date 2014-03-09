@@ -25,8 +25,8 @@ import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.StopWatch;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+import com.jordanwilliams.heftydb.util.CloseableIterator;
 
-import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +38,7 @@ public class EnduranceTest {
 
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 60;
-    private static final int LOAD_LEVEL = 2;
+    private static final int LOAD_LEVEL = 10;
     private static final int VALUE_SIZE = 100;
     private static final int THREAD_SLEEP_TIME = 10;
 
@@ -121,8 +121,12 @@ public class EnduranceTest {
                 @Override
                 public void run() {
                     try {
-                        Iterator<Record> scanIterator = db.ascendingIterator(new Snapshot(maxSnapshotId.get()));
+                        long randomKey = (long) (random.nextDouble() * (maxVisibleKey.get()));
+                        String nextKey = Long.toString(randomKey);
+                        CloseableIterator<Record> scanIterator = db.ascendingIterator(ByteBuffers.fromString(nextKey),
+                                new Snapshot(maxSnapshotId.get()));
                         long maxScanSnapshotId = 0;
+                        int iteratorCount = 0;
 
                         while (true) {
                             if (finished.get()) {
@@ -130,11 +134,17 @@ public class EnduranceTest {
                             }
 
                             for (int i = 0; i < LOAD_LEVEL; i++) {
-                                if (scanIterator.hasNext()) {
+                                if (scanIterator.hasNext() && iteratorCount < 10) {
                                     Record record = scanIterator.next();
                                     maxScanSnapshotId = Math.max(maxScanSnapshotId, record.snapshot().id());
+                                    iteratorCount++;
                                 } else {
-                                    scanIterator = db.ascendingIterator(new Snapshot(maxSnapshotId.get()));
+                                    scanIterator.close();
+                                    iteratorCount = 0;
+                                    randomKey = (long) (random.nextDouble() * (maxVisibleKey.get()));
+                                    nextKey = Long.toString(randomKey);
+                                    scanIterator = db.ascendingIterator(ByteBuffers.fromString(nextKey),
+                                            new Snapshot(maxSnapshotId.get()));
                                 }
                             }
 
