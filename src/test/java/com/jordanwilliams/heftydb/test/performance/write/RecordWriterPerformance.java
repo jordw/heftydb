@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.test.performance.write;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.jordanwilliams.heftydb.write.TableWriter;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.DBState;
 import com.jordanwilliams.heftydb.metrics.Metrics;
@@ -28,6 +27,7 @@ import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+import com.jordanwilliams.heftydb.write.TableWriter;
 
 public class RecordWriterPerformance {
 

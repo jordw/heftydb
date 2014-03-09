@@ -35,10 +35,10 @@ public class FullCompactionPlanner implements CompactionPlanner {
 
         tables.readLock();
 
-        if (tables.count() > 1){
+        if (tables.count() > 1) {
             try {
-                for (Table table : tables){
-                    if (table.isPersistent()){
+                for (Table table : tables) {
+                    if (table.isPersistent()) {
                         taskBuilder.add(table);
                     }
                 }

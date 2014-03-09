@@ -123,8 +123,8 @@ public class EnduranceTest {
                     try {
                         long randomKey = (long) (random.nextDouble() * (maxVisibleKey.get()));
                         String nextKey = Long.toString(randomKey);
-                        CloseableIterator<Record> scanIterator = db.ascendingIterator(ByteBuffers.fromString(nextKey),
-                                new Snapshot(maxSnapshotId.get()));
+                        CloseableIterator<Record> scanIterator = db.ascendingIterator(ByteBuffers.fromString(nextKey)
+                                , new Snapshot(maxSnapshotId.get()));
                         long maxScanSnapshotId = 0;
                         int iteratorCount = 0;
 

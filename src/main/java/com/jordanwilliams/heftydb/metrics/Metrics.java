@@ -39,8 +39,8 @@ public class Metrics {
     private final ConsoleReporter reporter;
 
     public Metrics(Config config) {
-        this.reporter = ConsoleReporter.forRegistry(metrics)
-                .convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo(TimeUnit.SECONDS).build();
+        this.reporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo
+                (TimeUnit.SECONDS).build();
 
         if (config.autoPrintMetrics()) {
             reporter.start(30, TimeUnit.SECONDS);

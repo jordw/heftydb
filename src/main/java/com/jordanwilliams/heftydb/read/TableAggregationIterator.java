@@ -68,7 +68,7 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
             if (!hasNext) {
                 try {
                     close();
-                } catch (IOException e){
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }

@@ -39,16 +39,10 @@ public class WritePerformance {
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
         Value value = new Value(keyValueGenerator.testValue(100));
 
-        Config config = new Config.Builder()
-                .directory(TestFileHelper.TEMP_PATH)
-                .memoryTableSize(16384000)
-                .tableCacheSize(512000000)
-                .indexCacheSize(64000000)
-                .tableBlockSize(16384)
-                .compactionStrategy(CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY)
-                .indexBlockSize(32768)
-                .maxWriteRate(Integer.MAX_VALUE)
-                .build();
+        Config config = new Config.Builder().directory(TestFileHelper.TEMP_PATH).memoryTableSize(16384000)
+                .tableCacheSize(512000000).indexCacheSize(64000000).tableBlockSize(16384).compactionStrategy
+                        (CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY).indexBlockSize(32768).maxWriteRate
+                        (Integer.MAX_VALUE).build();
 
         //Write
         DB db = HeftyDB.open(config);

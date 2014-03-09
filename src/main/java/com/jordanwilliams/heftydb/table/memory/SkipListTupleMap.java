@@ -49,26 +49,25 @@ public class SkipListTupleMap implements SortedTupleMap {
 
     @Override
     public CloseableIterator<Tuple> ascendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
-                .values().iterator()));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples.values().iterator()));
     }
 
     @Override
     public CloseableIterator<Tuple> descendingIterator(long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
-                .descendingMap().values().iterator()));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples.descendingMap().values
+                ().iterator()));
     }
 
     @Override
     public CloseableIterator<Tuple> ascendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
-                .tailMap(key, true).values().iterator()));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples.tailMap(key,
+                true).values().iterator()));
     }
 
     @Override
     public CloseableIterator<Tuple> descendingIterator(Key key, long snapshotId) {
-        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples
-                .headMap(key, true).descendingMap().values().iterator()));
+        return new LatestTupleIterator(snapshotId, new CloseableIterator.Wrapper<Tuple>(tuples.headMap(key,
+                true).descendingMap().values().iterator()));
     }
 
     @Override

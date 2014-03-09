@@ -37,13 +37,9 @@ public class ReadPerformance {
     public static void main(String[] args) throws Exception {
         Random random = new Random(System.nanoTime());
 
-        Config config = new Config.Builder()
-                .directory(TestFileHelper.TEMP_PATH)
-                .compactionStrategy(CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY)
-                .tableCacheSize(512000000)
-                .indexCacheSize(64000000)
-                .maxWriteRate(Integer.MAX_VALUE)
-                .build();
+        Config config = new Config.Builder().directory(TestFileHelper.TEMP_PATH).compactionStrategy
+                (CompactionStrategies.SIZE_TIERED_COMPACTION_STRATEGY).tableCacheSize(512000000).indexCacheSize
+                (64000000).maxWriteRate(Integer.MAX_VALUE).build();
 
         MetricRegistry metrics = new MetricRegistry();
         ConsoleReporter reporter = PerformanceHelper.consoleReporter(metrics);

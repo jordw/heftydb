@@ -53,14 +53,14 @@ public class AppendChannelFile implements AppendFile {
         int writeLength = bufferToWrite.limit() - bufferToWrite.position();
         long writtenPosition = appendPosition.getAndAdd(writeLength);
 
-        if (writeLength > DEFAULT_APPEND_BUFFER_SIZE){
+        if (writeLength > DEFAULT_APPEND_BUFFER_SIZE) {
             flushAppendBuffer();
             channel.write(bufferToWrite);
         } else {
             ByteBuffer buffer = appendBuffer.directBuffer();
 
-            while (bufferToWrite.position() < bufferToWrite.limit()){
-                if (buffer.position() == buffer.limit()){
+            while (bufferToWrite.position() < bufferToWrite.limit()) {
+                if (buffer.position() == buffer.limit()) {
                     flushAppendBuffer();
                 }
 
@@ -99,7 +99,7 @@ public class AppendChannelFile implements AppendFile {
             flushAppendBuffer();
             sync();
 
-            if (appendBuffer != null && !appendBuffer.isFree()){
+            if (appendBuffer != null && !appendBuffer.isFree()) {
                 appendBuffer.free();
             }
 
@@ -138,7 +138,7 @@ public class AppendChannelFile implements AppendFile {
     private void flushAppendBuffer() throws IOException {
         ByteBuffer buffer = appendBuffer.directBuffer();
 
-        if (buffer.position() == 0){
+        if (buffer.position() == 0) {
             return;
         }
 

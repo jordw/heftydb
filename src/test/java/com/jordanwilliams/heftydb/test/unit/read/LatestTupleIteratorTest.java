@@ -16,10 +16,10 @@
 
 package com.jordanwilliams.heftydb.test.unit.read;
 
-import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
+import com.jordanwilliams.heftydb.read.LatestTupleIterator;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
 import org.junit.Assert;

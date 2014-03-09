@@ -43,13 +43,13 @@ public class FileIOTest extends FileTest {
 
         long[] offsets = new long[100];
 
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             TEST_BYTES.rewind();
             offsets[i] = file.appendInt(TEST_BYTES.capacity());
             file.append(TEST_BYTES);
         }
 
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 100; i++) {
             long offset = offsets[i];
             Assert.assertEquals("Offset is correct", 0, offset % 39);
         }

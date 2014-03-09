@@ -51,9 +51,8 @@ public class ConfigGenerator {
     }
 
     public static Config performanceConfig() {
-        return new Config.Builder().tableDirectory(TestFileHelper.TEMP_PATH).indexCacheSize
-                (128000000).tableCacheSize(512000000).tableBlockSize(1024).memoryTableSize(8192000).maxCompactionRate
-                (32768000).build();
+        return new Config.Builder().tableDirectory(TestFileHelper.TEMP_PATH).indexCacheSize(128000000).tableCacheSize
+                (512000000).tableBlockSize(1024).memoryTableSize(8192000).maxCompactionRate(32768000).build();
     }
 
     public static Config testConfig() {

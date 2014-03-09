@@ -43,11 +43,8 @@ public class TuplPerformance {
         Value value = new Value(keyValueGenerator.testValue(100));
         Random random = new Random(System.nanoTime());
 
-        DatabaseConfig config = new DatabaseConfig()
-                .baseFilePath("/tmp/heftytest/test")
-                .maxCacheSize(512000000)
-                .pageSize(4096)
-                .durabilityMode(DurabilityMode.NO_SYNC);
+        DatabaseConfig config = new DatabaseConfig().baseFilePath("/tmp/heftytest/test").maxCacheSize(512000000)
+                .pageSize(4096).durabilityMode(DurabilityMode.NO_SYNC);
 
         Database db = Database.open(config);
         Index testIndex = db.openIndex("test");

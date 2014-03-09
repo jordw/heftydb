@@ -61,7 +61,7 @@ public class MemoryAllocator {
         }
     }
 
-    public static MemoryPointer wrap(long address, int size){
+    public static MemoryPointer wrap(long address, int size) {
         return new MemoryPointer(address, size, rawDirectBuffer(address, size));
     }
 
@@ -91,7 +91,7 @@ public class MemoryAllocator {
         return pointer;
     }
 
-    public static void deallocate(long address, int size){
+    public static void deallocate(long address, int size) {
         allocator.deallocate(address);
         offHeapMemoryCounter.dec(size);
     }

@@ -95,7 +95,7 @@ public class Tuple implements Comparable<Tuple> {
         return key.size() + value().size();
     }
 
-    public void rewind(){
+    public void rewind() {
         key.data().rewind();
         value.data().rewind();
     }

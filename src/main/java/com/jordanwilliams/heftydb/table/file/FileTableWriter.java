@@ -147,7 +147,7 @@ public class FileTableWriter {
                 }
 
                 logger.debug("Finishing table writer " + id);
-            } catch (ClosedChannelException e){
+            } catch (ClosedChannelException e) {
                 logger.debug("File table was only partially written " + tableId);
             } catch (IOException e) {
                 throw new RuntimeException(e);

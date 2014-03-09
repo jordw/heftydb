@@ -176,7 +176,7 @@ public class HeftyDB implements DB {
         Tuple tuple = tableReader.get(new Key(key, snapshotId));
         watch.stop();
         if (tuple != null) {
-           readRate.mark(tuple.size());
+            readRate.mark(tuple.size());
         }
         return tuple == null || tuple.value().isEmpty() ? null : new Record(tuple);
     }

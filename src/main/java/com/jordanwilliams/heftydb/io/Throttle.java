@@ -29,6 +29,6 @@ public class Throttle {
     }
 
     public void consume(int usage) {
-       rateLimiter.acquire(usage);
+        rateLimiter.acquire(usage);
     }
 }

@@ -18,7 +18,6 @@ package com.jordanwilliams.heftydb.db;
 
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.index.IndexBlock;
-import com.jordanwilliams.heftydb.write.CommitLog;
 import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -28,6 +27,7 @@ import com.jordanwilliams.heftydb.table.file.FileTable;
 import com.jordanwilliams.heftydb.table.file.FileTableWriter;
 import com.jordanwilliams.heftydb.table.file.TupleBlock;
 import com.jordanwilliams.heftydb.table.memory.MemoryTable;
+import com.jordanwilliams.heftydb.write.CommitLog;
 
 import java.io.IOException;
 import java.nio.file.Files;

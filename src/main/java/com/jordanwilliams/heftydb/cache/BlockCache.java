@@ -81,12 +81,12 @@ public class BlockCache<T extends Offheap> {
     public BlockCache(long maxSize, Weigher<T> weigher) {
         cache = new ConcurrentLinkedHashMap.Builder<Entry, T>().concurrencyLevel(CONCURRENCY_LEVEL).weigher(weigher)
                 .listener(new EvictionListener<Entry, T>() {
-                    @Override
-                    public void onEviction(Entry key, T value) {
-                        totalSize.addAndGet(value.memory().size() * -1);
-                        value.memory().release();
-                    }
-                }).maximumWeightedCapacity(maxSize).build();
+            @Override
+            public void onEviction(Entry key, T value) {
+                totalSize.addAndGet(value.memory().size() * -1);
+                value.memory().release();
+            }
+        }).maximumWeightedCapacity(maxSize).build();
         this.maxSize = maxSize;
     }
 
@@ -107,7 +107,7 @@ public class BlockCache<T extends Offheap> {
     public void put(long tableId, long offset, T block) {
         Entry entry = new Entry(tableId, offset);
 
-        if (!block.memory().retain()){
+        if (!block.memory().retain()) {
             return;
         }
 

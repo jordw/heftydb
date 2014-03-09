@@ -91,7 +91,7 @@ public class Compactor {
                 removeObsoleteTables(compactionTask.tables());
 
                 watch.stop();
-            } catch (ClosedChannelException e){
+            } catch (ClosedChannelException e) {
                 logger.debug("Compaction terminated without finishing " + compactionId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -132,10 +132,8 @@ public class Compactor {
         this.metrics = metrics;
         this.compactionTaskExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
                 config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>
-                (config.tableCompactionThreads()), new ThreadFactoryBuilder().setNameFormat("Compaction task thread " +
-                "%d")
-                .build(),
-                new ThreadPoolExecutor.CallerRunsPolicy());
+                (config.tableCompactionThreads()), new ThreadFactoryBuilder().setNameFormat("Compaction task thread "
+                + "%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
         this.compactionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat
                 ("Compaction plan thread").build());
         this.compactionPlanner = compactionStrategy.initialize(tables);
@@ -161,7 +159,7 @@ public class Compactor {
             @Override
             public void run() {
                 //Previous compaction may have obviated the need for another one
-                if (!compactionPlanner.needsCompaction() && !force){
+                if (!compactionPlanner.needsCompaction() && !force) {
                     return;
                 }
 
@@ -170,7 +168,7 @@ public class Compactor {
 
                 CompactionPlan compactionPlan = compactionPlanner.planCompaction();
 
-                if (compactionPlan == null){
+                if (compactionPlan == null) {
                     logger.debug("No compaction tasks present " + id);
                     logger.debug("Finishing compaction " + id);
                     return;
