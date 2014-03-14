@@ -43,6 +43,7 @@ public class MemoryTable implements MutableTable {
         records.put(tuple.key(), tuple.value());
         recordCount.incrementAndGet();
         size.addAndGet(tuple.size());
+        maxSnapshotId.set(tuple.key().snapshotId());
     }
 
     @Override

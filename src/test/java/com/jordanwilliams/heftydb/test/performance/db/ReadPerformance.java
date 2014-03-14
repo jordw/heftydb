@@ -32,7 +32,7 @@ import java.util.Random;
 
 public class ReadPerformance {
 
-    private static final int RECORD_COUNT = 10 * 1000000;
+    private static final int RECORD_COUNT = 1 * 1000000;
 
     public static void main(String[] args) throws Exception {
         Random random = new Random(System.nanoTime());
@@ -50,7 +50,7 @@ public class ReadPerformance {
         db.compact().get();
 
         //Read
-        for (int i = 0; i < RECORD_COUNT; i++) {
+        for (int i = 0; i < RECORD_COUNT * 10; i++) {
             String key = random.nextInt(RECORD_COUNT) + "";
             Timer.Context watch = readTimer.time();
             db.get(ByteBuffers.fromString(key));

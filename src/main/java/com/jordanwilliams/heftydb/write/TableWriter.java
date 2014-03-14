@@ -103,7 +103,6 @@ public class TableWriter {
     public void close() throws IOException {
         if (memoryTable != null) {
             commitLogWriter.close();
-            writeMemoryTable(memoryTable);
         }
 
         tableExecutor.shutdownNow();

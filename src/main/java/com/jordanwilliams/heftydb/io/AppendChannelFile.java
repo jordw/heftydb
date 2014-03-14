@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class AppendChannelFile implements AppendFile {
 
-    private static final int DEFAULT_APPEND_BUFFER_SIZE = JVMUnsafe.unsafe.pageSize();
+    private static final int APPEND_BUFFER_SIZE = JVMUnsafe.unsafe.pageSize();
 
     private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {
         @Override
@@ -53,7 +53,7 @@ public class AppendChannelFile implements AppendFile {
         int writeLength = bufferToWrite.limit() - bufferToWrite.position();
         long writtenPosition = appendPosition.getAndAdd(writeLength);
 
-        if (writeLength > DEFAULT_APPEND_BUFFER_SIZE) {
+        if (writeLength > APPEND_BUFFER_SIZE) {
             flushAppendBuffer();
             channel.write(bufferToWrite);
         } else {
@@ -151,6 +151,6 @@ public class AppendChannelFile implements AppendFile {
 
     public static AppendFile open(Path path) throws IOException {
         FileChannel channel = FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-        return new AppendChannelFile(channel, DEFAULT_APPEND_BUFFER_SIZE);
+        return new AppendChannelFile(channel, APPEND_BUFFER_SIZE);
     }
 }

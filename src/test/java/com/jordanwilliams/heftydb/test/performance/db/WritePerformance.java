@@ -20,7 +20,6 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.compact.CompactionStrategies;
-import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.db.DB;
 import com.jordanwilliams.heftydb.db.HeftyDB;
@@ -28,6 +27,8 @@ import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
 import com.jordanwilliams.heftydb.test.helper.TestFileHelper;
 import com.jordanwilliams.heftydb.util.ByteBuffers;
+
+import java.nio.ByteBuffer;
 
 public class WritePerformance {
 
@@ -37,7 +38,7 @@ public class WritePerformance {
         TestFileHelper.createTestDirectory();
         TestFileHelper.cleanUpTestFiles();
         KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
-        Value value = new Value(keyValueGenerator.testValue(100));
+        ByteBuffer testValueBuffer = keyValueGenerator.testValue(100);
 
         Config config = new Config.Builder().directory(TestFileHelper.TEMP_PATH).memoryTableSize(16384000)
                 .tableCacheSize(512000000).indexCacheSize(64000000).tableBlockSize(16384).compactionStrategy
@@ -52,9 +53,8 @@ public class WritePerformance {
         Timer writeTimer = metrics.timer("writes");
 
         for (int i = 0; i < RECORD_COUNT; i++) {
-            value.data().rewind();
             Timer.Context watch = writeTimer.time();
-            db.put(ByteBuffers.fromString(i + ""), value.data());
+            db.put(ByteBuffers.fromString(i + ""), testValueBuffer.slice());
             watch.stop();
         }
 
