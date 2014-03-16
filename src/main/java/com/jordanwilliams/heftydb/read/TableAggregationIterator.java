@@ -81,13 +81,19 @@ public class TableAggregationIterator implements CloseableIterator<Tuple> {
 
     @Override
     public Tuple next() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
+        tables.readLock();
 
-        Tuple next = delegate.next();
-        this.lastKey = next.key();
-        return next;
+        try {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Tuple next = delegate.next();
+            this.lastKey = next.key();
+            return next;
+        } finally {
+            tables.readUnlock();
+        }
     }
 
     @Override

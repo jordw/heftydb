@@ -192,7 +192,8 @@ public class Compactor {
                     taskFutures.add(taskExecutor.submit(new Task(task, compactionThrottle)));
                 }
 
-                metrics.histogram("compactor.concurrentTasks").update(compactionTaskExecutor.getTaskCount());
+                metrics.histogram("compactor.concurrentTasks").update(highPriorityCompactionTaskExecutor.getActiveCount() +
+                        compactionTaskExecutor.getActiveCount());
 
                 for (Future<?> taskFuture : taskFutures) {
                     try {
