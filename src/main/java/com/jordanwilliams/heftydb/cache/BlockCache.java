@@ -83,7 +83,7 @@ public class BlockCache<T extends Offheap> {
                 .listener(new EvictionListener<Entry, T>() {
             @Override
             public void onEviction(Entry key, T value) {
-                totalSize.addAndGet(value.memory().size() * -1);
+                totalSize.addAndGet(-(value.memory().size()));
                 value.memory().release();
             }
         }).maximumWeightedCapacity(maxSize).build();

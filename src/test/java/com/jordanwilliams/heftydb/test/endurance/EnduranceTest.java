@@ -38,7 +38,7 @@ public class EnduranceTest {
 
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 60;
-    private static final int LOAD_LEVEL = 100;
+    private static final int LOAD_LEVEL = 25;
     private static final int VALUE_SIZE = 100;
     private static final int THREAD_SLEEP_TIME = 10;
 
@@ -92,6 +92,11 @@ public class EnduranceTest {
                 }
             });
 
+            //Make sure some keys have been written
+            while (maxVisibleKey.get() < 1000){
+                Thread.sleep(10);
+            }
+
             readExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -102,11 +107,9 @@ public class EnduranceTest {
                             }
 
                             for (int i = 0; i < LOAD_LEVEL; i++) {
-                                if (maxVisibleKey.get() > 0) {
-                                    long randomKey = (long) (random.nextDouble() * (maxVisibleKey.get()));
-                                    String nextKey = Long.toString(randomKey);
-                                    db.get(ByteBuffers.fromString(nextKey));
-                                }
+                                long randomKey = (long) (random.nextDouble() * (maxVisibleKey.get()));
+                                String nextKey = Long.toString(randomKey);
+                                db.get(ByteBuffers.fromString(nextKey));
                             }
 
                             Thread.sleep(THREAD_SLEEP_TIME);
