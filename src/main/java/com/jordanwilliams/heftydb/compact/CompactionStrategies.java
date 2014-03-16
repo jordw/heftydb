@@ -19,7 +19,6 @@ package com.jordanwilliams.heftydb.compact;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.compact.planner.FullCompactionPlanner;
 import com.jordanwilliams.heftydb.compact.planner.SizeTieredCompactionPlanner;
-import com.jordanwilliams.heftydb.state.Tables;
 
 import java.util.Collections;
 
@@ -27,14 +26,14 @@ public enum CompactionStrategies implements CompactionStrategy {
 
     SIZE_TIERED_COMPACTION_STRATEGY {
         @Override
-        public CompactionPlanner initialize(Tables tables) {
+        public CompactionPlanner initialize(CompactionTables tables) {
             return new SizeTieredCompactionPlanner(tables);
         }
     },
 
     NULL_COMPACTION_STRATEGY {
         @Override
-        public CompactionPlanner initialize(Tables tables) {
+        public CompactionPlanner initialize(CompactionTables tables) {
             return new CompactionPlanner() {
                 @Override
                 public CompactionPlan planCompaction() {
@@ -51,11 +50,11 @@ public enum CompactionStrategies implements CompactionStrategy {
 
     FULL_COMPACTION_STRATEGY {
         @Override
-        public CompactionPlanner initialize(Tables tables) {
+        public CompactionPlanner initialize(CompactionTables tables) {
             return new FullCompactionPlanner(tables);
         }
     };
 
     @Override
-    public abstract CompactionPlanner initialize(Tables tables);
+    public abstract CompactionPlanner initialize(CompactionTables tables);
 }

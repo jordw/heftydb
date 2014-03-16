@@ -23,13 +23,19 @@ import java.util.List;
 
 public class CompactionTask {
 
+    public enum Priority {
+        HIGH, NORMAL
+    }
+
     public static class Builder {
 
         private final List<Table> tables = new ArrayList<Table>();
         private final int level;
+        private final Priority priority;
 
-        public Builder(int level) {
+        public Builder(int level, Priority priority) {
             this.level = level;
+            this.priority = priority;
         }
 
         public void add(Table table) {
@@ -37,16 +43,18 @@ public class CompactionTask {
         }
 
         public CompactionTask build() {
-            return new CompactionTask(tables, level);
+            return new CompactionTask(tables, level, priority);
         }
     }
 
     private final List<Table> tables;
     private final int level;
+    private final Priority priority;
 
-    public CompactionTask(List<Table> tables, int level) {
+    public CompactionTask(List<Table> tables, int level, Priority priority) {
         this.tables = tables;
         this.level = level;
+        this.priority = priority;
     }
 
     public List<Table> tables() {
@@ -57,6 +65,10 @@ public class CompactionTask {
         return level;
     }
 
+    public Priority priority() {
+        return priority;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -64,6 +76,8 @@ public class CompactionTask {
 
         CompactionTask that = (CompactionTask) o;
 
+        if (level != that.level) return false;
+        if (priority != that.priority) return false;
         if (tables != null ? !tables.equals(that.tables) : that.tables != null) return false;
 
         return true;
@@ -71,13 +85,18 @@ public class CompactionTask {
 
     @Override
     public int hashCode() {
-        return tables != null ? tables.hashCode() : 0;
+        int result = tables != null ? tables.hashCode() : 0;
+        result = 31 * result + level;
+        result = 31 * result + (priority != null ? priority.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
         return "CompactionTask{" +
                 "tables=" + tables +
+                ", level=" + level +
+                ", priority=" + priority +
                 '}';
     }
 }

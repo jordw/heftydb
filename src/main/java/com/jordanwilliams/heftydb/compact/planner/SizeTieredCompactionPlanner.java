@@ -17,8 +17,8 @@
 package com.jordanwilliams.heftydb.compact.planner;
 
 import com.jordanwilliams.heftydb.compact.CompactionPlan;
+import com.jordanwilliams.heftydb.compact.CompactionTables;
 import com.jordanwilliams.heftydb.compact.CompactionTask;
-import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.ArrayList;
@@ -31,9 +31,9 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
 
     private static final int MAX_LEVEL_TABLES = 4;
 
-    private final Tables tables;
+    private final CompactionTables tables;
 
-    public SizeTieredCompactionPlanner(Tables tables) {
+    public SizeTieredCompactionPlanner(CompactionTables tables) {
         this.tables = tables;
     }
 
@@ -44,7 +44,9 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
 
         for (Map.Entry<Integer, List<Table>> entry : leveledTables.entrySet()) {
             if (entry.getValue().size() >= MAX_LEVEL_TABLES) {
-                compactionTasks.add(new CompactionTask(entry.getValue(), entry.getKey() + 1));
+                int level = entry.getKey();
+                compactionTasks.add(new CompactionTask(entry.getValue(), level + 1, level < 3 ? CompactionTask
+                        .Priority.HIGH : CompactionTask.Priority.NORMAL));
             }
         }
 
@@ -67,23 +69,17 @@ public class SizeTieredCompactionPlanner implements CompactionPlanner {
     private SortedMap<Integer, List<Table>> leveledTables() {
         SortedMap<Integer, List<Table>> tableMap = new TreeMap<Integer, List<Table>>();
 
-        tables.readLock();
+        List<Table> eligibleTables = tables.eligibleTables();
 
-        try {
-            for (Table table : tables) {
-                if (table.isPersistent()) {
-                    List<Table> levelTables = tableMap.get(table.level());
+        for (Table table : eligibleTables) {
+            List<Table> levelTables = tableMap.get(table.level());
 
-                    if (levelTables == null) {
-                        levelTables = new ArrayList<Table>();
-                        tableMap.put(table.level(), levelTables);
-                    }
-
-                    levelTables.add(table);
-                }
+            if (levelTables == null) {
+                levelTables = new ArrayList<Table>();
+                tableMap.put(table.level(), levelTables);
             }
-        } finally {
-            tables.readUnlock();
+
+            levelTables.add(table);
         }
 
         return tableMap;

@@ -17,36 +17,32 @@
 package com.jordanwilliams.heftydb.compact.planner;
 
 import com.jordanwilliams.heftydb.compact.CompactionPlan;
+import com.jordanwilliams.heftydb.compact.CompactionTables;
 import com.jordanwilliams.heftydb.compact.CompactionTask;
-import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
+
+import java.util.List;
 
 public class FullCompactionPlanner implements CompactionPlanner {
 
-    private final Tables tables;
+    private final CompactionTables tables;
 
-    public FullCompactionPlanner(Tables tables) {
+    public FullCompactionPlanner(CompactionTables tables) {
         this.tables = tables;
     }
 
     @Override
     public CompactionPlan planCompaction() {
-        CompactionTask.Builder taskBuilder = new CompactionTask.Builder(2);
+        CompactionTask.Builder taskBuilder = new CompactionTask.Builder(2, CompactionTask.Priority.NORMAL);
 
-        tables.readLock();
+        List<Table> eligibleTables = tables.eligibleTables();
 
-        if (tables.count() > 1) {
-            try {
-                for (Table table : tables) {
-                    if (table.isPersistent()) {
-                        taskBuilder.add(table);
-                    }
-                }
-
-                return new CompactionPlan(taskBuilder.build());
-            } finally {
-                tables.readUnlock();
+        if (eligibleTables.size() > 1) {
+            for (Table table : eligibleTables){
+                taskBuilder.add(table);
             }
+
+            return new CompactionPlan(taskBuilder.build());
         }
 
         return null;

@@ -39,7 +39,6 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,6 +72,7 @@ public class Compactor {
                 long nextTableId = tables.nextId();
 
                 for (Table table : compactionTask.tables()) {
+                    compactionTables.markAsCompacted(table);
                     tableIterators.add(table.ascendingIterator(Long.MAX_VALUE));
                     tupleCount += table.tupleCount();
                 }
@@ -115,29 +115,40 @@ public class Compactor {
     private final Config config;
     private final Paths paths;
     private final Tables tables;
+    private final CompactionTables compactionTables;
     private final Caches caches;
     private final ThreadPoolExecutor compactionTaskExecutor;
+    private final ThreadPoolExecutor highPriorityCompactionTaskExecutor;
     private final ExecutorService compactionExecutor;
     private final CompactionPlanner compactionPlanner;
     private final Metrics metrics;
     private final AtomicInteger compactionId = new AtomicInteger();
-    private final LinkedList<Future<?>> pendingCompactions = new LinkedList<Future<?>>();
 
     public Compactor(Config config, Paths paths, Tables tables, Caches caches, CompactionStrategy compactionStrategy,
                      Metrics metrics) {
         this.config = config;
         this.paths = paths;
         this.tables = tables;
+        this.compactionTables = new CompactionTables(tables);
         this.caches = caches;
         this.metrics = metrics;
-        this.compactionTaskExecutor = new ThreadPoolExecutor(config.tableWriterThreads(),
-                config.tableCompactionThreads(), Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>
-                (config.tableCompactionThreads()), new ThreadFactoryBuilder().setNameFormat("Compaction task thread "
-                + "%d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
-        this.compactionExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat
-                ("Compaction plan thread").build());
-        this.compactionPlanner = compactionStrategy.initialize(tables);
 
+        int executorThreads = Math.max(config.tableCompactionThreads() / 2, 1);
+
+        this.compactionTaskExecutor = new ThreadPoolExecutor(executorThreads, executorThreads, Long.MAX_VALUE,
+                TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
+                new ThreadFactoryBuilder().setNameFormat("Compaction task thread %d").build(),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+
+        this.highPriorityCompactionTaskExecutor = new ThreadPoolExecutor(executorThreads, executorThreads,
+                Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
+                new ThreadFactoryBuilder().setNameFormat("High priority " +
+                "compaction task thread %d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
+
+        this.compactionExecutor = Executors.newFixedThreadPool(config.tableCompactionThreads(),
+                new ThreadFactoryBuilder().setNameFormat("Compaction plan thread").build());
+
+        this.compactionPlanner = compactionStrategy.initialize(compactionTables);
 
         tables.addChangeHandler(new Tables.ChangeHandler() {
             @Override
@@ -158,11 +169,6 @@ public class Compactor {
         FutureTask<?> task = new FutureTask<Object>(new Runnable() {
             @Override
             public void run() {
-                //Previous compaction may have obviated the need for another one
-                if (!compactionPlanner.needsCompaction() && !force) {
-                    return;
-                }
-
                 int id = compactionId.incrementAndGet();
                 logger.debug("Starting compaction " + id);
 
@@ -179,10 +185,14 @@ public class Compactor {
 
                 for (CompactionTask task : compactionPlan) {
                     logger.debug("Compaction " + id + "  task : " + task);
-                    taskFutures.add(compactionTaskExecutor.submit(new Task(task, compactionThrottle)));
+
+                    ThreadPoolExecutor taskExecutor = task.priority().equals(CompactionTask.Priority.HIGH) ?
+                            highPriorityCompactionTaskExecutor : compactionTaskExecutor;
+
+                    taskFutures.add(taskExecutor.submit(new Task(task, compactionThrottle)));
                 }
 
-                metrics.histogram("compactor.concurrentTasks").update(compactionTaskExecutor.getActiveCount());
+                metrics.histogram("compactor.concurrentTasks").update(compactionTaskExecutor.getTaskCount());
 
                 for (Future<?> taskFuture : taskFutures) {
                     try {
@@ -196,7 +206,6 @@ public class Compactor {
             }
         }, null);
 
-        pendingCompactions.add(task);
         compactionExecutor.execute(task);
 
         return task;

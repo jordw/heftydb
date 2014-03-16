@@ -34,7 +34,7 @@ public class Config {
         private int tableCompactionThreads = 8;
         private long tableCacheSize = 128000000;
         private long indexCacheSize = 32000000;
-        private long maxCompactionRate = 16384000;
+        private long maxCompactionRate = 32768000;
         private long maxWriteRate = 32768000;
         private boolean printMetrics = false;
         private Path tableDirectory;
