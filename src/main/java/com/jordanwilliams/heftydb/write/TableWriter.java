@@ -127,7 +127,7 @@ public class TableWriter {
 
     private void writeMemoryTable(final Table tableToWrite) {
         final FileTableWriter.Task task = new FileTableWriter.Task.Builder().tableId(tableToWrite.id()).level(1)
-                .paths(paths).config(config).source(tableToWrite.ascendingIterator(Long.MAX_VALUE)).tupleCount
+                .paths(paths).config(config).source(tableToWrite.ascendingIterator(snapshots.minimumRetainedId())).tupleCount
                         (tableToWrite.tupleCount()).throttle(Throttle.MAX).callback(new FileTableWriter.Task.Callback
                         () {
             @Override
