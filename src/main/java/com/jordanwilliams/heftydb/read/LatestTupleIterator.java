@@ -47,7 +47,7 @@ public class LatestTupleIterator implements CloseableIterator<Tuple> {
             return true;
         }
 
-        Tuple tuple = fetchNextRecord();
+        Tuple tuple = fetchNextTuple();
 
         if (tuple == null) {
             return false;
@@ -72,7 +72,7 @@ public class LatestTupleIterator implements CloseableIterator<Tuple> {
         throw new UnsupportedOperationException();
     }
 
-    private Tuple fetchNextRecord() {
+    private Tuple fetchNextTuple() {
         while (tupleIterator.hasNext()) {
             Tuple next = tupleIterator.next();
 

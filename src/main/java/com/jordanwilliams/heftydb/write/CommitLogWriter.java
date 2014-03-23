@@ -26,7 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * Writes a CommitLog file.
+ * Writes a CommitLog file. Each write can optionally be fsynced if required.
  */
 public class CommitLogWriter implements Closeable {
 

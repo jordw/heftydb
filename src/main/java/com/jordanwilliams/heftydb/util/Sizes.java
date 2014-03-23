@@ -16,7 +16,9 @@
 
 package com.jordanwilliams.heftydb.util;
 
-
+/**
+ * JVM primitive sizes in bytes.
+ */
 public class Sizes {
 
     public static int LONG_SIZE = 8;
