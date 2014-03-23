@@ -30,6 +30,7 @@ public class Snapshots {
 
     public Snapshots(long startingSnapshotId) {
         this.currentSnapshotId.set(startingSnapshotId);
+        retainedSnapshots.add(Long.MAX_VALUE);
     }
 
     public long nextId() {
