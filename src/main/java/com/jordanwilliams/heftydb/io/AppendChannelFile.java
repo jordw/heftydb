@@ -28,6 +28,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * A buffered, append only FileChannel wrapper class.
+ */
 public class AppendChannelFile implements AppendFile {
 
     private static final int APPEND_BUFFER_SIZE = JVMUnsafe.unsafe.pageSize();

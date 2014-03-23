@@ -21,6 +21,9 @@ import com.jordanwilliams.heftydb.table.Table;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a single CompactionTask.
+ */
 public class CompactionTask {
 
     public enum Priority {

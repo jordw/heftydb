@@ -16,6 +16,10 @@
 
 package com.jordanwilliams.heftydb.util;
 
+/**
+ * A simple xor shift random number generator. Generates a predicatble stream of pseudo-random numbers from a
+ * starting seed.
+ */
 public class XORShiftRandom {
 
     private long last;

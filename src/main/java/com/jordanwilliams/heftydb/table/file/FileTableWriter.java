@@ -35,8 +35,14 @@ import java.nio.file.StandardCopyOption;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Writes a Table file from a stream of sorted records.
+ */
 public class FileTableWriter {
 
+    /**
+     * Provides a handy runnable for executing a self-contained FileTableWriter on a background thread.
+     */
     public static class Task implements Runnable {
 
         public static class Builder {

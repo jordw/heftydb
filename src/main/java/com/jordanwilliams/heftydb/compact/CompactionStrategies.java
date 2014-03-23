@@ -22,6 +22,9 @@ import com.jordanwilliams.heftydb.compact.planner.SizeTieredCompactionPlanner;
 
 import java.util.Collections;
 
+/**
+ * Contains built in compaction strategies.
+ */
 public enum CompactionStrategies implements CompactionStrategy {
 
     SIZE_TIERED_COMPACTION_STRATEGY {

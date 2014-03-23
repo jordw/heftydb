@@ -25,6 +25,10 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * A CloseableIterator that merges streams of Tuples from multiple Tables. The Iterator is notified when the set of
+ * tables in the database changes and refreshes its delegate iterator from a provided iterator source.
+ */
 public class TableAggregationIterator implements CloseableIterator<Tuple> {
 
     public interface Source {

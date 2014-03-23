@@ -22,7 +22,7 @@ import com.jordanwilliams.heftydb.cache.BlockCache;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.metrics.Metrics;
-import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.SortedByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 
@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A SortedByteMap wrapper
+ */
 public class TupleBlock implements Iterable<Tuple>, Offheap {
 
     public static class Cache {
@@ -78,7 +81,7 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
 
     public static class Builder {
 
-        private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
+        private final SortedByteMap.Builder byteMapBuilder = new SortedByteMap.Builder();
         private int size;
 
         public void addRecord(Tuple tuple) {
@@ -97,9 +100,9 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
 
     private class TupleIterator implements Iterator<Tuple> {
 
-        private final Iterator<ByteMap.Entry> entryIterator;
+        private final Iterator<SortedByteMap.Entry> entryIterator;
 
-        private TupleIterator(Iterator<ByteMap.Entry> entryIterator) {
+        private TupleIterator(Iterator<SortedByteMap.Entry> entryIterator) {
             this.entryIterator = entryIterator;
         }
 
@@ -110,7 +113,7 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
 
         @Override
         public Tuple next() {
-            ByteMap.Entry nextEntry = entryIterator.next();
+            SortedByteMap.Entry nextEntry = entryIterator.next();
             return new Tuple(nextEntry.key(), nextEntry.value());
         }
 
@@ -120,16 +123,16 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
         }
     }
 
-    private final ByteMap byteMap;
+    private final SortedByteMap sortedByteMap;
 
-    public TupleBlock(ByteMap byteMap) {
-        this.byteMap = byteMap;
+    public TupleBlock(SortedByteMap sortedByteMap) {
+        this.sortedByteMap = sortedByteMap;
     }
 
     public Tuple get(Key key) {
-        int closestIndex = byteMap.floorIndex(key);
+        int closestIndex = sortedByteMap.floorIndex(key);
 
-        if (closestIndex < 0 || closestIndex >= byteMap.entryCount()) {
+        if (closestIndex < 0 || closestIndex >= sortedByteMap.entryCount()) {
             return null;
         }
 
@@ -142,29 +145,29 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
     }
 
     public Iterator<Tuple> ascendingIterator() {
-        return new TupleIterator(byteMap.ascendingIterator());
+        return new TupleIterator(sortedByteMap.ascendingIterator());
     }
 
     public Iterator<Tuple> ascendingIterator(Key key) {
-        return new TupleIterator(byteMap.ascendingIterator(key));
+        return new TupleIterator(sortedByteMap.ascendingIterator(key));
     }
 
     public Iterator<Tuple> descendingIterator() {
-        return new TupleIterator(byteMap.descendingIterator());
+        return new TupleIterator(sortedByteMap.descendingIterator());
     }
 
     public Iterator<Tuple> descendingIterator(Key key) {
-        return new TupleIterator(byteMap.descendingIterator(key));
+        return new TupleIterator(sortedByteMap.descendingIterator(key));
     }
 
     @Override
     public Iterator<Tuple> iterator() {
-        return new TupleIterator(byteMap.ascendingIterator());
+        return new TupleIterator(sortedByteMap.ascendingIterator());
     }
 
     @Override
     public MemoryPointer memory() {
-        return byteMap.memory();
+        return sortedByteMap.memory();
     }
 
     @Override
@@ -178,7 +181,7 @@ public class TupleBlock implements Iterable<Tuple>, Offheap {
     }
 
     private Tuple deserialize(int index) {
-        ByteMap.Entry entry = byteMap.get(index);
+        SortedByteMap.Entry entry = sortedByteMap.get(index);
         return new Tuple(entry.key(), entry.value());
     }
 }

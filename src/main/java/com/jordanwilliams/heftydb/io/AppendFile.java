@@ -20,6 +20,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * An append only file.
+ */
 public interface AppendFile extends Closeable {
 
     public long append(ByteBuffer buffer) throws IOException;

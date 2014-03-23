@@ -25,6 +25,9 @@ import com.jordanwilliams.heftydb.state.Paths;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * Writes a BloomFilter out to a file.
+ */
 public class TableBloomFilterWriter {
 
     private static final double FALSE_POSITIVE_PROBABILITY = 0.01;

@@ -21,6 +21,9 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
 
+/**
+ * A wrapper class that groups a Key and Value together.
+ */
 public class Tuple implements Comparable<Tuple> {
 
     public static Serializer<Tuple> SERIALIZER = new Serializer<Tuple>() {

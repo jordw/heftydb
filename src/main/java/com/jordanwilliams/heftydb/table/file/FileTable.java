@@ -25,7 +25,7 @@ import com.jordanwilliams.heftydb.io.ImmutableChannelFile;
 import com.jordanwilliams.heftydb.io.ImmutableFile;
 import com.jordanwilliams.heftydb.metrics.CacheHitGauge;
 import com.jordanwilliams.heftydb.metrics.Metrics;
-import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.SortedByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.read.LatestTupleIterator;
@@ -40,6 +40,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Provides a read-only view on a Table file.
+ */
 public class FileTable implements Table {
 
     private class AscendingBlockIterator implements Iterator<TupleBlock> {
@@ -423,7 +426,7 @@ public class FileTable implements Table {
             ByteBuffer recordBlockBuffer = recordBlockPointer.directBuffer();
             tableFile.read(recordBlockBuffer, offset);
             recordBlockBuffer.rewind();
-            return new TupleBlock(new ByteMap(recordBlockPointer));
+            return new TupleBlock(new SortedByteMap(recordBlockPointer));
         } catch (IOException e) {
             recordBlockPointer.release();
             throw e;

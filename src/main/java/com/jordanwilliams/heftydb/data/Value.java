@@ -20,6 +20,9 @@ import com.jordanwilliams.heftydb.util.ByteBuffers;
 
 import java.nio.ByteBuffer;
 
+/**
+ * A wrapper class around a ByteBuffer that encapsulates a database Value.
+ */
 public class Value implements Comparable<Value> {
 
     public static Value TOMBSTONE_VALUE = new Value(ByteBuffers.EMPTY_BUFFER);

@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Wraps a set of Tables and tracks compaction status for each table.
+ */
 public class CompactionTables {
 
     private final Set<Long> alreadyCompactedTables = new HashSet<Long>();

@@ -28,6 +28,10 @@ import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+/**
+ * A a generic Iterator that merges multiple sorted Iterators into a single sorted Iterator.
+ * @param <T>
+ */
 public class MergingIterator<T extends Comparable> implements CloseableIterator<T> {
 
     private static class ComparableIterator<T extends Comparable> implements PeekableIterator<T>,

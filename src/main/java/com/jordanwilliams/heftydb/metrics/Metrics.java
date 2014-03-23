@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A registry of metrics that are recorded within a database instance.
+ */
 public class Metrics {
 
     private static final String METRIC_PREFIX = "heftydb.";

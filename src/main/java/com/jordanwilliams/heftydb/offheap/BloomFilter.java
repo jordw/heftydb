@@ -22,6 +22,10 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
 
+/**
+ * An immutable bloom filter that is backed by an off-heap BitSet. Uses similar hashing techniques as the Guava bloom
+ * filter, but is more efficient and creates less garbage.
+ */
 public class BloomFilter implements Offheap {
 
     public static class Builder {

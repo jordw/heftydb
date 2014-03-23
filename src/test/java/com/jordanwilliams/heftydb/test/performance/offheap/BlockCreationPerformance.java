@@ -22,7 +22,7 @@ import com.codahale.metrics.Timer;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.index.IndexRecord;
-import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.SortedByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.test.generator.KeyValueGenerator;
 import com.jordanwilliams.heftydb.test.helper.PerformanceHelper;
@@ -60,7 +60,7 @@ public class BlockCreationPerformance {
 
         for (int i = 0; i < iterations; i++) {
             Timer.Context watch = timer.time();
-            block = new IndexBlock(new ByteMap(blockPointer));
+            block = new IndexBlock(new SortedByteMap(blockPointer));
             watch.stop();
         }
 

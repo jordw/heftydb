@@ -18,6 +18,10 @@ package com.jordanwilliams.heftydb.data;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Encapsulates a database Key. Contains both a ByteBuffer with the Key data as well as a long that represents the
+ * snapshot that the Key was written at.
+ */
 public class Key implements Comparable<Key> {
 
     private final ByteBuffer data;

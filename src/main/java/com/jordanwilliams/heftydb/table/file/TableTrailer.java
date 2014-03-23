@@ -22,6 +22,9 @@ import com.jordanwilliams.heftydb.io.ImmutableFile;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * Encapsulates meta data stored at the end of a Table file.
+ */
 public class TableTrailer {
 
     public static final int SIZE = 28;

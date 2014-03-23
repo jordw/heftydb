@@ -20,6 +20,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * An immutable file.
+ */
 public interface ImmutableFile extends Closeable {
 
     public long read(ByteBuffer bufferToRead, long position) throws IOException;

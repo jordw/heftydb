@@ -21,6 +21,9 @@ import com.jordanwilliams.heftydb.compact.CompactionStrategy;
 
 import java.nio.file.Path;
 
+/**
+ * Encapsulates all of the tunable values for a database instance.
+ */
 public class Config {
 
     public static class Builder {

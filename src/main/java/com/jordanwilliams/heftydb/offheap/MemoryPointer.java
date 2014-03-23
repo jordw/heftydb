@@ -19,6 +19,11 @@ package com.jordanwilliams.heftydb.offheap;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Represents a reference counted pointer to a block of off-heap memory. Each MemoryPointer has a DirectByteBuffer
+ * instance that can be used to safely access the memory the pointer points to. Reference counting operations can be
+ * done safely from multiple concurrent threads.
+ */
 public class MemoryPointer {
 
     private final AtomicInteger retainCount = new AtomicInteger(1);

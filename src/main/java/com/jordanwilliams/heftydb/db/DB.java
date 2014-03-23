@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
+/**
+ * The public API for a database implementation.
+ */
 public interface DB {
 
     public Snapshot put(ByteBuffer key, ByteBuffer value) throws IOException;

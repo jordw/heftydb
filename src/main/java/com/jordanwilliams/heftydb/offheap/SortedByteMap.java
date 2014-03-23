@@ -28,7 +28,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
+/**
+ * A sorted block of key-value entries optimized for efficient binary search backed by off-heap memory. A binary search
+ * over a SortedByteMap requires no object allocations, and is thus quite fast.
+ */
+public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
 
     private static final Unsafe unsafe = JVMUnsafe.unsafe;
     private static final int PAGE_SIZE = unsafe.pageSize();
@@ -68,8 +72,8 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             entries.add(new Entry(key, value));
         }
 
-        public ByteMap build() {
-            return new ByteMap(serializeEntries());
+        public SortedByteMap build() {
+            return new SortedByteMap(serializeEntries());
         }
 
         private MemoryPointer serializeEntries() {
@@ -203,7 +207,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
     private final ByteBuffer directBuffer;
     private final int entryCount;
 
-    public ByteMap(MemoryPointer pointer) {
+    public SortedByteMap(MemoryPointer pointer) {
         this.pointer = pointer;
         this.directBuffer = pointer.directBuffer();
         this.entryCount = unsafe.getInt(pointer.address());
@@ -304,7 +308,7 @@ public class ByteMap implements Offheap, Iterable<ByteMap.Entry> {
             entries.add(entry);
         }
 
-        return "ByteMap{entries=" + entries + "}";
+        return "SortedByteMap{entries=" + entries + "}";
     }
 
     private Entry getEntry(int index) {

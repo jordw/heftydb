@@ -17,7 +17,7 @@
 package com.jordanwilliams.heftydb.test.unit.offheap;
 
 import com.jordanwilliams.heftydb.data.Tuple;
-import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.SortedByteMap;
 import com.jordanwilliams.heftydb.test.base.ParameterizedTupleTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,26 +25,26 @@ import org.junit.Test;
 import java.util.Iterator;
 import java.util.List;
 
-public class ByteMapTest extends ParameterizedTupleTest {
+public class SortedByteMapTest extends ParameterizedTupleTest {
 
-    private final ByteMap byteMap;
+    private final SortedByteMap sortedByteMap;
 
-    public ByteMapTest(List<Tuple> testTuples) {
+    public SortedByteMapTest(List<Tuple> testTuples) {
         super(testTuples);
 
-        ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
+        SortedByteMap.Builder byteMapBuilder = new SortedByteMap.Builder();
 
         for (Tuple tuple : tuples) {
             byteMapBuilder.add(tuple.key(), tuple.value());
         }
 
-        this.byteMap = byteMapBuilder.build();
+        this.sortedByteMap = byteMapBuilder.build();
     }
 
     @Test
     public void getTest() {
         for (int i = 0; i < tuples.size(); i++) {
-            ByteMap.Entry entry = byteMap.get(i);
+            SortedByteMap.Entry entry = sortedByteMap.get(i);
             Tuple tuple = tuples.get(i);
             Assert.assertEquals("Keys match", tuple.key(), entry.key());
             Assert.assertEquals("Values match", tuple.value(), entry.value());
@@ -55,8 +55,8 @@ public class ByteMapTest extends ParameterizedTupleTest {
     public void floorIndexMatchTest() {
         for (int i = 0; i < tuples.size(); i++) {
             Tuple tuple = tuples.get(i);
-            int floorIndex = byteMap.floorIndex(tuple.key());
-            ByteMap.Entry entry = byteMap.get(floorIndex);
+            int floorIndex = sortedByteMap.floorIndex(tuple.key());
+            SortedByteMap.Entry entry = sortedByteMap.get(floorIndex);
             Assert.assertEquals("Keys match", tuple.key(), entry.key());
             Assert.assertEquals("Values match", tuple.value(), entry.value());
         }
@@ -66,11 +66,11 @@ public class ByteMapTest extends ParameterizedTupleTest {
     @Test
     public void iteratorTest() {
         Iterator<Tuple> recordIterator = tuples.iterator();
-        Iterator<ByteMap.Entry> byteMapIterator = byteMap.iterator();
+        Iterator<SortedByteMap.Entry> byteMapIterator = sortedByteMap.iterator();
 
         while (recordIterator.hasNext()) {
             Tuple tupleNext = recordIterator.next();
-            ByteMap.Entry byteMapNext = byteMapIterator.next();
+            SortedByteMap.Entry byteMapNext = byteMapIterator.next();
 
             Assert.assertEquals("Records match", tupleNext, new Tuple(byteMapNext.key(), byteMapNext.value()));
         }

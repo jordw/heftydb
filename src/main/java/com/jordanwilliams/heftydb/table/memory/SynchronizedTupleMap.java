@@ -31,6 +31,10 @@ import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * A SortedTupleMap backed by a TreeMap with a ReentrantReadWrite lock guarding access. This class is safe to use
+ * from multiple concurrent threads.
+ */
 public class SynchronizedTupleMap implements SortedTupleMap {
 
     private class LockingIterator implements CloseableIterator<Tuple> {

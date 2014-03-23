@@ -18,6 +18,9 @@ package com.jordanwilliams.heftydb.compact;
 
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 
+/**
+ * Represents a particular CompactionPlanner.
+ */
 public interface CompactionStrategy {
 
     public CompactionPlanner initialize(CompactionTables tables);

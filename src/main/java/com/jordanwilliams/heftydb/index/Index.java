@@ -22,7 +22,7 @@ import com.jordanwilliams.heftydb.io.ImmutableChannelFile;
 import com.jordanwilliams.heftydb.io.ImmutableFile;
 import com.jordanwilliams.heftydb.metrics.CacheHitGauge;
 import com.jordanwilliams.heftydb.metrics.Metrics;
-import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.SortedByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryAllocator;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -30,6 +30,9 @@ import com.jordanwilliams.heftydb.state.Paths;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * Represents a read-only view of a B+tree database index file.
+ */
 public class Index {
 
     private static final int ROOT_INDEX_BLOCK_OFFSET = 8;
@@ -99,7 +102,7 @@ public class Index {
             ByteBuffer indexBuffer = indexPointer.directBuffer();
             indexFile.read(indexBuffer, blockOffset);
             indexBuffer.rewind();
-            return new IndexBlock(new ByteMap(indexPointer));
+            return new IndexBlock(new SortedByteMap(indexPointer));
         } catch (IOException e) {
             indexPointer.release();
             throw e;

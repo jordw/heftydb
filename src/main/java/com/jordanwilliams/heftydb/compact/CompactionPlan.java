@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A collection of CompactionTasks that can execute in parallel.
+ */
 public class CompactionPlan implements Iterable<CompactionTask> {
 
     private final List<CompactionTask> tasks;

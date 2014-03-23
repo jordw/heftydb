@@ -19,6 +19,9 @@ package com.jordanwilliams.heftydb.index;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.util.Sizes;
 
+/**
+ * Represents a single entry in an IndexBlock.
+ */
 public class IndexRecord {
 
     private final Key startKey;

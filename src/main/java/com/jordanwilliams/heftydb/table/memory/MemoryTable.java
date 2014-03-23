@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Provides a MutableTable that is kept in Memory. Records are kept in sorted order as they are inserted.
+ */
 public class MemoryTable implements MutableTable {
 
     private final long id;

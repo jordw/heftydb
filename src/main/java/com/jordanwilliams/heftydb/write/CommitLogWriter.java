@@ -25,6 +25,9 @@ import com.jordanwilliams.heftydb.util.XORShiftRandom;
 import java.io.Closeable;
 import java.io.IOException;
 
+/**
+ * Writes a CommitLog file.
+ */
 public class CommitLogWriter implements Closeable {
 
     private final long tableId;

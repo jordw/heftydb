@@ -18,6 +18,9 @@ package com.jordanwilliams.heftydb.offheap;
 
 import java.lang.reflect.Field;
 
+/**
+ * Provides sane access to sun.misc.Unsafe
+ */
 public class JVMUnsafe {
 
     public static final sun.misc.Unsafe unsafe;

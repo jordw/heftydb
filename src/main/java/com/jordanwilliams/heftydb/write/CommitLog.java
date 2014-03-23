@@ -31,6 +31,11 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+/**
+ * Provides a read-only view on a CommitLog file. Commit logs are written with a predictable stream of pseudo random
+ * numbers with each record to ensure consistency. A commit log file that contains corrupted records is truncated at
+ * the first record that fails this consistency check.
+ */
 public class CommitLog implements Iterable<Tuple>, Closeable {
 
     private class LogIterator implements Iterator<Tuple> {

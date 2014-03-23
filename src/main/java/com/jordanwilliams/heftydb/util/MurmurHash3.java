@@ -16,6 +16,9 @@
 
 package com.jordanwilliams.heftydb.util;
 
+/**
+ * An implementation of MurmurHash3 based on https://code.google.com/p/smhasher/source/browse/trunk/MurmurHash3.cpp
+ */
 public class MurmurHash3 {
 
     private static long getblock(byte[] key, int i) {

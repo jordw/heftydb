@@ -34,6 +34,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
+/**
+ * Encapsulates the public database API
+ */
 public class HeftyDB implements DB {
 
     private class InstrumentedScanIterator implements CloseableIterator<Record> {

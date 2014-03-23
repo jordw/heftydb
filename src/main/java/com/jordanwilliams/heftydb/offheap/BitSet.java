@@ -20,6 +20,9 @@ import com.jordanwilliams.heftydb.util.Sizes;
 
 import java.nio.ByteBuffer;
 
+/**
+ * An immutable bit set that is backed by off-heap memory.
+ */
 public class BitSet implements Offheap {
 
     public static class Builder {

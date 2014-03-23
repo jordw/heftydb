@@ -22,7 +22,7 @@ import com.jordanwilliams.heftydb.cache.BlockCache;
 import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.metrics.Metrics;
-import com.jordanwilliams.heftydb.offheap.ByteMap;
+import com.jordanwilliams.heftydb.offheap.SortedByteMap;
 import com.jordanwilliams.heftydb.offheap.MemoryPointer;
 import com.jordanwilliams.heftydb.offheap.Offheap;
 import com.jordanwilliams.heftydb.util.Sizes;
@@ -32,6 +32,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A SortedByteMap wrapper that represents a block of IndexRecords. An IndexBlock is a page in the B+tree Index for a
+ * database file.
+ */
 public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     public static class Cache {
@@ -80,7 +84,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     public static class Builder {
 
-        private final ByteMap.Builder byteMapBuilder = new ByteMap.Builder();
+        private final SortedByteMap.Builder byteMapBuilder = new SortedByteMap.Builder();
 
         private int size;
 
@@ -109,9 +113,9 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     private class RecordIterator implements Iterator<IndexRecord> {
 
-        private final Iterator<ByteMap.Entry> entryIterator;
+        private final Iterator<SortedByteMap.Entry> entryIterator;
 
-        private RecordIterator(Iterator<ByteMap.Entry> entryIterator) {
+        private RecordIterator(Iterator<SortedByteMap.Entry> entryIterator) {
             this.entryIterator = entryIterator;
         }
 
@@ -122,7 +126,7 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
         @Override
         public IndexRecord next() {
-            ByteMap.Entry nextEntry = entryIterator.next();
+            SortedByteMap.Entry nextEntry = entryIterator.next();
             return deserialize(nextEntry);
         }
 
@@ -132,10 +136,10 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
         }
     }
 
-    private final ByteMap byteMap;
+    private final SortedByteMap sortedByteMap;
 
-    public IndexBlock(ByteMap byteMap) {
-        this.byteMap = byteMap;
+    public IndexBlock(SortedByteMap sortedByteMap) {
+        this.sortedByteMap = sortedByteMap;
     }
 
     public IndexRecord startRecord() {
@@ -143,14 +147,14 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     }
 
     public IndexRecord get(Key key) {
-        int closestIndex = byteMap.floorIndex(key);
+        int closestIndex = sortedByteMap.floorIndex(key);
 
         if (closestIndex < 0) {
             return null;
         }
 
-        if (closestIndex >= byteMap.entryCount()) {
-            closestIndex = byteMap.entryCount() - 1;
+        if (closestIndex >= sortedByteMap.entryCount()) {
+            closestIndex = sortedByteMap.entryCount() - 1;
         }
 
         return deserialize(closestIndex);
@@ -158,28 +162,28 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
 
     @Override
     public MemoryPointer memory() {
-        return byteMap.memory();
+        return sortedByteMap.memory();
     }
 
     public Iterator<IndexRecord> ascendingIterator() {
-        return new RecordIterator(byteMap.ascendingIterator());
+        return new RecordIterator(sortedByteMap.ascendingIterator());
     }
 
     public Iterator<IndexRecord> ascendingIterator(Key key) {
-        return new RecordIterator(byteMap.ascendingIterator(key));
+        return new RecordIterator(sortedByteMap.ascendingIterator(key));
     }
 
     public Iterator<IndexRecord> descendingIterator() {
-        return new RecordIterator(byteMap.descendingIterator());
+        return new RecordIterator(sortedByteMap.descendingIterator());
     }
 
     public Iterator<IndexRecord> descendingIterator(Key key) {
-        return new RecordIterator(byteMap.descendingIterator(key));
+        return new RecordIterator(sortedByteMap.descendingIterator(key));
     }
 
     @Override
     public Iterator<IndexRecord> iterator() {
-        return new RecordIterator(byteMap.ascendingIterator());
+        return new RecordIterator(sortedByteMap.ascendingIterator());
     }
 
     @Override
@@ -194,11 +198,11 @@ public class IndexBlock implements Iterable<IndexRecord>, Offheap {
     }
 
     private IndexRecord deserialize(int index) {
-        ByteMap.Entry entry = byteMap.get(index);
+        SortedByteMap.Entry entry = sortedByteMap.get(index);
         return deserialize(entry);
     }
 
-    private IndexRecord deserialize(ByteMap.Entry entry) {
+    private IndexRecord deserialize(SortedByteMap.Entry entry) {
         ByteBuffer entryValueBuffer = entry.value().data();
         long blockOffset = entryValueBuffer.getLong(0);
         int blockSize = entryValueBuffer.getInt(Sizes.LONG_SIZE);

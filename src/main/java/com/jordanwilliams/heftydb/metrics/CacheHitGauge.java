@@ -19,6 +19,9 @@ package com.jordanwilliams.heftydb.metrics;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.RatioGauge;
 
+/**
+ * A RatioGauge that represents a cache hit rate.
+ */
 public class CacheHitGauge extends RatioGauge {
 
     private final Meter hits = new Meter();

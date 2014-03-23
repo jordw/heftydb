@@ -20,6 +20,9 @@ package com.jordanwilliams.heftydb.offheap.allocator;
 import com.jordanwilliams.heftydb.offheap.JVMUnsafe;
 import sun.misc.Unsafe;
 
+/**
+ * An off-heap memory allocator that uses sun.misc.Unsafe
+ */
 public class UnsafeAllocator implements Allocator {
 
     private static final Unsafe unsafe = JVMUnsafe.unsafe;

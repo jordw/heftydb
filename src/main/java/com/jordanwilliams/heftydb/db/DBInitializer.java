@@ -35,6 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Restores the state of an existing database and does any clean up needed to get into a consistent state.
+ */
 public class DBInitializer {
 
     private final Config config;

@@ -24,6 +24,9 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
+/**
+ * A read only wrapper around a FileChannel
+ */
 public class ImmutableChannelFile implements ImmutableFile {
 
     private static final ThreadLocal<ByteBuffer> primitiveBuffer = new ThreadLocal<ByteBuffer>() {

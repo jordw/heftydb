@@ -18,6 +18,9 @@ package com.jordanwilliams.heftydb.io;
 
 import com.google.common.util.concurrent.RateLimiter;
 
+/**
+ * An I/O rate limiter that uses the Token Bucket algorithm to limit throughput.
+ */
 public class Throttle {
 
     public static Throttle MAX = new Throttle(Integer.MAX_VALUE);

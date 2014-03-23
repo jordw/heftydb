@@ -20,6 +20,9 @@ import com.jordanwilliams.heftydb.data.Key;
 import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
 
+/**
+ * Represents an immutable collection of sorted record in a database.
+ */
 public interface Table extends Iterable<Tuple>, Comparable<Table> {
 
     public long id();

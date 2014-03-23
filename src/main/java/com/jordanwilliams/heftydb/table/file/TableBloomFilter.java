@@ -28,6 +28,9 @@ import com.jordanwilliams.heftydb.state.Paths;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * Reads an immutable BloomFilter from a file.
+ */
 public class TableBloomFilter implements Offheap {
 
     private final BloomFilter bloomFilter;

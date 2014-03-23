@@ -27,6 +27,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * Incrementally writes a B+tree database index file for a stream of sorted records.
+ */
 public class IndexWriter {
 
     private final AppendFile indexFile;

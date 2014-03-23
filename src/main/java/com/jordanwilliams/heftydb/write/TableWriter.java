@@ -44,6 +44,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Handles all write operations to a database. Each write first goes into a MemoryTable,
+ * which is written to disk on a background thread once it is full. Writes are serialized so that only one writer
+ * thread may proceed at a time.
+ */
 public class TableWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(TableWriter.class);

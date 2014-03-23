@@ -16,6 +16,9 @@
 
 package com.jordanwilliams.heftydb.offheap.allocator;
 
+/**
+ * An off-heap memory allocator.
+ */
 public interface Allocator {
 
     public long allocate(long bytes);

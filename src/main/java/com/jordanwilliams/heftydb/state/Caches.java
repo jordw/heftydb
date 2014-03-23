@@ -19,6 +19,9 @@ package com.jordanwilliams.heftydb.state;
 import com.jordanwilliams.heftydb.index.IndexBlock;
 import com.jordanwilliams.heftydb.table.file.TupleBlock;
 
+/**
+ * Encapsulates the BlockCaches used in a database.
+ */
 public class Caches {
 
     private final TupleBlock.Cache recordBlockCache;

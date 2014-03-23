@@ -27,6 +27,9 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * A class that allocates off-heap memory and returns reference counted pointers to these blocks of memory.
+ */
 public class MemoryAllocator {
 
     private static final Unsafe unsafe = JVMUnsafe.unsafe;

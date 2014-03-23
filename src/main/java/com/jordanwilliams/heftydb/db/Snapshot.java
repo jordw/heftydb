@@ -16,6 +16,9 @@
 
 package com.jordanwilliams.heftydb.db;
 
+/**
+ * Represents a database snapshot.
+ */
 public class Snapshot implements Comparable<Snapshot> {
 
     public static final Snapshot MAX = new Snapshot(Long.MAX_VALUE);

@@ -21,6 +21,9 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.data.Value;
 import com.jordanwilliams.heftydb.util.CloseableIterator;
 
+/**
+ * Provides the underlying sorted storage for a MemoryTable.
+ */
 public interface SortedTupleMap extends Iterable<Tuple> {
 
     public void put(Key key, Value value);

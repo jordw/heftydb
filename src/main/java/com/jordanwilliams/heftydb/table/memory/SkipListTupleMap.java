@@ -27,6 +27,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+/**
+ * A SortedTupleMap backed by a ConcurrentSkipListMap. This class is safe to use from multiple concurrent threads.
+ */
 public class SkipListTupleMap implements SortedTupleMap {
 
     private final ConcurrentNavigableMap<Key, Tuple> tuples = new ConcurrentSkipListMap<Key, Tuple>();

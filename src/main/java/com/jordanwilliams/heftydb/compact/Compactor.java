@@ -49,6 +49,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Orchestrates the scheduling and execution of CompactionPlans provided by the contained CompactionPlanner.
+ */
 public class Compactor {
 
     private static final Logger logger = LoggerFactory.getLogger(Compactor.class);

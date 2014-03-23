@@ -18,6 +18,9 @@ package com.jordanwilliams.heftydb.state;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Keeps track of Snapshot ids in a database.
+ */
 public class Snapshots {
 
     private final AtomicLong currentSnapshotId = new AtomicLong();

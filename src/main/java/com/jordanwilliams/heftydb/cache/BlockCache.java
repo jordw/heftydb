@@ -23,6 +23,10 @@ import com.jordanwilliams.heftydb.offheap.Offheap;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * A cache designed for concurrent access of Offheap data blocks keyed off of a particular Table.
+ * @param <T>
+ */
 public class BlockCache<T extends Offheap> {
 
     public static class Entry {

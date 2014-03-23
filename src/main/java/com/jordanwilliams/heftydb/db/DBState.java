@@ -24,6 +24,9 @@ import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.Collection;
 
+/**
+ * Represents the state of a database.
+ */
 public class DBState {
 
     private final Tables tables;

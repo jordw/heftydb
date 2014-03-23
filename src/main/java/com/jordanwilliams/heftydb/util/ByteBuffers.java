@@ -19,6 +19,9 @@ package com.jordanwilliams.heftydb.util;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
+/**
+ * Some utilities for working with ByteBuffers.
+ */
 public class ByteBuffers {
 
     public static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);

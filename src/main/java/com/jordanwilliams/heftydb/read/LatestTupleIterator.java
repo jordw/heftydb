@@ -25,6 +25,10 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * An Iterator that filters a sorted stream of Tuples, and returns only a single Tuple for each unique Key in the
+ * stream that is the latest version of that particular Tuple according to the snapshot id associated with each key.
+ */
 public class LatestTupleIterator implements CloseableIterator<Tuple> {
 
     private final CloseableIterator<Tuple> tupleIterator;

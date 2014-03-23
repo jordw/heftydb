@@ -30,6 +30,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Handles read operations across all Tables in a database.
+ */
 public class TableReader implements Iterable<Tuple> {
 
     private final TableAggregationIterator.Source ascendingIteratorSource = new TableAggregationIterator.Source() {

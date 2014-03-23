@@ -23,6 +23,9 @@ import com.jordanwilliams.heftydb.util.CloseableIterator;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * A public wrapper class that represents the results of a database read.
+ */
 public class Record implements Comparable<Record> {
 
     public static class TupleIterator implements CloseableIterator<Record> {
