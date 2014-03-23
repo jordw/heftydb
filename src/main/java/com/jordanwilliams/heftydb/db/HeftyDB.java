@@ -35,7 +35,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 
 /**
- * Encapsulates the public database API
+ * The main database API implementation
  */
 public class HeftyDB implements DB {
 
@@ -162,7 +162,7 @@ public class HeftyDB implements DB {
 
     @Override
     public synchronized Future<?> compact() throws IOException {
-        return compactor.scheduleCompaction(true);
+        return compactor.scheduleCompaction();
     }
 
     private Snapshot write(ByteBuffer key, ByteBuffer value, boolean fsync) throws IOException {

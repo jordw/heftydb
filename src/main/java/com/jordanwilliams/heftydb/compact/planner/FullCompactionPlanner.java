@@ -23,6 +23,9 @@ import com.jordanwilliams.heftydb.table.Table;
 
 import java.util.List;
 
+/**
+ * Compacts all tables into a single table.
+ */
 public class FullCompactionPlanner implements CompactionPlanner {
 
     private final CompactionTables tables;

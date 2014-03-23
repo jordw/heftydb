@@ -27,9 +27,12 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+/**
+ * Compacts tables into groups with overlapping key ranges once there are 10 tables at a particular size.
+ */
 public class SizeTieredCompactionPlanner implements CompactionPlanner {
 
-    private static final int MAX_LEVEL_TABLES = 4;
+    private static final int MAX_LEVEL_TABLES = 10;
 
     private final CompactionTables tables;
 

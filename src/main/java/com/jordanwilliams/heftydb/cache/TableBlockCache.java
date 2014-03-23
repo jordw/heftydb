@@ -24,10 +24,10 @@ import com.jordanwilliams.heftydb.offheap.Offheap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A cache designed for concurrent access of Offheap data blocks keyed off of a particular Table.
+ * A cache designed for concurrent access to Offheap data blocks keyed off of a particular Table.
  * @param <T>
  */
-public class BlockCache<T extends Offheap> {
+public class TableBlockCache<T extends Offheap> {
 
     public static class Entry {
 
@@ -82,7 +82,7 @@ public class BlockCache<T extends Offheap> {
     private final long maxSize;
     private final AtomicLong totalSize = new AtomicLong();
 
-    public BlockCache(long maxSize, Weigher<T> weigher) {
+    public TableBlockCache(long maxSize, Weigher<T> weigher) {
         cache = new ConcurrentLinkedHashMap.Builder<Entry, T>().concurrencyLevel(CONCURRENCY_LEVEL).weigher(weigher)
                 .listener(new EvictionListener<Entry, T>() {
             @Override

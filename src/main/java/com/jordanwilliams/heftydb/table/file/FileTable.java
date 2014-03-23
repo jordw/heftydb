@@ -41,7 +41,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * Provides a read-only view on a Table file.
+ * Provides a read-only view on a Table file. A Table file is a doubly linked list of TupleBlocks to allow for
+ * efficient iteration. These blocks make up the leaves of the B+tree provided by the Index file.
  */
 public class FileTable implements Table {
 

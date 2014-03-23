@@ -23,6 +23,9 @@ import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+/**
+ * Generates various file paths for all the files in a database.
+ */
 public class Paths {
 
     private static final String TABLE_EXT = ".table";

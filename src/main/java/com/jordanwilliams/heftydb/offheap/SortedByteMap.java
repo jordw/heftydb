@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * A sorted block of key-value entries optimized for efficient binary search backed by off-heap memory. A binary search
- * over a SortedByteMap requires no object allocations, and is thus quite fast.
+ * A sorted block of key-value entries optimized for efficient binary search and backed by off-heap memory. A binary
+ * search over a SortedByteMap requires no object allocations, and is thus quite fast.
  */
 public class SortedByteMap implements Offheap, Iterable<SortedByteMap.Entry> {
 

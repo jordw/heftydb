@@ -163,11 +163,11 @@ public class Compactor {
 
     public synchronized void evaluateCompaction() {
         if (compactionPlanner.needsCompaction()) {
-            scheduleCompaction(false);
+            scheduleCompaction();
         }
     }
 
-    public synchronized Future<?> scheduleCompaction(final boolean force) {
+    public synchronized Future<?> scheduleCompaction() {
 
         FutureTask<?> task = new FutureTask<Object>(new Runnable() {
             @Override
@@ -184,7 +184,7 @@ public class Compactor {
                 }
 
                 List<Future<?>> taskFutures = new ArrayList<Future<?>>();
-                Throttle compactionThrottle = force ? Throttle.MAX : new Throttle(config.maxCompactionRate());
+                Throttle compactionThrottle = new Throttle(config.maxCompactionRate());
 
                 for (CompactionTask task : compactionPlan) {
                     logger.debug("Compaction " + id + "  task : " + task);

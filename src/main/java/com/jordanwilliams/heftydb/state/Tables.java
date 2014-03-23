@@ -28,6 +28,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * A collection of all of the Tables in a database. Concurrent access from multiple threads is guarded by a
+ * ReentrantReadWriteLock.
+ */
 public class Tables implements Iterable<Table> {
 
     public interface ChangeHandler {

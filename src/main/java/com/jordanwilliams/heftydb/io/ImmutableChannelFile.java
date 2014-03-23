@@ -25,7 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- * A read only wrapper around a FileChannel
+ * A read only wrapper around a FileChannel.
  */
 public class ImmutableChannelFile implements ImmutableFile {
 
