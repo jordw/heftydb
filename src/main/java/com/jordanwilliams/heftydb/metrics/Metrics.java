@@ -16,15 +16,18 @@
 
 package com.jordanwilliams.heftydb.metrics;
 
-import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
+import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.UniformReservoir;
 import com.jordanwilliams.heftydb.db.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,19 +38,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class Metrics {
 
+    private static final Logger logger = LoggerFactory.getLogger(Metrics.class);
     private static final String METRIC_PREFIX = "heftydb.";
 
     private final Map<String, CacheHitGauge> gaugeCache = new ConcurrentHashMap<String, CacheHitGauge>();
     private final MetricRegistry metrics = new MetricRegistry();
-    private final ConsoleReporter reporter;
+    private final Slf4jReporter reporter;
+    private final JmxReporter jmxReporter;
 
     public Metrics(Config config) {
-        this.reporter = ConsoleReporter.forRegistry(metrics).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo
-                (TimeUnit.SECONDS).build();
+        this.reporter = Slf4jReporter.forRegistry(metrics).outputTo(logger).convertDurationsTo(TimeUnit.MILLISECONDS)
+                .convertRatesTo(TimeUnit.SECONDS).build();
 
-        if (config.autoPrintMetrics()) {
-            reporter.start(30, TimeUnit.SECONDS);
-        }
+        reporter.start(1, TimeUnit.MINUTES);
+
+        this.jmxReporter = JmxReporter.forRegistry(metrics).inDomain("HeftyDB @ " + config.tableDirectory().toString
+                ()).convertDurationsTo(TimeUnit.MILLISECONDS).convertRatesTo(TimeUnit.SECONDS).build();
+
+        jmxReporter.start();
 
         initMetrics();
     }

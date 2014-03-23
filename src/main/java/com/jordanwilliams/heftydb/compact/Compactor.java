@@ -26,6 +26,7 @@ import com.jordanwilliams.heftydb.metrics.Metrics;
 import com.jordanwilliams.heftydb.read.MergingIterator;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
+import com.jordanwilliams.heftydb.state.Snapshots;
 import com.jordanwilliams.heftydb.state.Tables;
 import com.jordanwilliams.heftydb.table.Table;
 import com.jordanwilliams.heftydb.table.file.FileTable;
@@ -76,7 +77,7 @@ public class Compactor {
 
                 for (Table table : compactionTask.tables()) {
                     compactionTables.markAsCompacted(table);
-                    tableIterators.add(table.ascendingIterator(Long.MAX_VALUE));
+                    tableIterators.add(table.ascendingIterator(snapshots.minimumRetainedId()));
                     tupleCount += table.tupleCount();
                 }
 
@@ -126,15 +127,17 @@ public class Compactor {
     private final CompactionPlanner compactionPlanner;
     private final Metrics metrics;
     private final AtomicInteger compactionId = new AtomicInteger();
+    private final Snapshots snapshots;
 
     public Compactor(Config config, Paths paths, Tables tables, Caches caches, CompactionStrategy compactionStrategy,
-                     Metrics metrics) {
+                     Metrics metrics, Snapshots snapshots) {
         this.config = config;
         this.paths = paths;
         this.tables = tables;
         this.compactionTables = new CompactionTables(tables);
         this.caches = caches;
         this.metrics = metrics;
+        this.snapshots = snapshots;
 
         int executorThreads = Math.max(config.tableCompactionThreads() / 2, 1);
 

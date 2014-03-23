@@ -16,6 +16,8 @@
 
 package com.jordanwilliams.heftydb.state;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class Snapshots {
 
     private final AtomicLong currentSnapshotId = new AtomicLong();
+    private final SortedSet<Long> retainedSnapshots = new TreeSet<Long>();
 
     public Snapshots(long startingSnapshotId) {
         this.currentSnapshotId.set(startingSnapshotId);
@@ -35,5 +38,17 @@ public class Snapshots {
 
     public long currentId() {
         return currentSnapshotId.get();
+    }
+
+    public long minimumRetainedId(){
+        return retainedSnapshots.first();
+    }
+
+    public synchronized void retain(long snapshotId){
+        retainedSnapshots.add(snapshotId);
+    }
+
+    public synchronized void release(long snapshotId){
+        retainedSnapshots.remove(snapshotId);
     }
 }

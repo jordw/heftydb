@@ -90,7 +90,7 @@ public class HeftyDB implements DB {
         this.snapshots = snapshots;
         this.tableWriter = new TableWriter(config, paths, tables, snapshots, caches, metrics);
         this.tableReader = new TableReader(tables, metrics);
-        this.compactor = new Compactor(config, paths, tables, caches, config.compactionStrategy(), metrics);
+        this.compactor = new Compactor(config, paths, tables, caches, config.compactionStrategy(), metrics, snapshots);
         this.metrics = metrics;
 
         this.writeTimer = metrics.timer("write");
@@ -146,6 +146,16 @@ public class HeftyDB implements DB {
     public CloseableIterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException {
         return new InstrumentedScanIterator(new Record.TupleIterator(tableReader.descendingIterator(new Key(key,
                 snapshot.id()), snapshot.id())));
+    }
+
+    @Override
+    public void retainSnapshot(Snapshot snapshot) {
+        snapshots.retain(snapshot.id());
+    }
+
+    @Override
+    public void releaseSnapshot(Snapshot snapshot) {
+        snapshots.release(snapshot.id());
     }
 
     @Override

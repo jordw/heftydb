@@ -45,6 +45,10 @@ public interface DB {
 
     public CloseableIterator<Record> descendingIterator(ByteBuffer key, Snapshot snapshot) throws IOException;
 
+    public void retainSnapshot(Snapshot snapshot);
+
+    public void releaseSnapshot(Snapshot snapshot);
+
     public void close() throws IOException;
 
     public void logMetrics();
