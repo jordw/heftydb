@@ -39,7 +39,7 @@ public class EnduranceTest {
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 60;
     private static final int LOAD_LEVEL = 2;
-    private static final int VALUE_SIZE = 100;
+    private static final int VALUE_SIZE = 1024;
     private static final int THREAD_SLEEP_TIME = 10;
 
     public static void main(String[] args) throws Exception {

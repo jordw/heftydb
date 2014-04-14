@@ -31,7 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A SortedByteMap wrapper
+ * A SortedByteMap wrapper that represents a sorted collection of Tuples. TupleBlocks are leaf pages in the B+tree
+ * that makes up a Table.
  */
 public class TupleBlock implements Iterable<Tuple>, Offheap {
 
