@@ -39,16 +39,30 @@ public class EnduranceTest {
     private static final int THREAD_COUNT = 16;
     private static final int RUNTIME_MINUTES = 60;
     private static final int LOAD_LEVEL = 2;
-    private static final int VALUE_SIZE = 1024;
+    private static final int VALUE_SIZE = 1000;
     private static final int THREAD_SLEEP_TIME = 10;
+    private static final int KEY_DUPLICATION_PROBABILITY = 20;
+
+    private static final Random random = new Random(System.nanoTime());
+
+    private static final AtomicLong maxSnapshotId = new AtomicLong();
+    private static final AtomicLong maxKey = new AtomicLong();
+    private static final AtomicLong maxVisibleKey = new AtomicLong();
+
+    private static long generateKey(){
+        int next = random.nextInt(100);
+
+        if (next <= KEY_DUPLICATION_PROBABILITY){
+            return (long) (random.nextDouble() * (maxVisibleKey.get()));
+        }
+
+        return maxSnapshotId.incrementAndGet();
+    }
 
     public static void main(String[] args) throws Exception {
         TestFileHelper.createTestDirectory();
         TestFileHelper.cleanUpTestFiles();
 
-        final AtomicLong maxSnapshotId = new AtomicLong();
-        final AtomicLong maxKey = new AtomicLong();
-        final AtomicLong maxVisibleKey = new AtomicLong();
         final AtomicBoolean finished = new AtomicBoolean();
 
         final KeyValueGenerator keyValueGenerator = new KeyValueGenerator();
@@ -71,11 +85,16 @@ public class EnduranceTest {
                             }
 
                             for (int i = 0; i < LOAD_LEVEL; i++) {
-                                String nextKey = Long.toString(maxKey.incrementAndGet());
+                                long generatedKey = generateKey();
+                                String nextKey = Long.toString(generatedKey);
                                 Snapshot maxSnapshot = db.put(ByteBuffers.fromString(nextKey),
                                         keyValueGenerator.testValue(VALUE_SIZE));
 
-                                maxVisibleKey.incrementAndGet();
+                                long currentMaxKey = maxVisibleKey.get();
+
+                                if (generatedKey > currentMaxKey){
+                                    maxVisibleKey.compareAndSet(currentMaxKey, generatedKey);
+                                }
 
                                 long currentMaxSnapshotId = maxSnapshotId.get();
 

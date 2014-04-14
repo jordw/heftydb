@@ -23,6 +23,7 @@ import com.jordanwilliams.heftydb.data.Tuple;
 import com.jordanwilliams.heftydb.db.Config;
 import com.jordanwilliams.heftydb.io.Throttle;
 import com.jordanwilliams.heftydb.metrics.Metrics;
+import com.jordanwilliams.heftydb.read.CompactionTupleIterator;
 import com.jordanwilliams.heftydb.read.MergingIterator;
 import com.jordanwilliams.heftydb.state.Caches;
 import com.jordanwilliams.heftydb.state.Paths;
@@ -77,15 +78,17 @@ public class Compactor {
 
                 for (Table table : compactionTask.tables()) {
                     compactionTables.markAsCompacted(table);
-                    tableIterators.add(table.ascendingIterator(snapshots.minimumRetainedId()));
+                    tableIterators.add(new CloseableIterator.Wrapper<Tuple>(table.iterator()));
                     tupleCount += table.tupleCount();
                 }
 
-                Iterator<Tuple> mergedIterator = new MergingIterator<Tuple>(tableIterators);
+                Iterator<Tuple> compactionIterator = new CompactionTupleIterator(snapshots.minimumRetainedId(),
+                        new MergingIterator<Tuple>
+                        (tableIterators));
 
                 FileTableWriter.Task writerTask = new FileTableWriter.Task.Builder().tableId(nextTableId).config
                         (config).paths(paths).level(compactionTask.level()).tupleCount(tupleCount).source
-                        (mergedIterator).throttle(throttle).build();
+                        (compactionIterator).throttle(throttle).build();
 
                 writerTask.run();
 
