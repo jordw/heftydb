@@ -60,6 +60,10 @@ public class Metrics {
         initMetrics();
     }
 
+    public void close() {
+        jmxReporter.close();
+    }
+
     public void logMetrics() {
         reporter.report();
     }

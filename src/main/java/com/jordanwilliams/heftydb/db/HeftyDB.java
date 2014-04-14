@@ -160,6 +160,7 @@ public class HeftyDB implements DB {
 
     @Override
     public synchronized void close() throws IOException {
+        metrics.close();
         compactor.close();
         tableWriter.close();
         tableReader.close();
