@@ -17,6 +17,7 @@
 package com.jordanwilliams.heftydb.compact;
 
 import com.codahale.metrics.Timer;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.jordanwilliams.heftydb.compact.planner.CompactionPlanner;
 import com.jordanwilliams.heftydb.data.Tuple;
@@ -42,10 +43,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -77,7 +75,6 @@ public class Compactor {
                 long nextTableId = tables.nextId();
 
                 for (Table table : compactionTask.tables()) {
-                    compactionTables.markAsCompacted(table);
                     tableIterators.add(new CloseableIterator.Wrapper<Tuple>(table.iterator()));
                     tupleCount += table.tupleCount();
                 }
@@ -124,9 +121,9 @@ public class Compactor {
     private final Tables tables;
     private final CompactionTables compactionTables;
     private final Caches caches;
+    private final ThreadPoolExecutor compactionExecutor;
     private final ThreadPoolExecutor compactionTaskExecutor;
     private final ThreadPoolExecutor highPriorityCompactionTaskExecutor;
-    private final ExecutorService compactionExecutor;
     private final CompactionPlanner compactionPlanner;
     private final Metrics metrics;
     private final AtomicInteger compactionId = new AtomicInteger();
@@ -142,20 +139,21 @@ public class Compactor {
         this.metrics = metrics;
         this.snapshots = snapshots;
 
-        int executorThreads = Math.max(config.tableCompactionThreads() / 2, 1);
+        this.compactionExecutor = new ThreadPoolExecutor(config.tableCompactionThreads(), config.tableCompactionThreads(),
+                Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
+                new ThreadFactoryBuilder().setNameFormat("Compaction thread %d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
 
-        this.compactionTaskExecutor = new ThreadPoolExecutor(executorThreads, executorThreads, Long.MAX_VALUE,
+        int compactionTaskThreads = Math.max(config.tableCompactionThreads() / 2, 1);
+
+        this.compactionTaskExecutor = new ThreadPoolExecutor(compactionTaskThreads, compactionTaskThreads, Long.MAX_VALUE,
                 TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
                 new ThreadFactoryBuilder().setNameFormat("Compaction task thread %d").build(),
                 new ThreadPoolExecutor.CallerRunsPolicy());
 
-        this.highPriorityCompactionTaskExecutor = new ThreadPoolExecutor(executorThreads, executorThreads,
+        this.highPriorityCompactionTaskExecutor = new ThreadPoolExecutor(compactionTaskThreads, compactionTaskThreads,
                 Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(config.tableCompactionThreads()),
                 new ThreadFactoryBuilder().setNameFormat("High priority " +
                 "compaction task thread %d").build(), new ThreadPoolExecutor.CallerRunsPolicy());
-
-        this.compactionExecutor = Executors.newFixedThreadPool(config.tableCompactionThreads(),
-                new ThreadFactoryBuilder().setNameFormat("Compaction plan thread").build());
 
         this.compactionPlanner = compactionStrategy.initialize(compactionTables);
 
@@ -174,55 +172,49 @@ public class Compactor {
     }
 
     public synchronized Future<?> scheduleCompaction() {
+        final int id = compactionId.incrementAndGet();
+        logger.debug("Starting compaction " + id);
 
-        FutureTask<?> task = new FutureTask<Object>(new Runnable() {
+        CompactionPlan compactionPlan = compactionPlanner.planCompaction();
+
+        if (compactionPlan == null) {
+            logger.debug("No compaction tasks present " + id);
+            logger.debug("Finishing compaction " + id);
+            return Futures.immediateFuture(null);
+        }
+
+        final List<Future<?>> taskFutures = new ArrayList<Future<?>>();
+        Throttle compactionThrottle = new Throttle(config.maxCompactionRate());
+
+        for (CompactionTask task : compactionPlan) {
+            logger.debug("Compaction " + id + "  task : " + task);
+
+            for (Table table : task.tables()){
+                compactionTables.markAsCompacted(table);
+            }
+
+            ThreadPoolExecutor taskExecutor = task.priority().equals(CompactionTask.Priority.HIGH) ?
+                    highPriorityCompactionTaskExecutor : compactionTaskExecutor;
+
+            taskFutures.add(taskExecutor.submit(new Task(task, compactionThrottle)));
+        }
+
+        metrics.histogram("compactor.concurrentTasks").update(highPriorityCompactionTaskExecutor.getActiveCount() +
+                compactionTaskExecutor.getActiveCount());
+
+        return compactionExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                int id = compactionId.incrementAndGet();
-                logger.debug("Starting compaction " + id);
-
-                CompactionPlan compactionPlan = compactionPlanner.planCompaction();
-
-                if (compactionPlan == null) {
-                    logger.debug("No compaction tasks present " + id);
-                    logger.debug("Finishing compaction " + id);
-                    return;
-                }
-
-                List<Future<?>> taskFutures = new ArrayList<Future<?>>();
-                Throttle compactionThrottle = new Throttle(config.maxCompactionRate());
-
-                for (CompactionTask task : compactionPlan) {
-                    logger.debug("Compaction " + id + "  task : " + task);
-
-                    ThreadPoolExecutor taskExecutor = task.priority().equals(CompactionTask.Priority.HIGH) ?
-                            highPriorityCompactionTaskExecutor : compactionTaskExecutor;
-
-                    taskFutures.add(taskExecutor.submit(new Task(task, compactionThrottle)));
-                }
-
-                metrics.histogram("compactor.concurrentTasks").update(highPriorityCompactionTaskExecutor.getActiveCount() +
-                        compactionTaskExecutor.getActiveCount());
-
-                for (Future<?> taskFuture : taskFutures) {
-                    try {
-                        taskFuture.get();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                for (Future<?> taskFuture : taskFutures){
+                    Futures.getUnchecked(taskFuture);
                 }
 
                 logger.debug("Finishing compaction " + id);
             }
-        }, null);
-
-        compactionExecutor.execute(task);
-
-        return task;
+        });
     }
 
     public void close() throws IOException {
-        compactionExecutor.shutdownNow();
         compactionTaskExecutor.shutdownNow();
     }
 
