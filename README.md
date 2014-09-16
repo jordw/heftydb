@@ -31,6 +31,9 @@ Make use of multiple CPU cores for table writes and table compactions
 ###Pluggable compaction strategies
 Provide custom compaction behavior tailored to specific workloads.
 
+##Design Details
+https://github.com/jordw/heftydb/wiki/Design-Overview
+
 ##Example Usage
 
 ```java
