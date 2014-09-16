@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.dir}/heftydb.log</file>
+        <file>${user.dir}/logs/heftydb.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${user.dir}/heftydb/heftydb.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${user.dir}/logs/heftydb.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -11,7 +11,7 @@
         </encoder>
     </appender>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="FILE"/>
     </root>
 </configuration>

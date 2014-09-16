@@ -140,7 +140,6 @@ public class MurmurHash3 {
         h2 = fmix(h2);
 
         h1 += h2;
-        h2 += h1;
 
         return h1;
     }
