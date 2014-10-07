@@ -9,7 +9,7 @@ HeftyDB is a persistent, sorted, key-value library for the JVM. It was designed 
 3. Provide detailed metrics about what is going on at every level of the stack.
 4. Have clean, understandable code that others can learn from.
 
-*Note: HeftyDB was built primarily for fun and learning. While the code is production quality and has extensive test coverage, you probably shouldn't use it in production unless you know what you are doing.*
+*Note: HeftyDB was built primarily for fun and learning. While the code is generally production quality and has extensive test coverage, you probably shouldn't use it in production unless you know what you are doing. So, yea, don't use it in production and lose a bunch of important data, or something.*
 
 ##Features
 
