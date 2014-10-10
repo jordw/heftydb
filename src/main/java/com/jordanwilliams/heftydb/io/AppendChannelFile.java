@@ -121,7 +121,7 @@ public class AppendChannelFile implements AppendFile {
         ByteBuffer intBuffer = intBuffer();
         intBuffer.putInt(value);
         intBuffer.rewind();
-        return intBuffer();
+        return intBuffer;
     }
 
     private ByteBuffer longBuffer() {
