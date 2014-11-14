@@ -215,6 +215,7 @@ public class Compactor {
     }
 
     public void close() throws IOException {
+        compactionExecutor.shutdownNow();
         compactionTaskExecutor.shutdownNow();
     }
 
