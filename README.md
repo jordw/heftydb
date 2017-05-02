@@ -1,4 +1,4 @@
-#HeftyDB
+# HeftyDB
 
 *"You put your data in it."*
 
@@ -11,32 +11,32 @@ HeftyDB is a persistent, sorted, key-value library for the JVM. It was designed 
 
 *Note: HeftyDB was built primarily for fun and learning. While the code is generally production quality and has extensive test coverage, you probably shouldn't use it in production unless you know what you are doing. So, yea, don't use it in production and lose a bunch of important data, or something.*
 
-##Features
+## Features
 
-###Simple API
+### Simple API
 Supports gets and puts by key as well as ascending and descending iteration from any key.
 
-###Log Structured Merge Trees
+### Log Structured Merge Trees
 All write operations are sequential, and are limited by the sequential IO performance of the underlying disk. Tables
 are written with a full B+tree index for memory efficiency, even at very large table sizes.
 
-###Snapshotted multi-version concurrency control
+### Snapshotted multi-version concurrency control
 Reads and range scans never block writes.
 
-###Off-heap data structures
+### Off-heap data structures
 Operations in the critical read and write paths are implemented using off-heap memory wherever possible to reduce GC
 pressure and memory overhead.
 
-###Multi-threaded compactions
+### Multi-threaded compactions
 Make use of multiple CPU cores for table writes and table compactions
 
-###Pluggable compaction strategies
+### Pluggable compaction strategies
 Provide custom compaction behavior tailored to specific workloads.
 
-##Design Details
+## Design Details
 https://github.com/jordw/heftydb/wiki/Design-Overview
 
-##Example Usage
+## Example Usage
 
 ```java
 try {
@@ -55,6 +55,7 @@ try {
     //Get an ascending iterator of keys greater than or equal
     //to the provided key at the provided snapshot
     CloseableIterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
+    
     while (ascendingIterator.hasNext()){
         Record next = ascendingIterator.next();
     }
@@ -62,6 +63,7 @@ try {
     //Get a descending iterator of keys less than or equal
     //to the provided key at the provided snapshot
     CloseableIterator<Record> descendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
+    
     while (descendingIterator.hasNext()){
         Record next = descendingIterator.next();
     }
