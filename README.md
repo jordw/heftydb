@@ -56,7 +56,7 @@ try {
     //to the provided key at the provided snapshot
     CloseableIterator<Record> ascendingIterator = testDB.ascendingIterator(someByteBufferKey, snapshot);
     
-    while (ascendingIterator.hasNext()){
+    while (ascendingIterator.hasNext()) {
         Record next = ascendingIterator.next();
     }
 
@@ -64,7 +64,7 @@ try {
     //to the provided key at the provided snapshot
     CloseableIterator<Record> descendingIterator = testDB.descendingIterator(someByteBufferKey, snapshot);
     
-    while (descendingIterator.hasNext()){
+    while (descendingIterator.hasNext()) {
         Record next = descendingIterator.next();
     }
 
