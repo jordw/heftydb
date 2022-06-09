@@ -91,13 +91,13 @@ public class DBInitializer {
             CommitLog log = CommitLog.open(id, paths);
             Table memoryTable = readTable(log);
             log.close();
+            if ((memoryTable.tupleCount() > 0)) {
+                FileTableWriter.Task tableWriterTask = new FileTableWriter.Task.Builder().tableId(id).config(config)
+                        .paths(paths).level(1).tupleCount(memoryTable.tupleCount()).source(memoryTable.ascendingIterator
+                                (Long.MAX_VALUE)).build();
 
-            FileTableWriter.Task tableWriterTask = new FileTableWriter.Task.Builder().tableId(id).config(config)
-                    .paths(paths).level(1).tupleCount(memoryTable.tupleCount()).source(memoryTable.ascendingIterator
-                            (Long.MAX_VALUE)).build();
-
-            tableWriterTask.run();
-
+                tableWriterTask.run();
+            }
             Files.deleteIfExists(paths.logPath(id));
         }
     }
